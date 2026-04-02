@@ -7,7 +7,7 @@ import {
   Plus, Dumbbell, Play, Clock, CheckCircle2, X, Save, History,
   ChevronRight, RotateCcw, Trash2, Compass, Copy, BarChart3,
   Pause, Timer, TrendingUp, Award, Flame, ChevronDown, ChevronUp,
-  Edit3, Target, Zap, Activity
+  Edit3, Target, Zap, Activity, Video,
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
@@ -46,6 +46,28 @@ interface WorkoutViewProps {
 /* ────────────────────────────────────────────────────────────
    Recommended Workouts Data
    ──────────────────────────────────────────────────────────── */
+// Exercise video database — YouTube embed IDs
+const EXERCISE_VIDEOS: Record<string, string> = {
+  'workout.ex_squats': 'aclHkVaku9U',
+  'workout.ex_pushups': 'IODxDxX7oi4',
+  'workout.ex_lunges': 'QOVaHwm-Q6U',
+  'workout.ex_plank': 'ASdvN_XEl_c',
+  'workout.ex_jacks': 'CWpmIW6l-YA',
+  'workout.ex_neck': 'tpbjXalYmSQ',
+  'workout.ex_catcow': 'kqnua4rHVVA',
+  'workout.ex_childpose': 'eqVMAPM00DM',
+  'workout.ex_shoulder': 'lOCse3urMFA',
+  'workout.ex_press': 'qEwKCR5JCog',
+  'workout.ex_curls': 'ykJmrZ5v0Oo',
+  'workout.ex_rows': 'pYcpY20QaE8',
+  'workout.ex_tricep': '_gsUck-7M74',
+  'workout.ex_lateral': '3VcKaXpzqRo',
+  'workout.ex_highknees': 'tx5rgpDAJRI',
+  'workout.ex_climbers': 'nmwgirgXLYM',
+  'workout.ex_burpees': 'dZgVxmf6jkA',
+  'workout.ex_jumpsquats': 'A-cFYGvaYcg',
+};
+
 const RECOMMENDED_WORKOUTS = [
   {
     nameKey: 'workout.rec_fullbody',
@@ -138,6 +160,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   const [sessionDuration, setSessionDuration] = useState(0);
   const [sessionData, setSessionData] = useState<WorkoutExerciseResult[]>([]);
   const [expandedExercise, setExpandedExercise] = useState<number | null>(null);
+  const [videoExercise, setVideoExercise] = useState<string | null>(null); // exercise nameKey for video
 
   // Rest timer
   const [restTimer, setRestTimer] = useState(0);
@@ -499,6 +522,22 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
+                        {/* Video button */}
+                        {(() => {
+                          // Find video for this exercise by matching name
+                          const videoKey = Object.keys(EXERCISE_VIDEOS).find(key =>
+                            t(key).toLowerCase() === exercise.exerciseName.toLowerCase()
+                          );
+                          if (videoKey) {
+                            return (
+                              <button onClick={(e) => { e.stopPropagation(); setVideoExercise(videoKey); }}
+                                className="p-1.5 rounded-lg transition-colors" style={{ backgroundColor: `${V.accent}10`, color: V.accent }}>
+                                <Video className="w-3.5 h-3.5" />
+                              </button>
+                            );
+                          }
+                          return null;
+                        })()}
                         {/* Mini progress */}
                         <div className="flex gap-1">
                           {exercise.sets.map((s, i) => (
@@ -1174,6 +1213,38 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                 }}>
                 {t('workout.modal_save')}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ═══════════════════════════════════════════
+           VIDEO MODAL
+         ═══════════════════════════════════════════ */}
+      {videoExercise && EXERCISE_VIDEOS[videoExercise] && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+          <div className="absolute inset-0 bg-[#06060B]/90 backdrop-blur-sm" onClick={() => setVideoExercise(null)} />
+          <div className="relative w-full max-w-2xl mx-4">
+            <div className="bg-[#0C0C14] border border-[#1A1A2E] rounded-2xl overflow-hidden shadow-2xl">
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-[#1A1A2E]">
+                <div className="flex items-center gap-2">
+                  <Video className="w-4 h-4" style={{ color: V.accent }} />
+                  <span className="text-sm font-bold" style={{ color: V.text }}>{t(videoExercise)}</span>
+                </div>
+                <button onClick={() => setVideoExercise(null)} className="p-1.5 rounded-lg hover:bg-[#1F1F2B] transition-colors">
+                  <X className="w-4 h-4" style={{ color: V.textTertiary }} />
+                </button>
+              </div>
+              {/* YouTube embed */}
+              <div className="aspect-video">
+                <iframe
+                  src={`https://www.youtube.com/embed/${EXERCISE_VIDEOS[videoExercise]}?rel=0&modestbranding=1`}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={t(videoExercise)}
+                />
+              </div>
             </div>
           </div>
         </div>

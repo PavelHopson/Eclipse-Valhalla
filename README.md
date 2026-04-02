@@ -5,106 +5,71 @@
 <h1 align="center">ECLIPSE VALHALLA</h1>
 
 <p align="center">
-  <em>Discipline through darkness.</em>
+  <em>The app that doesn't let you quit.</em>
 </p>
 
 <p align="center">
-  Personal operating system for execution, intelligence, and control.
-</p>
-
-<p align="center">
-  <a href="#core-systems">Systems</a> &nbsp;·&nbsp;
-  <a href="#architecture">Architecture</a> &nbsp;·&nbsp;
-  <a href="#installation">Install</a> &nbsp;·&nbsp;
-  <a href="#tech-stack">Stack</a> &nbsp;·&nbsp;
-  <a href="#roadmap">Roadmap</a>
+  <a href="https://pavelhopson.github.io/Eclipse-Valhalla/">Web App</a> &nbsp;·&nbsp;
+  <a href="https://github.com/PavelHopson/Eclipse-Valhalla/releases">Download</a> &nbsp;·&nbsp;
+  <a href="https://t.me/pfrfrpfr">Telegram</a>
 </p>
 
 ---
 
 ## What is this
 
-Eclipse Valhalla is not a task manager.
+Create a task. It follows you. Ignoring it makes it worse. Completing it earns progress. AI plans your day. You get disciplined or get punished.
 
-It is a **personal command center** that connects objectives, intelligence, and discipline into a single system.
+Eclipse Valhalla is a **personal execution system** — not a to-do app. It enforces discipline through pressure, escalation, and consequences.
 
-```
-Signal  →  Understanding  →  Decision  →  Quest  →  Action  →  Progress
-```
+---
 
-You define objectives. The system tracks, reminds, escalates, and enforces.
-AI analyzes your world. News becomes intelligence. Intelligence becomes action.
+## Try it
+
+**Web (instant, no signup):** https://pavelhopson.github.io/Eclipse-Valhalla/
+
+**Desktop (Windows):** [Download .exe](https://github.com/PavelHopson/Eclipse-Valhalla/releases/latest)
+
+**Mobile:** Open the web link on your phone. Works as a web app. Native iOS/Android apps coming soon.
+
+---
+
+## How it works
+
+1. **Create a quest** — type and press Enter. Takes 5 seconds.
+2. **Focus Mode activates** — fullscreen timer. No distractions.
+3. **Switch tabs? Caught.** — "You left. That is escape behavior."
+4. **Complete it** — emotional feedback + next quest prompt.
+5. **Ignore it** — notifications escalate. Discipline score drops.
+6. **Come back tomorrow** — "Day 5. Don't break it." or "Streak broken."
 
 ---
 
 ## Core Systems
 
-### ⚔️ Valhalla — Execution Engine
-
-Quest management with discipline enforcement.
-Kanban boards. Calendar. Recurring objectives.
-Widgets that overlay your desktop. Blockers that cannot be dismissed.
-
-### 🧠 Oracle — AI Advisor
-
-Gemini-powered intelligence that plans your day,
-analyzes productivity, and calls out procrastination.
-Not a chatbot. A discipline system.
-
-### 🌀 Nexus — Intelligence Feed
-
-Backend-driven news ingestion pipeline.
-RSS, Telegram, websites. AI enrichment. Ranking. Deduplication.
-News becomes quests. Information becomes action.
-
-### 🖥️ Control — Desktop Layer
-
-Electron overlay with floating widgets.
-System tray. Native notifications. Always-on-top mode.
-Click-through transparency. Focus mode.
+| System | What it does |
+|--------|-------------|
+| **Quests** | Create, track, complete objectives. Priority escalation. Kanban + list view. |
+| **Focus Mode** | 25-min timer. Tab escape detection. No exit without completion. |
+| **Discipline** | Streak tracking. Daily comparison. Weekly identity review. |
+| **Oracle AI** | Plans your day. Analyzes productivity. Calls out procrastination. |
+| **Nexus Feed** | RSS/Telegram/Website news. AI ranking. Convert articles to quests. |
+| **Workouts** | Training routines with sets/reps. Exercise videos. Session tracking. |
+| **Notifications** | Browser push. 2h/5h pressure reminders. Escalation chain. |
 
 ---
 
-## Architecture
+## AI Providers
 
-```
-┌─────────────────────────────────────────────────┐
-│                 ECLIPSE VALHALLA                 │
-├──────────┬──────────┬───────────┬───────────────┤
-│ VALHALLA │  ORACLE  │   NEXUS   │   CONTROL     │
-│ Quests   │  AI      │  Intel    │   Desktop     │
-│ Calendar │  Plan    │  Pipeline │   Overlay     │
-│ Focus    │  Analyze │  Ranking  │   Tray        │
-│ Widgets  │  Push    │  Digest   │   Sync        │
-├──────────┴──────────┴───────────┴───────────────┤
-│              SERVICE LAYER                       │
-│  Auth · Billing · Sync · Notifications · Push    │
-├─────────────────────────────────────────────────┤
-│              BACKEND                             │
-│  Supabase · Repositories · Ingestion Pipeline    │
-├─────────────────────────────────────────────────┤
-│              DESIGN SYSTEM                       │
-│  Tokens · Theme · Motion · Brand · Sigils        │
-└─────────────────────────────────────────────────┘
-```
+Supports multiple AI providers. Configure in Settings → AI Providers.
 
----
-
-## Features
-
-| Module | Capability |
-|--------|-----------|
-| **Quests** | CRUD, Kanban, status tracking, priority escalation, recurring |
-| **Widgets** | Floating overlays, drag/snap, focus timer, blocker mode |
-| **Oracle** | Day planning, productivity analysis, anti-procrastination |
-| **Nexus** | RSS/Telegram/Website ingestion, AI ranking, news-to-quest |
-| **Gamification** | XP, levels, streaks, discipline score, penalties |
-| **Sync** | Local-first + Supabase cloud, conflict resolution |
-| **Desktop** | Electron overlay, tray, native notifications, click-through |
-| **Mobile** | Capacitor-ready, responsive, platform detection |
-| **Auth** | Guest + cloud mode, session management, migration |
-| **Billing** | Free/Pro tiers, feature gating, Stripe-ready |
-| **i18n** | English + Russian, 500+ keys |
+| Provider | Chat | Image | TTS |
+|----------|------|-------|-----|
+| Google Gemini | ✓ | ✓ | ✓ |
+| OpenAI / GPT-4 | ✓ | ✓ | — |
+| Anthropic Claude | ✓ | — | — |
+| Custom endpoint | ✓ | — | — |
+| Ollama (local) | ✓ | — | — |
 
 ---
 
@@ -112,48 +77,81 @@ Click-through transparency. Focus mode.
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19 · TypeScript 5.8 · Vite 6 |
+| Frontend | React 19 · TypeScript · Vite 6 · Tailwind |
 | State | Zustand · React Context |
-| Styling | Tailwind CSS · Custom design tokens |
-| Desktop | Electron 29 · IPC · Overlay API |
+| Desktop | Electron 29 |
 | Mobile | Capacitor |
-| Backend | Supabase (Auth, Postgres, RLS, Realtime) |
-| AI | Google Gemini (3 Pro, 2.5 Flash TTS) |
-| Ingestion | Custom pipeline (fetch → clean → normalize → enrich → dedupe → rank) |
+| Backend | Supabase (Auth, Postgres, RLS) |
+| AI | Multi-provider (Gemini, OpenAI, Anthropic, custom) |
 
 ---
 
 ## Installation
 
+### Web (recommended for testing)
+
+Just open: https://pavelhopson.github.io/Eclipse-Valhalla/
+
+### From source
+
 ```bash
 git clone https://github.com/PavelHopson/Eclipse-Valhalla.git
 cd Eclipse-Valhalla
 npm install
+npm run dev
 ```
 
-### Environment
+### Desktop (Electron)
+
+```bash
+npm run electron:dev    # Development
+npm run dist:win        # Build Windows installer
+```
+
+### Mobile (Capacitor)
+
+```bash
+npm run build
+npx cap sync
+npx cap open android    # Opens Android Studio
+npx cap open ios        # Opens Xcode (macOS only)
+```
+
+### Environment (optional, for cloud features)
 
 ```bash
 cp .env.example .env
 ```
 
-Set your keys:
-- `VITE_SUPABASE_URL` — Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` — Supabase anon key
+- `VITE_SUPABASE_URL` — for cloud sync
+- `VITE_SUPABASE_ANON_KEY` — for auth
 
-Gemini API key can be configured in Settings UI.
+AI keys are configured in the app: Settings → AI Providers.
 
-### Development
+---
 
-```bash
-npm run dev          # Web (localhost:5173)
-npm run electron:dev # Desktop (Electron + Vite)
-npm run build        # Production build
-```
+## Languages
 
-### Database
+- 🇺🇸 English
+- 🇷🇺 Русский
 
-Run `SUPABASE_SCHEMA.sql` and `SUPABASE_PHASE6_NEWS_PUSH.sql` in your Supabase SQL editor.
+Switch in Settings → Language.
+
+---
+
+## Behavioral System
+
+Eclipse Valhalla uses psychological pressure mechanics:
+
+| Mechanic | Effect |
+|----------|--------|
+| Streak tracking | "Day 7. Don't break it." |
+| Tab escape detection | "You left. That is escape behavior." |
+| Overdue escalation | Red pulse, growing notifications |
+| Morning confrontation | "3 objectives abandoned. The system remembers." |
+| Identity reinforcement | "You are becoming someone who executes." |
+| Anti-burnout valve | "You showed up enough today. Rest without guilt." |
+| Discipline modes | Hardcore (no mercy) / Balanced (firm but calm) |
 
 ---
 
@@ -161,68 +159,51 @@ Run `SUPABASE_SCHEMA.sql` and `SUPABASE_PHASE6_NEWS_PUSH.sql` in your Supabase S
 
 ```
 eclipse-valhalla/
-├── electron/          Desktop control layer (6 files)
 ├── src/
-│   ├── backend/       Supabase client, repos, ingestion pipeline
+│   ├── ai/            Multi-provider AI system (Gemini, OpenAI, Anthropic)
+│   ├── admin/         Analytics dashboard, RBAC
+│   ├── backend/       Supabase, repositories, ingestion pipeline
 │   ├── brand/         Visual DNA — motifs, sigils, overlays
-│   ├── components/    React components (27)
-│   ├── context/       Auth context
-│   ├── design/        Design system — tokens, theme, motion
-│   ├── i18n/          Translations (EN/RU)
-│   ├── mobile/        Capacitor bridge, responsive hooks
-│   ├── news/          Nexus feed service + types
-│   ├── services/      Core services (13)
-│   ├── types/         TypeScript domain types
-│   ├── utils/         Utilities
-│   └── widgets/       Widget system (Zustand store + renderer)
-├── docs/              Architecture documentation
-└── SUPABASE_SCHEMA.sql
+│   ├── components/    React components (40+)
+│   ├── design/        Design system — tokens, theme, motion, states, toast
+│   ├── i18n/          Translations (EN/RU, 700+ keys)
+│   ├── landing/       Landing page
+│   ├── mobile/        Capacitor bridge, responsive
+│   ├── news/          Nexus feed service
+│   ├── services/      25+ services (discipline, growth, analytics, etc.)
+│   ├── widgets/       Widget system (Zustand)
+│   └── App.tsx        Main app with behavioral loops
+├── electron/          Desktop overlay (7 files)
+├── docs/              20 documentation files
+└── .github/workflows/ CI/CD (GitHub Pages + releases)
 ```
 
 ---
 
-## Roadmap
+## Documentation
 
-### Done
-- [x] Core quest system with priority, categories, recurring
-- [x] Design system (tokens, theme, brand, motion, sigils)
-- [x] Widget overlay system (quest, focus, blocker)
-- [x] Oracle AI (planning, analysis, anti-procrastination)
-- [x] Gamification (XP, levels, streaks, discipline score)
-- [x] Electron desktop (overlay, tray, click-through, auto-update)
-- [x] Supabase backend (auth, repos, mappers, 14 tables)
-- [x] Cloud sync architecture (local-first + cloud)
-- [x] Nexus intelligence pipeline (8-stage, RSS/Telegram/Website)
-- [x] Billing foundation (plans, trial, feature gates)
-- [x] Landing page (bilingual EN/RU)
-- [x] Growth engine (onboarding, funnels, referrals, milestones)
-- [x] Mobile adaptation layer (Capacitor bridge, responsive)
-- [x] Push notifications (web + native + escalation)
-- [x] 19-doc documentation suite
-- [x] Installers (Win/Mac/Linux/mobile-ready)
-- [x] PMF tracking system
+Full docs in `docs/`:
 
-### Next
-- [ ] Stripe payment integration
-- [ ] Real-time Supabase sync
-- [ ] Telegram bot ingestion
-- [ ] Mobile app (App Store / Play Store)
-- [ ] Team collaboration
-- [ ] API for third-party integrations
+- [VISION.md](docs/VISION.md) — Product vision
+- [PRODUCT.md](docs/PRODUCT.md) — Features & user flows
+- [ARCHITECTURE_DEEP.md](docs/ARCHITECTURE_DEEP.md) — System architecture
+- [INTELLIGENCE_ENGINE.md](docs/INTELLIGENCE_ENGINE.md) — Nexus pipeline
+- [ORACLE_SYSTEM.md](docs/ORACLE_SYSTEM.md) — AI system
+- [WIDGET_SYSTEM.md](docs/WIDGET_SYSTEM.md) — Widgets
+- [DATABASE.md](docs/DATABASE.md) — Schema (14 tables)
+- [API_FULL.md](docs/API_FULL.md) — Internal API (100+ functions)
+- [SECURITY.md](docs/SECURITY.md) — Security model
+- [SCALING.md](docs/SCALING.md) — Growth stages (100 → 100K users)
+- [ROADMAP.md](docs/ROADMAP.md) — Development roadmap
+- [DEPLOYMENT.md](docs/DEPLOYMENT.md) — Deploy guides
+- [LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) — Launch plan
 
 ---
 
-## Eclipse Ecosystem
+## Contact
 
-**Eclipse Valhalla** is the core product.
-Future modules extend the platform:
-
-| Module | Purpose |
-|--------|---------|
-| Eclipse Valhalla | Execution + discipline |
-| Eclipse Nexus | Intelligence + signals |
-| Eclipse Forge | AI creation tools |
-| Eclipse Void | Focus + deep work |
+- **Telegram:** [@pfrfrpfr](https://t.me/pfrfrpfr)
+- **GitHub Issues:** [Report a bug](https://github.com/PavelHopson/Eclipse-Valhalla/issues)
 
 ---
 
