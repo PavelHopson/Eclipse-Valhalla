@@ -11,6 +11,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Reminder } from '../types';
 import { X, Check, Pause, Play, RotateCcw, ArrowRight, Coffee } from 'lucide-react';
 import { getCompletionMessage, getIdentityMessage, getEscapeMessage, recordDailyCompletion, recordDailyEscape, getDailyStats, getProgressMessage } from '../services/disciplineMode';
+import { shouldShowCTA, getCTAConfig, openTelegram } from '../services/telegramCTA';
+import { MessageSquare } from 'lucide-react';
 
 interface FocusModeProps {
   quest: Reminder;
@@ -96,9 +98,17 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
             Escape count this session: {escapeCount}
           </p>
           <button onClick={handleReturnFromEscape}
-            className="px-8 py-4 bg-[#5DAEFF] text-[#06060B] rounded-xl text-sm font-bold shadow-[0_0_30px_rgba(93,174,255,0.15)] hover:shadow-[0_0_40px_rgba(93,174,255,0.25)] transition-all">
+            className="px-8 py-4 bg-[#5DAEFF] text-[#06060B] rounded-xl text-sm font-bold shadow-[0_0_30px_rgba(93,174,255,0.15)] hover:shadow-[0_0_40px_rgba(93,174,255,0.25)] transition-all mb-3">
             Return to objective
           </button>
+
+          {escapeCount >= 3 && (
+            <button onClick={() => openTelegram('escape_repeat', 'focus_escape')}
+              className="flex items-center gap-2 mx-auto text-[10px] text-[#55556A] hover:text-[#8888A0] transition-colors">
+              <MessageSquare className="w-3 h-3" />
+              This pattern needs intervention. Talk to creator.
+            </button>
+          )}
         </div>
       </div>
     );
@@ -155,6 +165,21 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
           ) : (
             <p className="text-xs text-[#3A3A4A] mb-6">All objectives cleared.</p>
           )}
+
+          {/* Contextual Telegram CTA (after success streak) */}
+          {(() => {
+            const stats = getDailyStats();
+            if (stats.completed >= 3) {
+              return (
+                <button onClick={() => openTelegram('success_streak', 'focus_done')}
+                  className="flex items-center gap-2 mx-auto text-[10px] text-[#5DAEFF] hover:text-[#4A9AEE] transition-colors mb-3">
+                  <MessageSquare className="w-3 h-3" />
+                  Executing consistently? Get advanced guidance.
+                </button>
+              );
+            }
+            return null;
+          })()}
 
           {/* Rest option — deliberately smaller */}
           <button onClick={onClose}

@@ -11,7 +11,8 @@
  */
 
 import React from 'react';
-import { Swords, AlertTriangle, Flame, ArrowRight } from 'lucide-react';
+import { Swords, AlertTriangle, Flame, ArrowRight, MessageSquare } from 'lucide-react';
+import { openTelegram } from '../services/telegramCTA';
 
 export interface ReturnState {
   type: 'morning' | 'debt' | 'comeback';
@@ -98,6 +99,15 @@ const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDi
           <ArrowRight className="w-5 h-5" />
           {state.abandonedCount > 0 ? 'Face your objectives' : 'Start first objective'}
         </button>
+
+        {/* Telegram CTA for streak break / comeback */}
+        {(state.type === 'comeback' || (state.type === 'debt' && state.abandonedCount >= 3)) && (
+          <button onClick={() => openTelegram('streak_break', 'return_overlay')}
+            className="flex items-center gap-2 mx-auto text-[10px] text-[#55556A] hover:text-[#8888A0] transition-colors mb-3">
+            <MessageSquare className="w-3 h-3" />
+            Need accountability? Talk to the creator.
+          </button>
+        )}
 
         <button onClick={onDismiss}
           className="text-[10px] text-[#2A2A3C] hover:text-[#3A3A4A] transition-colors">
