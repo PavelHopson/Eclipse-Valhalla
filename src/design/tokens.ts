@@ -1,83 +1,139 @@
 /**
- * Eclipse Valhalla — Design Tokens
+ * Eclipse Valhalla — Design Tokens v2
  *
- * Dark. Brutal. Cold. Cosmic. Nordic minimal.
- * Every pixel serves a purpose.
+ * SACRED BRUTALISM — Mythic Discipline Interface
+ *
+ * Not a theme. An identity.
+ * Every pixel serves execution. Every shadow implies judgment.
+ * 80% clean brutalist clarity. 20% mythic symbolic depth.
  */
 
 // ═══════════════════════════════════════════
-// COLORS
+// COLORS — THE VOID PALETTE
 // ═══════════════════════════════════════════
 
 export const colors = {
-  // Backgrounds
-  bg: {
-    void:    '#0A0A0F',   // deepest background — the void
-    abyss:   '#0E0E16',   // main app background
-    surface: '#12121A',   // elevated surface
-    card:    '#1A1A26',   // card backgrounds
-    raised:  '#1F1F2B',   // raised elements (modals, popover)
-    hover:   '#262636',   // hover state
-    active:  '#2D2D40',   // active/pressed state
+  // Void layers — the system's depth
+  void: {
+    black:    '#050508',   // True void — page bg
+    deep:     '#08080D',   // App shell
+    abyss:    '#0B0B12',   // Surface 1
+    obsidian: '#0F0F18',   // Surface 2 (cards)
+    slate:    '#14141F',   // Surface 3 (raised)
+    iron:     '#1A1A28',   // Surface 4 (interactive)
+    steel:    '#222233',   // Hover
+    ash:      '#2A2A3D',   // Active
   },
 
   // Borders
   border: {
-    subtle:  '#1E1E2E',   // barely visible
-    default: '#2A2A3C',   // standard border
-    strong:  '#3A3A52',   // emphasized border
-    glow:    '#5DAEFF20', // glowing border (accent with alpha)
+    ghost:    '#16162240',
+    subtle:   '#1E1E3050',
+    default:  '#2A2A3C70',
+    strong:   '#3A3A5080',
+    ritual:   '#5DA8FF15',
   },
 
-  // Text
+  // Text hierarchy
   text: {
-    primary:   '#E8E8F0',  // main text
-    secondary: '#8888A0',  // secondary/muted
-    tertiary:  '#55556A',  // very muted (labels, hints)
-    disabled:  '#3A3A4A',  // disabled text
-    inverse:   '#0A0A0F',  // text on light backgrounds
+    primary:   '#EAEAF2',
+    secondary: '#9494AD',
+    tertiary:  '#5E5E78',
+    ghost:     '#3D3D52',
+    inverse:   '#050508',
   },
 
-  // Accent — Primary (Ice Blue)
+  // Accent — Ice Fire
   accent: {
-    primary:    '#5DAEFF',
-    primaryDim: '#5DAEFF80',
-    primaryGlow:'#5DAEFF30',
-    primaryBg:  '#5DAEFF10',
+    ice:       '#5DA8FF',
+    iceDim:    '#5DA8FF60',
+    iceGlow:   '#5DA8FF20',
+    iceSurface:'#5DA8FF08',
+    iceHover:  '#4A95EE',
   },
 
-  // Accent — Secondary (Void Purple)
-  purple: {
-    primary:    '#7A5CFF',
-    primaryDim: '#7A5CFF80',
-    primaryGlow:'#7A5CFF30',
-    primaryBg:  '#7A5CFF10',
-  },
-
-  // Accent — Oracle (Emerald)
+  // Oracle — Emerald
   oracle: {
-    primary:    '#4ADE80',
-    primaryDim: '#4ADE8080',
-    primaryGlow:'#4ADE8030',
-    primaryBg:  '#4ADE8010',
+    green:      '#3DD68C',
+    greenDim:   '#3DD68C60',
+    greenGlow:  '#3DD68C18',
+    greenSurface:'#3DD68C08',
   },
 
-  // Status
-  status: {
-    success:   '#4ADE80',
-    warning:   '#FBBF24',
-    danger:    '#8B0000',
-    dangerLit: '#DC2626',
-    failed:    '#FF4444',
-    info:      '#5DAEFF',
+  // Forge — Void Purple
+  forge: {
+    purple:      '#7B5CFF',
+    purpleDim:   '#7B5CFF60',
+    purpleGlow:  '#7B5CFF18',
+    purpleSurface:'#7B5CFF08',
   },
 
-  // XP & Gamification
-  xp: {
-    gold:    '#FFD700',
-    goldDim: '#FFD70060',
-    goldGlow:'#FFD70020',
-    streak:  '#FF6B35',
+  // Danger — Blood Rune
+  danger: {
+    blood:      '#E03030',
+    bloodDim:   '#E0303060',
+    bloodGlow:  '#E0303020',
+    bloodSurface:'#E0303008',
+    bloodDeep:  '#6B0000',
+  },
+
+  // Warning
+  warning: {
+    flame:      '#E8A820',
+    flameDim:   '#E8A82060',
+    flameGlow:  '#E8A82018',
+    flameSurface:'#E8A82008',
+  },
+
+  // Streak
+  streak: { fire: '#E86835', fireGlow: '#E8683518' },
+
+  // XP
+  glory: { gold: '#D4A828', goldGlow: '#D4A82818' },
+
+  // Completion
+  completion: { mark: '#3DD68C', markGlow: '#3DD68C10' },
+
+  // Legacy compat (used across components)
+  bg: {
+    void:    '#050508',
+    abyss:   '#08080D',
+    surface: '#0B0B12',
+    card:    '#0F0F18',
+    raised:  '#14141F',
+    hover:   '#222233',
+    active:  '#2A2A3D',
+  },
+} as const;
+
+
+// ═══════════════════════════════════════════
+// TYPOGRAPHY
+// ═══════════════════════════════════════════
+
+export const typography = {
+  fontFamily: {
+    body: "'Inter', -apple-system, sans-serif",
+    display: "'Inter', sans-serif",
+    mono: "'JetBrains Mono', 'SF Mono', monospace",
+    hand: "'Patrick Hand', cursive",
+  },
+  fontSize: {
+    xs:    '11px',
+    sm:    '13px',
+    base:  '14px',
+    md:    '16px',
+    lg:    '18px',
+    xl:    '22px',
+    '2xl': '28px',
+    '3xl': '36px',
+  },
+  fontWeight: {
+    normal:   400,
+    medium:   500,
+    semibold: 600,
+    bold:     700,
+    black:    900,
   },
 } as const;
 
@@ -99,38 +155,7 @@ export const spacing = {
 
 
 // ═══════════════════════════════════════════
-// TYPOGRAPHY
-// ═══════════════════════════════════════════
-
-export const typography = {
-  fontFamily: {
-    body:    "'Inter', -apple-system, sans-serif",
-    heading: "'Cinzel', serif",
-    mono:    "'JetBrains Mono', 'Fira Code', monospace",
-    hand:    "'Patrick Hand', cursive",
-  },
-  fontSize: {
-    xs:   '11px',
-    sm:   '13px',
-    base: '14px',
-    md:   '16px',
-    lg:   '18px',
-    xl:   '22px',
-    '2xl':'28px',
-    '3xl':'36px',
-  },
-  fontWeight: {
-    normal:   400,
-    medium:   500,
-    semibold: 600,
-    bold:     700,
-    black:    900,
-  },
-} as const;
-
-
-// ═══════════════════════════════════════════
-// BORDERS & RADIUS
+// RADIUS
 // ═══════════════════════════════════════════
 
 export const radius = {
@@ -143,18 +168,18 @@ export const radius = {
 
 
 // ═══════════════════════════════════════════
-// SHADOWS & EFFECTS
+// SHADOWS
 // ═══════════════════════════════════════════
 
 export const shadows = {
-  sm:    '0 2px 8px rgba(0, 0, 0, 0.3)',
-  md:    '0 4px 16px rgba(0, 0, 0, 0.4)',
-  lg:    '0 8px 32px rgba(0, 0, 0, 0.5)',
-  xl:    '0 16px 64px rgba(0, 0, 0, 0.6)',
-  glow:  '0 0 20px rgba(93, 174, 255, 0.15)',
-  glowPurple: '0 0 20px rgba(122, 92, 255, 0.15)',
-  glowDanger: '0 0 20px rgba(139, 0, 0, 0.3)',
-  inner: 'inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+  sm:    '0 2px 8px rgba(0, 0, 0, 0.4)',
+  md:    '0 4px 16px rgba(0, 0, 0, 0.5)',
+  lg:    '0 8px 32px rgba(0, 0, 0, 0.6)',
+  xl:    '0 16px 64px rgba(0, 0, 0, 0.7)',
+  glow:  '0 0 20px rgba(93, 168, 255, 0.12)',
+  glowPurple: '0 0 20px rgba(123, 92, 255, 0.12)',
+  glowDanger: '0 0 20px rgba(224, 48, 48, 0.15)',
+  inner: 'inset 0 1px 0 rgba(255, 255, 255, 0.02)',
 } as const;
 
 
@@ -171,7 +196,7 @@ export const transitions = {
 
 
 // ═══════════════════════════════════════════
-// Z-INDEX LAYERS
+// Z-INDEX
 // ═══════════════════════════════════════════
 
 export const zIndex = {

@@ -82,28 +82,27 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
   return (
     <>
       {/* ═══ DESKTOP SIDEBAR ═══ */}
-      <div className="hidden md:flex w-64 bg-[#0A0A0F] text-white flex-col h-full shrink-0 z-30 border-r border-[#1E1E2E]">
+      <div className="hidden md:flex w-60 bg-[#08080D] text-[#EAEAF2] flex-col h-full shrink-0 z-30 border-r border-[#16162240]">
 
         {/* Brand */}
-        <div className="px-5 py-5 flex items-center gap-3 border-b border-[#1E1E2E] relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#12121A] to-[#0A0A0F] pointer-events-none" />
-          <div className="relative z-10 w-9 h-9 rounded-lg bg-[#5DAEFF15] border border-[#5DAEFF30] flex items-center justify-center shadow-[0_0_15px_rgba(93,174,255,0.1)]">
-            <Hammer className="w-5 h-5 text-[#5DAEFF]" />
+        <div className="px-5 py-4 flex items-center gap-3 border-b border-[#16162240]">
+          <div className="w-8 h-8 rounded-md bg-[#5DA8FF08] border border-[#5DA8FF20] flex items-center justify-center">
+            <Hammer className="w-4 h-4 text-[#5DA8FF]" />
           </div>
-          <div className="relative z-10">
-            <h1 className="font-bold text-base tracking-[0.15em] uppercase font-serif text-[#E8E8F0]">Eclipse</h1>
-            <span className="text-[8px] font-bold text-[#55556A] uppercase tracking-[0.25em]">Valhalla</span>
+          <div>
+            <h1 className="font-bold text-sm tracking-[0.12em] uppercase text-[#EAEAF2]">Eclipse</h1>
+            <span className="text-[7px] font-semibold text-[#3D3D52] uppercase tracking-[0.25em]">Valhalla</span>
           </div>
         </div>
 
         {/* Search */}
-        <div className="px-3 pt-4 pb-1">
+        <div className="px-3 pt-3 pb-1">
           <button
             onClick={onSearchClick}
-            className="w-full bg-[#12121A] hover:bg-[#1A1A26] border border-[#1E1E2E] hover:border-[#2A2A3C] text-[#55556A] rounded-lg px-3 py-2 flex items-center gap-2 text-xs transition-all group"
+            className="w-full bg-[#0B0B12] hover:bg-[#0F0F18] border border-[#1E1E3050] hover:border-[#2A2A3C70] text-[#5E5E78] rounded-md px-3 py-2 flex items-center gap-2 text-xs transition-all group"
           >
-            <Search className="w-3.5 h-3.5 group-hover:text-[#8888A0] transition-colors" />
-            <span className="group-hover:text-[#8888A0]">{t('nav.search')}</span>
+            <Search className="w-3.5 h-3.5 group-hover:text-[#9494AD] transition-colors" />
+            <span className="group-hover:text-[#9494AD]">{t('nav.search')}</span>
             <span className="ml-auto text-[9px] bg-[#0A0A0F] px-1.5 py-0.5 rounded border border-[#1E1E2E] text-[#3A3A4A] font-mono">^K</span>
           </button>
         </div>
@@ -199,7 +198,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
       </div>
 
       {/* ═══ MOBILE BOTTOM NAV ═══ */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0A0A0F]/95 backdrop-blur-xl border-t border-[#1E1E2E] z-50 pb-safe">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#050508]/95 backdrop-blur-xl border-t border-[#16162240] z-50 pb-safe">
         <div className="flex items-center justify-around px-1 pt-2 pb-1">
           {[
             { id: 'dashboard', icon: Home, label: 'Home' },

@@ -25,7 +25,7 @@ const TTSView = lazy(() => import('./components/TTSView').then(m => ({ default: 
 const FocusMode = lazy(() => import('./components/FocusMode'));
 
 const LoadingScreen = () => (
-  <div className="h-full w-full flex flex-col items-center justify-center bg-[#0A0A0F]">
+  <div className="h-full w-full flex flex-col items-center justify-center bg-[#050508]">
     <Hammer className="w-8 h-8 animate-bounce mb-4 text-[#2A2A3C]" />
     <Loader2 className="w-5 h-5 animate-spin text-[#5DAEFF]" />
   </div>
@@ -297,14 +297,14 @@ const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-[#0A0A0F] font-sans text-[#E8E8F0] fixed inset-0">
+    <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-[#050508] font-sans text-[#EAEAF2] fixed inset-0">
       {/* Mobile Header */}
-      <div className="md:hidden bg-[#0A0A0F] border-b border-[#1E1E2E] p-4 flex justify-between items-center shrink-0 z-20">
+      <div className="md:hidden bg-[#050508] border-b border-[#1E1E2E] p-4 flex justify-between items-center shrink-0 z-20">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#5DAEFF15] border border-[#5DAEFF30] flex items-center justify-center">
             <Hammer className="w-3.5 h-3.5 text-[#5DAEFF]" />
           </div>
-          <span className="font-bold text-[#E8E8F0] tracking-widest uppercase font-serif text-xs">Eclipse</span>
+          <span className="font-bold text-[#EAEAF2] tracking-widest uppercase font-serif text-xs">Eclipse</span>
         </div>
       </div>
 
@@ -339,7 +339,7 @@ const AppContent: React.FC = () => {
               {/* PRESSURE HERO */}
               <div className="px-6 pt-4 pb-2">
                 <div className="flex items-center justify-between mb-1">
-                  <h1 className="text-lg font-bold text-[#E8E8F0]">
+                  <h1 className="text-lg font-bold text-[#EAEAF2]">
                     {reminders.filter(r => !r.isCompleted).length === 0
                       ? (isRU ? 'Нет целей. Определи задачи.' : 'No objectives. Define your targets.')
                       : (isRU ? `${reminders.filter(r => !r.isCompleted).length} целей ожидают.` : `${reminders.filter(r => !r.isCompleted).length} objectives pending.`)}
@@ -405,7 +405,7 @@ const AppContent: React.FC = () => {
                             isOverdue ? 'border-[#FF444420] bg-[#FF444406]' : 'border-[#1E1E2E] bg-[#0C0C14]'
                           }`}>
                           <div className={`w-2 h-2 rounded-full shrink-0 ${isOverdue ? 'bg-[#FF4444] animate-pulse' : 'bg-[#5DAEFF]'}`} />
-                          <span className={`text-sm font-medium flex-1 truncate ${isOverdue ? 'text-[#FF4444]' : 'text-[#E8E8F0]'}`}>{r.title}</span>
+                          <span className={`text-sm font-medium flex-1 truncate ${isOverdue ? 'text-[#FF4444]' : 'text-[#EAEAF2]'}`}>{r.title}</span>
                           <span className="text-[10px] text-[#3A3A4A]">Focus →</span>
                         </button>
                       );
@@ -480,12 +480,12 @@ const AppContent: React.FC = () => {
         <div className="fixed inset-0 z-[73] bg-[#06060B] flex items-center justify-center">
           <div className="max-w-md mx-auto px-6 text-center">
             <div className="text-[10px] text-[#7A5CFF] uppercase tracking-[0.3em] mb-4">Weekly Review</div>
-            <h1 className="text-2xl font-bold text-[#E8E8F0] mb-2">{weeklySummary.activeDays}/7 days active</h1>
+            <h1 className="text-2xl font-bold text-[#EAEAF2] mb-2">{weeklySummary.activeDays}/7 days active</h1>
             <p className="text-sm text-[#8888A0] mb-2">{weeklySummary.message}</p>
             <p className="text-xs text-[#5DAEFF] italic mb-6">"{weeklySummary.identityMessage}"</p>
             <div className="flex items-center justify-center gap-6 mb-8 text-xs text-[#55556A]">
-              <div><span className="text-lg font-bold text-[#E8E8F0]">{weeklySummary.totalCompleted}</span><br/>completed</div>
-              <div><span className="text-lg font-bold text-[#E8E8F0]">{weeklySummary.avgPerDay}</span><br/>avg/day</div>
+              <div><span className="text-lg font-bold text-[#EAEAF2]">{weeklySummary.totalCompleted}</span><br/>completed</div>
+              <div><span className="text-lg font-bold text-[#EAEAF2]">{weeklySummary.avgPerDay}</span><br/>avg/day</div>
               <div><span className={`text-lg font-bold ${weeklySummary.trend === 'improving' ? 'text-[#4ADE80]' : weeklySummary.trend === 'declining' ? 'text-[#FF4444]' : 'text-[#8888A0]'}`}>
                 {weeklySummary.trend === 'improving' ? '↑' : weeklySummary.trend === 'declining' ? '↓' : '→'}
               </span><br/>trend</div>
@@ -530,14 +530,14 @@ const AppContent: React.FC = () => {
       {/* Quest Modal */}
       {isReminderModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center">
-          <div className="absolute inset-0 bg-[#0A0A0F]/80 backdrop-blur-sm" onClick={() => setIsReminderModalOpen(false)} />
+          <div className="absolute inset-0 bg-[#050508]/80 backdrop-blur-sm" onClick={() => setIsReminderModalOpen(false)} />
           <div className="relative w-full md:max-w-lg bg-[#12121A] border border-[#2A2A3C] rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-[#1E1E2E] flex justify-between items-center">
-              <h3 className="text-lg font-bold text-[#E8E8F0]">{editingId ? 'Edit Quest' : 'New Quest'}</h3>
+              <h3 className="text-lg font-bold text-[#EAEAF2]">{editingId ? 'Edit Quest' : 'New Quest'}</h3>
               <button onClick={() => setIsReminderModalOpen(false)}><X className="w-5 h-5 text-[#55556A]" /></button>
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
-              <input type="text" value={modalData.title} onChange={e => setModalData(p => ({...p, title: e.target.value}))} placeholder="Quest objective..." autoFocus className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-[#E8E8F0] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40]" />
+              <input type="text" value={modalData.title} onChange={e => setModalData(p => ({...p, title: e.target.value}))} placeholder="Quest objective..." autoFocus className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-[#EAEAF2] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40]" />
               <textarea value={modalData.desc} onChange={e => setModalData(p => ({...p, desc: e.target.value}))} placeholder="Details..." className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] h-20 text-sm text-[#8888A0] placeholder-[#3A3A4A] outline-none resize-none" />
               <div className="grid grid-cols-2 gap-3">
                 <input type="datetime-local" value={modalData.date} onChange={e => setModalData(p => ({...p, date: e.target.value}))} className="px-3 py-2.5 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-sm text-[#8888A0] outline-none" />

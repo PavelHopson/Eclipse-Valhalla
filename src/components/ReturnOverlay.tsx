@@ -30,7 +30,7 @@ interface ReturnOverlayProps {
 
 const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDismiss }) => {
   return (
-    <div className="fixed inset-0 z-[75] bg-[#06060B] flex items-center justify-center">
+    <div className="fixed inset-0 z-[75] bg-[#050508] flex items-center justify-center">
       <div className="max-w-md mx-auto px-6 text-center">
 
         {/* ═══ MORNING TRIGGER ═══ */}

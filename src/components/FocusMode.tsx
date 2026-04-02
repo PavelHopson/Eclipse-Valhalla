@@ -87,7 +87,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
   // ═══ ESCAPE STATE ═══
   if (phase === 'escaped') {
     return (
-      <div className="fixed inset-0 z-[80] bg-[#06060B] flex flex-col items-center justify-center">
+      <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center">
         <div className="text-center px-6 max-w-md">
           <div className="text-6xl mb-6 opacity-30">⚠</div>
           <h2 className="text-2xl font-bold text-[#FF4444] mb-3">You left.</h2>
@@ -117,7 +117,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
   // ═══ COMPLETION STATE (HOLD + EMOTION + NEXT) ═══
   if (phase === 'completed') {
     return (
-      <div className="fixed inset-0 z-[80] bg-[#06060B] flex flex-col items-center justify-center">
+      <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center">
         <button onClick={onClose} className="absolute top-4 right-4 p-2 text-[#2A2A3C] hover:text-[#55556A]">
           <X className="w-5 h-5" />
         </button>
@@ -194,7 +194,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
 
   // ═══ FOCUS STATE ═══
   return (
-    <div className="fixed inset-0 z-[80] bg-[#06060B] flex flex-col items-center justify-center">
+    <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center">
       <button onClick={onClose} className="absolute top-4 right-4 p-2 text-[#2A2A3C] hover:text-[#55556A]">
         <X className="w-5 h-5" />
       </button>
