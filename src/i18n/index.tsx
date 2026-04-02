@@ -283,6 +283,37 @@ export const translations = {
     'greeting.morning': 'Dawn breaks',
     'greeting.afternoon': 'Sun is high',
     'greeting.evening': 'Night falls',
+
+    // Onboarding
+    'onboarding.focus_title': 'What do you want to control?',
+    'onboarding.quest_title': 'Define your first objectives.',
+    'onboarding.widget_title': 'Floating discipline.',
+    'onboarding.nexus_title': 'Intelligence feed.',
+    'onboarding.oracle_title': 'The Oracle awaits.',
+    'onboarding.enter': 'Enter Eclipse Valhalla',
+
+    // Daily Loop
+    'daily.morning': 'Dawn cycle. Review your objectives.',
+    'daily.day': 'Active cycle. Execute with precision.',
+    'daily.evening': 'Closing cycle. Assess your progress.',
+    'daily.night': 'Rest cycle. Prepare for tomorrow.',
+    'daily.summary': 'Day Complete',
+    'daily.acknowledged': 'Acknowledged',
+
+    // Paywall
+    'paywall.pro_required': 'Pro feature.',
+    'paywall.upgrade': 'Upgrade to Pro',
+    'paywall.not_now': 'Not now',
+
+    // Feedback
+    'feedback.title': 'Send Feedback',
+    'feedback.sent': 'Feedback received.',
+    'feedback.sent_sub': 'Your signal strengthens the system.',
+
+    // Retention
+    'retention.streak_risk': 'Streak at risk.',
+    'retention.comeback': 'You were away.',
+    'retention.rebuild': 'Rebuild discipline.',
   },
   ru: {
     'app.title': 'ECLIPSE VALHALLA',
@@ -563,6 +594,37 @@ export const translations = {
     'greeting.morning': 'Рассвет настал',
     'greeting.afternoon': 'Солнце высоко',
     'greeting.evening': 'Ночь пала',
+
+    // Onboarding
+    'onboarding.focus_title': 'Что ты хочешь контролировать?',
+    'onboarding.quest_title': 'Определи первые цели.',
+    'onboarding.widget_title': 'Плавающая дисциплина.',
+    'onboarding.nexus_title': 'Поток разведки.',
+    'onboarding.oracle_title': 'Оракул ждёт.',
+    'onboarding.enter': 'Войти в Eclipse Valhalla',
+
+    // Daily Loop
+    'daily.morning': 'Цикл рассвета. Проверь цели.',
+    'daily.day': 'Активный цикл. Действуй точно.',
+    'daily.evening': 'Завершающий цикл. Оцени прогресс.',
+    'daily.night': 'Цикл отдыха. Готовься к завтра.',
+    'daily.summary': 'День завершён',
+    'daily.acknowledged': 'Принято',
+
+    // Paywall
+    'paywall.pro_required': 'Нужен Pro.',
+    'paywall.upgrade': 'Перейти на Pro',
+    'paywall.not_now': 'Не сейчас',
+
+    // Feedback
+    'feedback.title': 'Обратная связь',
+    'feedback.sent': 'Обратная связь принята.',
+    'feedback.sent_sub': 'Твой сигнал усиливает систему.',
+
+    // Retention
+    'retention.streak_risk': 'Стрик под угрозой.',
+    'retention.comeback': 'Тебя не было.',
+    'retention.rebuild': 'Восстанови дисциплину.',
   }
 };
 
