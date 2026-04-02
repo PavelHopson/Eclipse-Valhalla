@@ -58,6 +58,7 @@ interface UsageLimits {
   maxOracleMessagesPerDay: number;
   maxImageGenerationsPerDay: number;
   maxFocusSessionsPerDay: number;
+  maxNexusSources: number;
 }
 
 const TIER_LIMITS: Record<Tier, UsageLimits> = {
@@ -67,6 +68,7 @@ const TIER_LIMITS: Record<Tier, UsageLimits> = {
     maxOracleMessagesPerDay: 10,
     maxImageGenerationsPerDay: 0,
     maxFocusSessionsPerDay: 5,
+    maxNexusSources: 5,
   },
   pro: {
     maxQuests: Infinity,
@@ -74,6 +76,7 @@ const TIER_LIMITS: Record<Tier, UsageLimits> = {
     maxOracleMessagesPerDay: Infinity,
     maxImageGenerationsPerDay: Infinity,
     maxFocusSessionsPerDay: Infinity,
+    maxNexusSources: Infinity,
   },
 };
 
