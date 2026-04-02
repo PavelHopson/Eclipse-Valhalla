@@ -183,7 +183,8 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
             </button>
           )}
 
-          <button
+          {/* Admin: only visible to dev account */}
+          {user?.id === 'user_pavel_hopson_admin' && <button
             onClick={() => setView('admin')}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-xs ${
               isActive('admin')
@@ -193,7 +194,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span className="font-bold uppercase tracking-wider text-[10px]">{t('nav.admin').split('(')[0].trim()}</span>
-          </button>
+          </button>}
         </div>
       </div>
 
