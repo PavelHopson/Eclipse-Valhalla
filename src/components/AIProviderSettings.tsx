@@ -1,0 +1,195 @@
+/**
+ * Eclipse Valhalla — AI Provider Settings
+ *
+ * Configure AI providers: Gemini, OpenAI, Anthropic, custom endpoints.
+ */
+
+import React, { useState, useEffect } from 'react';
+import { getAllProviders, addProvider, updateProvider, removeProvider, testProvider } from '../ai';
+import type { AIProviderConfig, AIProviderType } from '../ai';
+import { DEFAULT_MODELS, PROVIDER_CAPABILITIES, CAPABILITY_LABELS } from '../ai';
+import { Plus, Trash2, Check, X, Loader2, Zap, Settings2, ToggleLeft, ToggleRight, Star } from 'lucide-react';
+
+const PROVIDER_LABELS: Record<AIProviderType, string> = {
+  gemini: 'Google Gemini',
+  openai: 'OpenAI / Compatible',
+  anthropic: 'Anthropic Claude',
+  custom: 'Custom Endpoint',
+};
+
+const AIProviderSettings: React.FC = () => {
+  const [providers, setProviders] = useState<AIProviderConfig[]>([]);
+  const [showAdd, setShowAdd] = useState(false);
+  const [testing, setTesting] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<Record<string, { valid: boolean; error?: string }>>({});
+
+  // Add form state
+  const [newType, setNewType] = useState<AIProviderType>('openai');
+  const [newName, setNewName] = useState('');
+  const [newKey, setNewKey] = useState('');
+  const [newModel, setNewModel] = useState('');
+  const [newUrl, setNewUrl] = useState('');
+
+  useEffect(() => { setProviders(getAllProviders()); }, []);
+
+  const refresh = () => setProviders(getAllProviders());
+
+  const handleAdd = () => {
+    if (!newName.trim() || !newKey.trim()) return;
+    addProvider({
+      type: newType,
+      name: newName.trim(),
+      apiKey: newKey.trim(),
+      model: newModel.trim() || DEFAULT_MODELS[newType],
+      baseUrl: newUrl.trim() || undefined,
+      enabled: true,
+      isDefault: providers.length === 0,
+      capabilities: PROVIDER_CAPABILITIES[newType] || ['chat'],
+    });
+    setNewName(''); setNewKey(''); setNewModel(''); setNewUrl('');
+    setShowAdd(false);
+    refresh();
+  };
+
+  const handleTest = async (p: AIProviderConfig) => {
+    setTesting(p.id);
+    const result = await testProvider(p);
+    setTestResult(prev => ({ ...prev, [p.id]: result }));
+    setTesting(null);
+  };
+
+  const handleRemove = (id: string) => {
+    removeProvider(id);
+    refresh();
+  };
+
+  const handleToggle = (id: string, enabled: boolean) => {
+    updateProvider(id, { enabled });
+    refresh();
+  };
+
+  const handleSetDefault = (id: string) => {
+    updateProvider(id, { isDefault: true });
+    refresh();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-[#E8E8F0]">AI Providers</h3>
+          <p className="text-[10px] text-[#55556A]">{providers.length} configured · Supports Gemini, OpenAI, Claude, custom endpoints</p>
+        </div>
+        <button onClick={() => setShowAdd(!showAdd)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5DAEFF10] text-[#5DAEFF] border border-[#5DAEFF25] text-xs font-medium hover:bg-[#5DAEFF15] transition-colors">
+          <Plus className="w-3.5 h-3.5" /> Add Provider
+        </button>
+      </div>
+
+      {/* Add form */}
+      {showAdd && (
+        <div className="bg-[#0C0C14] border border-[#1E1E2E] rounded-xl p-4 space-y-3">
+          {/* Type */}
+          <div className="flex gap-2">
+            {(Object.keys(PROVIDER_LABELS) as AIProviderType[]).map(type => (
+              <button key={type} onClick={() => { setNewType(type); setNewModel(DEFAULT_MODELS[type]); }}
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  newType === type ? 'bg-[#5DAEFF10] text-[#5DAEFF] border border-[#5DAEFF25]' : 'bg-[#12121A] text-[#55556A] border border-[#1E1E2E]'
+                }`}>
+                {PROVIDER_LABELS[type]}
+              </button>
+            ))}
+          </div>
+
+          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Display name (e.g., My GPT-4o)"
+            className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF30]" />
+
+          <input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="API Key" type="password"
+            className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF30]" />
+
+          <div className="grid grid-cols-2 gap-3">
+            <input value={newModel} onChange={e => setNewModel(e.target.value)} placeholder={`Model (${DEFAULT_MODELS[newType]})`}
+              className="px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none" />
+            {(newType === 'openai' || newType === 'custom') && (
+              <input value={newUrl} onChange={e => setNewUrl(e.target.value)} placeholder="Base URL (optional)"
+                className="px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none" />
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setShowAdd(false)} className="px-3 py-1.5 text-xs text-[#55556A]">Cancel</button>
+            <button onClick={handleAdd} disabled={!newName.trim() || !newKey.trim()}
+              className="px-4 py-1.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-lg text-xs font-bold disabled:opacity-30">
+              Add Provider
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Provider list */}
+      <div className="space-y-2">
+        {providers.map(p => {
+          const result = testResult[p.id];
+          return (
+            <div key={p.id} className="bg-[#0C0C14] border border-[#1E1E2E] rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center border ${
+                  p.enabled ? 'bg-[#5DAEFF08] border-[#5DAEFF15]' : 'bg-[#12121A] border-[#1E1E2E]'}`}>
+                  <Zap className={`w-4 h-4 ${p.enabled ? 'text-[#5DAEFF]' : 'text-[#3A3A4A]'}`} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-medium ${p.enabled ? 'text-[#E8E8F0]' : 'text-[#55556A]'}`}>{p.name}</span>
+                    {p.isDefault && <Star className="w-3 h-3 text-[#FFD700] fill-current" />}
+                  </div>
+                  <div className="text-[10px] text-[#3A3A4A]">{PROVIDER_LABELS[p.type]} · {p.model}</div>
+                </div>
+
+                {/* Test */}
+                <button onClick={() => handleTest(p)}
+                  className="px-2 py-1 rounded text-[10px] font-medium text-[#55556A] hover:text-[#8888A0] border border-[#1E1E2E] hover:border-[#2A2A3C] transition-colors">
+                  {testing === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Test'}
+                </button>
+
+                {result && (
+                  <span className={`text-[10px] font-bold ${result.valid ? 'text-[#4ADE80]' : 'text-[#FF4444]'}`}>
+                    {result.valid ? '✓ OK' : '✗ Failed'}
+                  </span>
+                )}
+
+                {/* Default */}
+                {!p.isDefault && (
+                  <button onClick={() => handleSetDefault(p.id)} className="text-[10px] text-[#3A3A4A] hover:text-[#FFD700]" title="Set as default">
+                    <Star className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
+                {/* Toggle */}
+                <button onClick={() => handleToggle(p.id, !p.enabled)}>
+                  {p.enabled ? <ToggleRight className="w-5 h-5 text-[#5DAEFF]" /> : <ToggleLeft className="w-5 h-5 text-[#3A3A4A]" />}
+                </button>
+
+                {/* Delete */}
+                <button onClick={() => handleRemove(p.id)}
+                  className="p-1 rounded hover:bg-[#FF444410] text-[#3A3A4A] hover:text-[#FF4444] transition-colors">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+
+        {providers.length === 0 && (
+          <div className="text-center py-8 text-[#3A3A4A]">
+            <Settings2 className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">No AI providers configured.</p>
+            <p className="text-xs mt-1">Add your API key to use Oracle, Forge, and AI enrichment.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AIProviderSettings;
