@@ -2,19 +2,11 @@
  * Eclipse Valhalla — Oracle Service
  *
  * Oracle = AI-powered life management system.
- * Not just a chatbot. A system that plans, analyzes, and pushes.
- *
- * Uses Gemini API under the hood.
+ * Uses the provider-agnostic AI system (supports Gemini, OpenAI, Anthropic, custom).
  */
 
-import { GoogleGenAI } from "@google/genai";
+import { ai } from '../ai';
 import { Reminder } from "../types";
-
-const getClient = () => {
-  const apiKey = localStorage.getItem('gemini_api_key') || '';
-  if (!apiKey) throw new Error('Oracle requires Gemini API key. Configure in Settings.');
-  return new GoogleGenAI({ apiKey });
-};
 
 // ═══════════════════════════════════════════
 // ORACLE SYSTEM PROMPT
@@ -47,41 +39,33 @@ export const sendOracleMessage = async (
   newMessage: string,
   quests?: Reminder[]
 ) => {
-  try {
-    const ai = getClient();
+  // Build context from quests
+  let contextBlock = '';
+  if (quests && quests.length > 0) {
+    const pending = quests.filter(q => !q.isCompleted);
+    const completed = quests.filter(q => q.isCompleted);
+    const overdue = pending.filter(q => new Date(q.dueDateTime) < new Date());
 
-    // Build context from quests
-    let contextBlock = '';
-    if (quests && quests.length > 0) {
-      const pending = quests.filter(q => !q.isCompleted);
-      const completed = quests.filter(q => q.isCompleted);
-      const overdue = pending.filter(q => new Date(q.dueDateTime) < new Date());
-
-      contextBlock = `\n\n[QUEST STATUS]
-Total: ${quests.length} | Pending: ${pending.length} | Completed: ${completed.length} | Overdue (FAILED): ${overdue.length}
+    contextBlock = `\n\n[QUEST STATUS]
+Total: ${quests.length} | Pending: ${pending.length} | Completed: ${completed.length} | Overdue: ${overdue.length}
 ${overdue.length > 0 ? `\nOVERDUE QUESTS:\n${overdue.map(q => `- "${q.title}" (due: ${q.dueDateTime})`).join('\n')}` : ''}
 ${pending.length > 0 ? `\nACTIVE QUESTS:\n${pending.slice(0, 10).map(q => `- "${q.title}" [${q.priority}] (due: ${q.dueDateTime})`).join('\n')}` : ''}`;
-    }
-
-    const systemWithContext = ORACLE_SYSTEM + contextBlock;
-
-    const fullHistory = [
-      { role: 'user', parts: [{ text: `[SYSTEM CONTEXT — do not repeat this to user]\n${systemWithContext}` }] },
-      { role: 'model', parts: [{ text: 'Understood. I am the Oracle. Ready.' }] },
-      ...history,
-    ];
-
-    const chat = ai.chats.create({
-      model: 'gemini-2.5-flash-preview-05-20',
-      history: fullHistory,
-    });
-
-    const response = await chat.sendMessage({ message: newMessage });
-    return response.text;
-  } catch (error) {
-    console.error("Oracle Error:", error);
-    throw error;
   }
+
+  const systemContent = ORACLE_SYSTEM + contextBlock;
+
+  // Convert old history format to universal format
+  const messages = [
+    { role: 'system' as const, content: systemContent },
+    ...history.map(h => ({
+      role: (h.role === 'model' ? 'assistant' : 'user') as 'user' | 'assistant',
+      content: h.parts.map(p => p.text).join(''),
+    })),
+    { role: 'user' as const, content: newMessage },
+  ];
+
+  const response = await ai.chat(messages, 'planning');
+  return response.content;
 };
 
 // ═══════════════════════════════════════════
@@ -120,21 +104,6 @@ export const oracleAnalyze = async (quests: Reminder[]) => {
 Be honest. Am I disciplined or lazy? What pattern do you see? Give me ONE specific thing to fix.`;
 
   return sendOracleMessage([], prompt, quests);
-};
-
-// ═══════════════════════════════════════════
-// ORACLE: BREAK DOWN QUEST
-// ═══════════════════════════════════════════
-
-export const oracleBreakdown = async (questTitle: string, questDescription: string) => {
-  const prompt = `Break this quest into sub-objectives (3-7 steps). Each step must be concrete and actionable.
-
-Quest: "${questTitle}"
-${questDescription ? `Details: ${questDescription}` : ''}
-
-Format: numbered list. Short sentences. No explanations — just actions.`;
-
-  return sendOracleMessage([], prompt);
 };
 
 // ═══════════════════════════════════════════

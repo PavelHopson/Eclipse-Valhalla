@@ -1,9 +1,11 @@
 
-import React, { useRef, useState } from 'react';
-import { Download, Moon, Crown, Palette, HardDrive, User as UserIcon, LogOut, Upload, Zap, Trophy, Shield, Star, Globe, Edit2, Check, X } from 'lucide-react';
+import React, { useRef, useState, Suspense, lazy } from 'react';
+import { Download, Moon, Crown, Palette, HardDrive, User as UserIcon, LogOut, Upload, Zap, Trophy, Shield, Star, Globe, Edit2, Check, X, Cpu } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { User, Reminder, Note, PlanTier, Theme } from '../types';
 import { THEME_COLORS, getNextLevelXp } from '../utils';
+
+const AIProviderSettings = lazy(() => import('./AIProviderSettings'));
 
 interface SettingsViewProps {
   remindersCount: number;
@@ -204,6 +206,18 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                <button onClick={() => setLanguage('ru')} className={`p-4 rounded-xl border-2 font-bold text-sm transition-all flex flex-col items-center gap-2 ${language === 'ru' ? 'border-[#E8E8F0] bg-[#1A1A26] text-[#E8E8F0]' : 'border-transparent bg-[#1A1A26] text-[#55556A]'}`}>
                    <span className="text-2xl">🇷🇺</span> Русский
                </button>
+            </div>
+        </section>
+
+        {/* Section: AI Providers */}
+        <section>
+            <h4 className="text-xs font-bold text-[#55556A] uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
+                <Cpu className="w-3 h-3" /> AI Providers
+            </h4>
+            <div className="bg-[#1A1A26] rounded-2xl border border-[#2A2A3C] overflow-hidden p-4">
+                <Suspense fallback={<div className="text-xs text-[#3A3A4A] py-4 text-center">Loading AI settings...</div>}>
+                    <AIProviderSettings />
+                </Suspense>
             </div>
         </section>
 
