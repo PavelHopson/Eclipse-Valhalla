@@ -88,6 +88,7 @@ const AppContent: React.FC = () => {
   const [focusQuestId, setFocusQuestId] = useState<string | null>(null);
   const focusQuest = reminders.find(r => r.id === focusQuestId) || null;
   const [returnMessage, setReturnMessage] = useState<string | null>(null);
+  const [returnOverlay, setReturnOverlay] = useState<any>(null); // ReturnState | null
 
   // Load data ONCE + track session
   useEffect(() => {
@@ -105,34 +106,96 @@ const AppContent: React.FC = () => {
       dispatchAlerts(retention.alerts);
     }
 
-    // Streak + return messaging
+    // Streak + return messaging + overlay + notifications
     try {
       const streakKey = `eclipse_streak_${user.id}`;
       const streakData = JSON.parse(localStorage.getItem(streakKey) || '{}');
       const today = new Date().toISOString().split('T')[0];
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const lastShownKey = `eclipse_return_shown_${today}`;
+      const alreadyShown = localStorage.getItem(lastShownKey) === 'true';
+
+      // Count abandoned quests (created before today, not completed)
+      const loadedReminders: any[] = api.getData('reminders', user.id);
+      const abandonedCount = loadedReminders.filter((r: any) =>
+        !r.isCompleted && r.createdAt && new Date(r.createdAt).toISOString().split('T')[0] < today
+      ).length;
+      const topAbandoned = loadedReminders.find((r: any) => !r.isCompleted && r.priority === 'High')?.title
+        || loadedReminders.find((r: any) => !r.isCompleted)?.title;
 
       if (streakData.lastActiveDate === today) {
-        // Already active today — show continuation
         if (streakData.days > 1) setReturnMessage(`Day ${streakData.days}. Discipline maintained.`);
       } else if (streakData.lastActiveDate === yesterday) {
-        // Streak continues
         streakData.days = (streakData.days || 0) + 1;
         streakData.lastActiveDate = today;
         localStorage.setItem(streakKey, JSON.stringify(streakData));
         setReturnMessage(`Day ${streakData.days}. You showed up. Continue.`);
+
+        // Morning trigger overlay
+        if (!alreadyShown) {
+          setReturnOverlay({
+            type: abandonedCount > 0 ? 'debt' : 'morning',
+            streak: streakData.days,
+            abandonedCount,
+            daysAway: 0,
+            topAbandoned,
+          });
+          localStorage.setItem(lastShownKey, 'true');
+        }
       } else if (streakData.lastActiveDate) {
-        // Streak broken
         const daysAway = Math.floor((Date.now() - new Date(streakData.lastActiveDate).getTime()) / 86400000);
         streakData.days = 1;
         streakData.lastActiveDate = today;
         localStorage.setItem(streakKey, JSON.stringify(streakData));
         setReturnMessage(`${daysAway} days absent. Streak broken. Day 1 begins now.`);
+
+        // Comeback overlay
+        if (!alreadyShown) {
+          setReturnOverlay({
+            type: 'comeback',
+            streak: 1,
+            abandonedCount,
+            daysAway,
+            topAbandoned,
+          });
+          localStorage.setItem(lastShownKey, 'true');
+        }
       } else {
-        // First ever session
         streakData.days = 1;
         streakData.lastActiveDate = today;
         localStorage.setItem(streakKey, JSON.stringify(streakData));
+      }
+
+      // ═══ NOTIFICATION PRESSURE ═══
+      // Request permission + schedule pressure notifications
+      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
+      // Schedule inactivity pressure notifications (2-3 hours from now)
+      const pendingCount = loadedReminders.filter((r: any) => !r.isCompleted).length;
+      if (pendingCount > 0 && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        // 2 hours: gentle pressure
+        setTimeout(() => {
+          if (document.hidden) {
+            new Notification('Eclipse Valhalla', {
+              body: `${pendingCount} objective${pendingCount > 1 ? 's' : ''} still pending. Discipline is not built later.`,
+              icon: '/favicon.ico',
+              tag: 'ev-pressure-1',
+            });
+          }
+        }, 2 * 60 * 60 * 1000);
+
+        // 5 hours: harder
+        setTimeout(() => {
+          if (document.hidden) {
+            new Notification('Eclipse Valhalla', {
+              body: 'You said you would act. You didn\'t. Still nothing done.',
+              icon: '/favicon.ico',
+              tag: 'ev-pressure-2',
+            });
+          }
+        }, 5 * 60 * 60 * 1000);
       }
     } catch {}
   }, []);
@@ -362,6 +425,22 @@ const AppContent: React.FC = () => {
         <FeedbackPanel isOpen={showFeedback} onClose={() => setShowFeedback(false)} userId={user.id} />
       </Suspense>
 
+      {/* Return Overlay — confrontation on app open */}
+      {returnOverlay && (
+        <Suspense fallback={null}>
+          <ReturnOverlay
+            state={returnOverlay}
+            onStartFirst={() => {
+              setReturnOverlay(null);
+              // Find first pending quest and start Focus
+              const first = reminders.find(r => !r.isCompleted);
+              if (first) setFocusQuestId(first.id);
+            }}
+            onDismiss={() => setReturnOverlay(null)}
+          />
+        </Suspense>
+      )}
+
       {/* Focus Mode — fullscreen overlay */}
       {focusQuest && (
         <Suspense fallback={null}>
@@ -438,6 +517,7 @@ import { recordSession, checkCriticalQuests, dispatchAlerts } from './services/r
 const QuickQuestInput = lazy(() => import('./components/QuickQuestInput'));
 const FeedbackPanel = lazy(() => import('./components/FeedbackPanel'));
 const AIProviderSettings = lazy(() => import('./components/AIProviderSettings'));
+const ReturnOverlay = lazy(() => import('./components/ReturnOverlay'));
 
 const App = () => (
   <AppErrorBoundary>
