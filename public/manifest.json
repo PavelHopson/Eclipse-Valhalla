@@ -1,0 +1,16 @@
+{
+  "name": "Eclipse Valhalla",
+  "short_name": "Valhalla",
+  "description": "Personal operating system for discipline.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0F",
+  "theme_color": "#0A0A0F",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
