@@ -345,6 +345,17 @@ const AppContent: React.FC = () => {
                 </p>
               </div>
 
+              {/* DAILY WINS + MODE */}
+              {(() => {
+                const stats = getDailyStats();
+                return stats.completed > 0 ? (
+                  <div className="mx-6 mb-1 flex items-center gap-3">
+                    <span className="text-xs text-[#4ADE80] font-medium">{stats.completed} completed today</span>
+                    {stats.completed >= 3 && <span className="text-[9px] text-[#FFD700]">Momentum.</span>}
+                  </div>
+                ) : null;
+              })()}
+
               {/* QUICK QUEST INPUT — the activation point */}
               <div className="px-6 py-3">
                 <Suspense fallback={null}>
@@ -376,6 +387,19 @@ const AppContent: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {/* Mode switch — small, bottom */}
+              <div className="px-6 py-3 flex items-center gap-3">
+                <span className="text-[9px] text-[#2A2A3C] uppercase tracking-wider">Mode:</span>
+                {(['hardcore', 'balanced'] as const).map(m => (
+                  <button key={m} onClick={() => { setDisciplineMode(m); window.location.reload(); }}
+                    className={`text-[10px] px-2 py-0.5 rounded transition-colors ${
+                      getMode() === m ? 'text-[#5DAEFF] bg-[#5DAEFF08] border border-[#5DAEFF20]' : 'text-[#2A2A3C] hover:text-[#3A3A4A]'
+                    }`}>
+                    {m}
+                  </button>
+                ))}
+              </div>
 
               {/* Original dashboard below */}
               <Dashboard reminders={reminders} setView={setCurrentView} user={user} />
@@ -512,6 +536,7 @@ import { ToastContainer } from './design';
 import { pmfSessionStart, pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
 import { trackSessionStart, trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
 import { recordSession, checkCriticalQuests, dispatchAlerts } from './services/retentionService';
+import { getDailyStats, getMode, setMode as setDisciplineMode, type DisciplineMode } from './services/disciplineMode';
 
 // Lazy-load growth components
 const QuickQuestInput = lazy(() => import('./components/QuickQuestInput'));

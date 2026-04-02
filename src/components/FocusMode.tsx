@@ -10,6 +10,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Reminder } from '../types';
 import { X, Check, Pause, Play, RotateCcw, ArrowRight, Coffee } from 'lucide-react';
+import { getCompletionMessage, getIdentityMessage, getEscapeMessage, recordDailyCompletion, recordDailyEscape, getDailyStats, getProgressMessage } from '../services/disciplineMode';
 
 interface FocusModeProps {
   quest: Reminder;
@@ -21,21 +22,14 @@ interface FocusModeProps {
 
 const FOCUS_DURATION = 25 * 60;
 
-// Emotional completion messages (random)
-const COMPLETION_MESSAGES = [
-  { line1: 'You did what most people postpone.', line2: 'Discipline +1.' },
-  { line1: 'One step against chaos.', line2: 'The system recognizes you.' },
-  { line1: 'Executed. Not planned. Executed.', line2: 'That is the difference.' },
-  { line1: 'While others hesitate, you act.', line2: 'Remember this feeling.' },
-  { line1: 'Objective eliminated.', line2: 'What\'s next?' },
-];
-
 const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete, onStartNext, onClose }) => {
   const [secondsLeft, setSecondsLeft] = useState(FOCUS_DURATION);
   const [isRunning, setIsRunning] = useState(true);
   const [phase, setPhase] = useState<'focus' | 'completed' | 'escaped'>('focus');
   const [escapeCount, setEscapeCount] = useState(0);
-  const [completionMsg] = useState(() => COMPLETION_MESSAGES[Math.floor(Math.random() * COMPLETION_MESSAGES.length)]);
+  const [completionMsg] = useState(() => getCompletionMessage());
+  const [identityMsg, setIdentityMsg] = useState<string | null>(null);
+  const [dailyProgress, setDailyProgress] = useState<string | null>(null);
 
   const nextQuests = pendingQuests.filter(q => q.id !== quest.id).slice(0, 3);
 
@@ -58,6 +52,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
     const handleVisibility = () => {
       if (document.hidden && isRunning) {
         setEscapeCount(prev => prev + 1);
+        recordDailyEscape();
         setPhase('escaped');
         setIsRunning(false);
       }
@@ -71,6 +66,11 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
     setPhase('completed');
     setIsRunning(false);
     onComplete(quest.id);
+
+    // Record daily stats + get identity/progress messages
+    const stats = recordDailyCompletion();
+    setIdentityMsg(getIdentityMessage(stats.completed));
+    setDailyProgress(getProgressMessage(stats.completed));
   }, [quest.id, onComplete]);
 
   const handleReturnFromEscape = () => {
@@ -90,7 +90,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
           <div className="text-6xl mb-6 opacity-30">⚠</div>
           <h2 className="text-2xl font-bold text-[#FF4444] mb-3">You left.</h2>
           <p className="text-sm text-[#55556A] mb-2">
-            You switched away during focus. That is escape behavior.
+            {getEscapeMessage()}
           </p>
           <p className="text-xs text-[#3A3A4A] mb-8">
             Escape count this session: {escapeCount}
@@ -121,10 +121,20 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
 
           {/* Emotional message */}
           <h2 className="text-xl md:text-2xl font-bold text-[#E8E8F0] mb-2">{completionMsg.line1}</h2>
-          <p className="text-sm text-[#4ADE80] font-medium mb-8">{completionMsg.line2}</p>
+          <p className="text-sm text-[#4ADE80] font-medium mb-3">{completionMsg.line2}</p>
+
+          {/* Identity reinforcement (30% chance, after 2+ completions) */}
+          {identityMsg && (
+            <p className="text-xs text-[#5DAEFF] italic mb-3">"{identityMsg}"</p>
+          )}
+
+          {/* Daily progress */}
+          {dailyProgress && (
+            <p className="text-[10px] text-[#55556A] mb-6">{dailyProgress}</p>
+          )}
 
           {/* Escape penalty note */}
-          {escapeCount > 0 && (
+          {escapeCount > 0 && !identityMsg && (
             <p className="text-[10px] text-[#FF4444] mb-6">
               You escaped {escapeCount} time{escapeCount > 1 ? 's' : ''} during this session. Work on that.
             </p>
