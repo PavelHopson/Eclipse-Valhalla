@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import Navigation from './components/Navigation';
 import Auth from './components/Auth';
 import AdBanner from './components/AdBanner';
@@ -420,16 +420,18 @@ const AppContent: React.FC = () => {
       if(confirm('Delete task?')) setReminders(prev => prev.filter(r => r.id !== id));
   };
 
-  // --- Gamification State ---
-  const disciplineScore = calculateDisciplineScore(reminders);
-  const streak = getStreak();
-  const focusSessions = getFocusSessions();
-  const gamState = getDisciplineState();
-
-  // Update streak on load
-  useEffect(() => {
-    if (user && reminders.length > 0) updateStreak(reminders);
-  }, [user?.id]);
+  // --- Gamification State (memoized to prevent infinite loops) ---
+  const disciplineScore = useMemo(() => {
+    if (!user || reminders.length === 0) return 50;
+    const total = reminders.length;
+    const completed = reminders.filter(q => q.isCompleted).length;
+    const overdue = reminders.filter(q => !q.isCompleted && new Date(q.dueDateTime) < new Date()).length;
+    const rate = total > 0 ? completed / total : 0;
+    return Math.max(0, Math.min(100, Math.round(rate * 60 + (1 - (overdue / Math.max(total, 1))) * 20 + 20)));
+  }, [reminders, user?.id]);
+  const streak = useMemo(() => getStreak(), [user?.id]);
+  const focusSessions = useMemo(() => getFocusSessions(), [user?.id]);
+  const gamState = useMemo(() => getDisciplineState(), [user?.id]);
 
   // --- Render ---
 
