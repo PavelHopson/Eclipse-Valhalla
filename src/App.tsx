@@ -22,6 +22,8 @@ const ChatView = lazy(() => import('./components/ChatView').then(m => ({ default
 const ImageView = lazy(() => import('./components/ImageView').then(m => ({ default: m.ImageView })));
 const TTSView = lazy(() => import('./components/TTSView').then(m => ({ default: m.TTSView })));
 
+const FocusMode = lazy(() => import('./components/FocusMode'));
+
 const LoadingScreen = () => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-[#0A0A0F]">
     <Hammer className="w-8 h-8 animate-bounce mb-4 text-[#2A2A3C]" />
@@ -83,6 +85,8 @@ const AppContent: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const [showFeedback, setShowFeedback] = useState(false);
+  const [focusQuestId, setFocusQuestId] = useState<string | null>(null);
+  const focusQuest = reminders.find(r => r.id === focusQuestId) || null;
 
   // Load data ONCE + track session
   useEffect(() => {
@@ -153,6 +157,11 @@ const AppContent: React.FC = () => {
       setReminders(prev => [...prev, newR]);
       pmfQuestCreated();
       trackQuestCreated();
+
+      // Auto-start Focus Mode for quick-created quests (from dashboard input)
+      if (!isReminderModalOpen) {
+        setFocusQuestId(newR.id);
+      }
     }
     setIsReminderModalOpen(false);
   }, []);
@@ -205,7 +214,65 @@ const AppContent: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 h-full relative flex flex-col min-w-0 overflow-hidden pb-[70px] md:pb-0">
         <Suspense fallback={<LoadingScreen />}>
-          {currentView === 'dashboard' && <Dashboard reminders={reminders} setView={setCurrentView} user={user} />}
+          {currentView === 'dashboard' && (
+            <div className="h-full overflow-y-auto">
+              {/* PRESSURE HERO — not decoration, a threat */}
+              <div className="px-6 pt-6 pb-2">
+                <div className="flex items-center justify-between mb-1">
+                  <h1 className="text-lg font-bold text-[#E8E8F0]">
+                    {reminders.filter(r => !r.isCompleted).length === 0
+                      ? 'No objectives. Define your targets.'
+                      : `${reminders.filter(r => !r.isCompleted).length} objectives pending.`}
+                  </h1>
+                  {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length > 0 && (
+                    <span className="text-[10px] font-bold text-[#FF4444] bg-[#FF444408] border border-[#FF444415] px-2 py-1 rounded-lg">
+                      {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length} OVERDUE
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[#3A3A4A]">
+                  {reminders.filter(r => !r.isCompleted).length === 0
+                    ? 'A warrior without objectives is lost.'
+                    : 'Every hour of delay is a choice against yourself.'}
+                </p>
+              </div>
+
+              {/* QUICK QUEST INPUT — the activation point */}
+              <div className="px-6 py-3">
+                <Suspense fallback={null}>
+                  <QuickQuestInput
+                    onCreateQuest={(title) => saveReminder({ title, dueDateTime: new Date(Date.now() + 86400000).toISOString() })}
+                    placeholder="What must you do RIGHT NOW? (Enter to create)"
+                  />
+                </Suspense>
+              </div>
+
+              {/* Active quests — tap to focus */}
+              {reminders.filter(r => !r.isCompleted).length > 0 && (
+                <div className="px-6 py-2">
+                  <div className="text-[9px] text-[#3A3A4A] uppercase tracking-[0.2em] mb-2">Active · Tap to focus</div>
+                  <div className="space-y-1.5">
+                    {reminders.filter(r => !r.isCompleted).slice(0, 5).map(r => {
+                      const isOverdue = new Date(r.dueDateTime) < new Date();
+                      return (
+                        <button key={r.id} onClick={() => setFocusQuestId(r.id)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all hover:bg-[#12121A] ${
+                            isOverdue ? 'border-[#FF444420] bg-[#FF444406]' : 'border-[#1E1E2E] bg-[#0C0C14]'
+                          }`}>
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${isOverdue ? 'bg-[#FF4444] animate-pulse' : 'bg-[#5DAEFF]'}`} />
+                          <span className={`text-sm font-medium flex-1 truncate ${isOverdue ? 'text-[#FF4444]' : 'text-[#E8E8F0]'}`}>{r.title}</span>
+                          <span className="text-[10px] text-[#3A3A4A]">Focus →</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Original dashboard below */}
+              <Dashboard reminders={reminders} setView={setCurrentView} user={user} />
+            </div>
+          )}
           {currentView === 'reminders' && <ReminderView
             reminders={reminders}
             toggleComplete={toggleComplete}
@@ -249,6 +316,20 @@ const AppContent: React.FC = () => {
       <Suspense fallback={null}>
         <FeedbackPanel isOpen={showFeedback} onClose={() => setShowFeedback(false)} userId={user.id} />
       </Suspense>
+
+      {/* Focus Mode — fullscreen overlay */}
+      {focusQuest && (
+        <Suspense fallback={null}>
+          <FocusMode
+            quest={focusQuest}
+            onComplete={(id) => {
+              toggleComplete(id);
+              setFocusQuestId(null);
+            }}
+            onClose={() => setFocusQuestId(null)}
+          />
+        </Suspense>
+      )}
 
       {/* Quest Modal */}
       {isReminderModalOpen && (
