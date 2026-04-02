@@ -87,6 +87,7 @@ const AppContent: React.FC = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [focusQuestId, setFocusQuestId] = useState<string | null>(null);
   const focusQuest = reminders.find(r => r.id === focusQuestId) || null;
+  const [returnMessage, setReturnMessage] = useState<string | null>(null);
 
   // Load data ONCE + track session
   useEffect(() => {
@@ -103,6 +104,37 @@ const AppContent: React.FC = () => {
     if (retention.alerts.length > 0) {
       dispatchAlerts(retention.alerts);
     }
+
+    // Streak + return messaging
+    try {
+      const streakKey = `eclipse_streak_${user.id}`;
+      const streakData = JSON.parse(localStorage.getItem(streakKey) || '{}');
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+      if (streakData.lastActiveDate === today) {
+        // Already active today — show continuation
+        if (streakData.days > 1) setReturnMessage(`Day ${streakData.days}. Discipline maintained.`);
+      } else if (streakData.lastActiveDate === yesterday) {
+        // Streak continues
+        streakData.days = (streakData.days || 0) + 1;
+        streakData.lastActiveDate = today;
+        localStorage.setItem(streakKey, JSON.stringify(streakData));
+        setReturnMessage(`Day ${streakData.days}. You showed up. Continue.`);
+      } else if (streakData.lastActiveDate) {
+        // Streak broken
+        const daysAway = Math.floor((Date.now() - new Date(streakData.lastActiveDate).getTime()) / 86400000);
+        streakData.days = 1;
+        streakData.lastActiveDate = today;
+        localStorage.setItem(streakKey, JSON.stringify(streakData));
+        setReturnMessage(`${daysAway} days absent. Streak broken. Day 1 begins now.`);
+      } else {
+        // First ever session
+        streakData.days = 1;
+        streakData.lastActiveDate = today;
+        localStorage.setItem(streakKey, JSON.stringify(streakData));
+      }
+    } catch {}
   }, []);
 
   // Save reminders when they change
@@ -216,8 +248,21 @@ const AppContent: React.FC = () => {
         <Suspense fallback={<LoadingScreen />}>
           {currentView === 'dashboard' && (
             <div className="h-full overflow-y-auto">
+              {/* RETURN MESSAGE — streak or broken */}
+              {returnMessage && (
+                <div className="mx-6 mt-4 px-4 py-3 rounded-xl border bg-[#0C0C14]"
+                  style={{
+                    borderColor: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#FF444420' : '#4ADE8020',
+                    backgroundColor: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#FF444406' : '#4ADE8006',
+                  }}>
+                  <p className="text-xs font-medium" style={{
+                    color: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#FF4444' : '#4ADE80',
+                  }}>{returnMessage}</p>
+                </div>
+              )}
+
               {/* PRESSURE HERO — not decoration, a threat */}
-              <div className="px-6 pt-6 pb-2">
+              <div className="px-6 pt-4 pb-2">
                 <div className="flex items-center justify-between mb-1">
                   <h1 className="text-lg font-bold text-[#E8E8F0]">
                     {reminders.filter(r => !r.isCompleted).length === 0
@@ -322,10 +367,9 @@ const AppContent: React.FC = () => {
         <Suspense fallback={null}>
           <FocusMode
             quest={focusQuest}
-            onComplete={(id) => {
-              toggleComplete(id);
-              setFocusQuestId(null);
-            }}
+            pendingQuests={reminders.filter(r => !r.isCompleted)}
+            onComplete={(id) => { toggleComplete(id); }}
+            onStartNext={(id) => { setFocusQuestId(id); }}
             onClose={() => setFocusQuestId(null)}
           />
         </Suspense>
