@@ -322,24 +322,30 @@ const AppContent: React.FC = () => {
         <Suspense fallback={<LoadingScreen />}>
           {currentView === 'dashboard' && (
             <div className="h-full overflow-y-auto">
-              {/* RETURN MESSAGE — streak or broken */}
+
+              {/* ═══════════════════════════════════════════════════
+                   COMMAND STAGE — the system's primary interface
+                 ═══════════════════════════════════════════════════ */}
+
+              {/* Return message (streak) */}
               {returnMessage && (
-                <div className="mx-6 mt-4 px-4 py-3 rounded-xl border bg-[#0C0C14]"
+                <div className="mx-8 mt-5 px-4 py-2.5 rounded-md border"
                   style={{
-                    borderColor: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#FF444420' : '#4ADE8020',
-                    backgroundColor: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#FF444406' : '#4ADE8006',
+                    borderColor: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#E0303015' : '#3DD68C15',
+                    backgroundColor: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#E0303004' : '#3DD68C04',
                   }}>
-                  <p className="text-xs font-medium" style={{
-                    color: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#FF4444' : '#4ADE80',
+                  <p className="text-[11px] font-semibold" style={{
+                    color: returnMessage.includes('broken') || returnMessage.includes('absent') ? '#E03030' : '#3DD68C',
                   }}>{returnMessage}</p>
                 </div>
               )}
 
-              {/* ═══ COMMAND HERO — dominant, heavy, authoritative ═══ */}
-              <div className="px-6 pt-6 pb-3">
-                {/* Overdue badge — top right, urgent */}
+              {/* ═══ HERO ZONE — contained, isolated, heavy ═══ */}
+              <div className="mx-6 mt-6 mb-4 bg-[#08080D] border border-[#16162240] rounded-xl overflow-hidden">
+
+                {/* Pressure bar — overdue count (if any) */}
                 {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length > 0 && (
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="px-6 py-2 bg-[#E0303006] border-b border-[#E0303010] flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#E03030] animate-pulse" />
                     <span className="text-[11px] font-bold text-[#E03030] uppercase tracking-[0.15em]">
                       {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length} {isRU ? 'ПРОСРОЧЕНО' : 'OVERDUE'}
@@ -347,71 +353,48 @@ const AppContent: React.FC = () => {
                   </div>
                 )}
 
-                {/* Main headline — LARGE, dominant */}
-                <h1 className="text-2xl md:text-3xl font-black text-[#EAEAF2] leading-tight tracking-tight mb-2">
-                  {reminders.filter(r => !r.isCompleted).length === 0
-                    ? (isRU ? 'Нет целей.' : 'No objectives.')
-                    : (isRU ? `${reminders.filter(r => !r.isCompleted).length} целей.` : `${reminders.filter(r => !r.isCompleted).length} pending.`)}
-                </h1>
+                {/* Headline + sub */}
+                <div className="px-6 pt-6 pb-2">
+                  <h1 className="text-3xl md:text-4xl font-black text-[#EAEAF2] leading-[1.1] tracking-tight">
+                    {reminders.filter(r => !r.isCompleted).length === 0
+                      ? (isRU ? 'Нет целей.' : 'No objectives.')
+                      : (isRU ? `${reminders.filter(r => !r.isCompleted).length} целей.` : `${reminders.filter(r => !r.isCompleted).length} pending.`)}
+                  </h1>
+                  <p className="text-[13px] text-[#5E5E78] mt-1.5">
+                    {reminders.filter(r => !r.isCompleted).length === 0
+                      ? (isRU ? 'Определи задачи. Система ждёт.' : 'Define your targets. The system waits.')
+                      : (isRU ? 'Каждый час промедления — выбор против себя.' : 'Every hour of delay is a choice against yourself.')}
+                  </p>
+                </div>
 
-                {/* Sub — cold, system voice */}
-                <p className="text-sm text-[#5E5E78] font-medium">
-                  {reminders.filter(r => !r.isCompleted).length === 0
-                    ? (isRU ? 'Определи задачи. Система ждёт.' : 'Define your targets. The system waits.')
-                    : (isRU ? 'Каждый час промедления — выбор против себя.' : 'Every hour of delay is a choice against yourself.')}
-                </p>
+                {/* ═══ COMMAND INPUT — the core ═══ */}
+                <div className="px-6 pb-5 pt-2">
+                  <Suspense fallback={null}>
+                    <QuickQuestInput
+                      onCreateQuest={(title) => saveReminder({ title, dueDateTime: new Date(Date.now() + 86400000).toISOString() })}
+                      placeholder={isRU ? 'Введи цель. Enter.' : 'Enter objective. Enter.'}
+                    />
+                  </Suspense>
+                </div>
               </div>
 
-              {/* DAILY PROGRESS (today vs yesterday) */}
-              {(() => {
-                const stats = getDailyStats();
-                const completedToday = reminders.filter(r => r.isCompleted).length;
-                const comparison = getDailyComparison(completedToday);
-                const burnout = getAntiBurnoutMessage(stats.completed, (() => {
-                  try { const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user.id}`) || '{}'); return s.days || 0; } catch { return 0; }
-                })());
-
-                return (
-                  <div className="mx-6 mb-1 space-y-1">
-                    {comparison.message && (
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${comparison.trend === 'up' ? 'text-[#4ADE80]' : comparison.trend === 'down' ? 'text-[#FBBF24]' : 'text-[#8888A0]'}`}>
-                          {comparison.message}
-                        </span>
-                      </div>
-                    )}
-                    {burnout && (
-                      <div className="text-[10px] text-[#7A5CFF] italic">{burnout}</div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* ═══ COMMAND INPUT — heavy, dominant ═══ */}
-              <div className="px-6 py-2">
-                <Suspense fallback={null}>
-                  <QuickQuestInput
-                    onCreateQuest={(title) => saveReminder({ title, dueDateTime: new Date(Date.now() + 86400000).toISOString() })}
-                    placeholder={isRU ? 'Введи задачу. Нажми Enter.' : 'Enter objective. Press Enter.'}
-                  />
-                </Suspense>
-              </div>
-
-              {/* Active quests — tap to focus */}
+              {/* ═══ QUEST LIST — secondary layer ═══ */}
               {reminders.filter(r => !r.isCompleted).length > 0 && (
-                <div className="px-6 py-2">
-                  <div className="text-[10px] text-[#5E5E78] uppercase tracking-[0.2em] font-bold mb-3">{isRU ? 'Активные' : 'Active'}</div>
-                  <div className="space-y-1.5">
-                    {reminders.filter(r => !r.isCompleted).slice(0, 5).map(r => {
+                <div className="px-6 mb-4">
+                  <div className="text-[10px] text-[#5E5E78] uppercase tracking-[0.25em] font-bold mb-2 px-1">{isRU ? 'Активные' : 'Active'}</div>
+                  <div className="space-y-1">
+                    {reminders.filter(r => !r.isCompleted).slice(0, 6).map(r => {
                       const isOverdue = new Date(r.dueDateTime) < new Date();
                       return (
                         <button key={r.id} onClick={() => setFocusQuestId(r.id)}
-                          className={`w-full flex items-center gap-4 px-5 py-4 rounded-lg border text-left transition-all hover:bg-[#14141F] ${
-                            isOverdue ? 'border-[#E0303015] bg-[#0B0B12] state-overdue' : 'border-[#1E1E3040] bg-[#0B0B12] state-active'
+                          className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-md border text-left transition-all ${
+                            isOverdue
+                              ? 'border-[#E0303012] bg-[#E0303004] state-overdue hover:bg-[#E0303008]'
+                              : 'border-[#16162240] bg-[#08080D] state-active hover:bg-[#0F0F18]'
                           }`}>
-                          <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOverdue ? 'bg-[#E03030]' : 'bg-[#5DA8FF]'}`} />
-                          <span className={`text-[15px] font-semibold flex-1 truncate ${isOverdue ? 'text-[#E03030]' : 'text-[#EAEAF2]'}`}>{r.title}</span>
-                          <span className="text-[10px] text-[#3D3D52] uppercase tracking-wider font-medium">{isRU ? 'Фокус' : 'Focus'} →</span>
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${isOverdue ? 'bg-[#E03030]' : 'bg-[#5DA8FF]'}`} />
+                          <span className={`text-[14px] font-semibold flex-1 truncate ${isOverdue ? 'text-[#E03030]' : 'text-[#EAEAF2]'}`}>{r.title}</span>
+                          <span className="text-[9px] text-[#3D3D52] uppercase tracking-[0.15em] font-semibold">{isRU ? 'Фокус' : 'Focus'} →</span>
                         </button>
                       );
                     })}
@@ -419,20 +402,7 @@ const AppContent: React.FC = () => {
                 </div>
               )}
 
-              {/* Mode switch — small, bottom */}
-              <div className="px-6 py-3 flex items-center gap-3">
-                <span className="text-[9px] text-[#2A2A3C] uppercase tracking-wider">Mode:</span>
-                {(['hardcore', 'balanced'] as const).map(m => (
-                  <button key={m} onClick={() => { setDisciplineMode(m); window.location.reload(); }}
-                    className={`text-[10px] px-2 py-0.5 rounded transition-colors ${
-                      getMode() === m ? 'text-[#5DAEFF] bg-[#5DAEFF08] border border-[#5DAEFF20]' : 'text-[#2A2A3C] hover:text-[#3A3A4A]'
-                    }`}>
-                    {m}
-                  </button>
-                ))}
-              </div>
-
-              {/* Original dashboard below */}
+              {/* ═══ DASHBOARD STATS (tertiary layer) ═══ */}
               <Dashboard reminders={reminders} setView={setCurrentView} user={user} />
             </div>
           )}
