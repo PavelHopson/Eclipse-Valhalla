@@ -1,0 +1,14 @@
+node_modules/
+dist/
+dist-electron/
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
+*.log
+.vscode/
+.idea/
+.claude/
+_old/
+_organizer/

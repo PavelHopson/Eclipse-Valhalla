@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0A0A0F" />
+    <title>Eclipse Valhalla</title>
+    <link rel="manifest" href="/manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Cinzel:wght@400;700;900&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        background-color: #0A0A0F;
+        color: #E8E8F0;
+        overscroll-behavior-y: none;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      h1, h2, h3, .brand-font { font-family: 'Cinzel', serif; }
+      .font-handwriting { font-family: 'Patrick Hand', cursive; }
+
+      /* Scrollbar — minimal dark */
+      ::-webkit-scrollbar { width: 5px; height: 5px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #2A2A3C; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: #3A3A52; }
+
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+      /* Safe Areas */
+      .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+      .pt-safe { padding-top: env(safe-area-inset-top); }
+
+      /* Subtle noise texture overlay */
+      .noise-overlay::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        opacity: 0.015;
+        pointer-events: none;
+        z-index: 9999;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      }
+
+      /* Glow keyframes */
+      @keyframes pulse-glow {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.8; }
+      }
+
+      /* Selection */
+      ::selection {
+        background-color: #5DAEFF30;
+        color: #E8E8F0;
+      }
+
+      /* Motion keyframes */
+      @keyframes eclipse-pulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(93, 174, 255, 0.05); }
+        50% { box-shadow: 0 0 40px rgba(93, 174, 255, 0.12); }
+      }
+      @keyframes void-breathe {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.6; }
+      }
+      @keyframes quest-complete {
+        0% { opacity: 1; transform: scale(1); filter: blur(0); }
+        50% { opacity: 0.5; transform: scale(0.98); filter: blur(1px); }
+        100% { opacity: 0; transform: scale(0.95); filter: blur(4px); }
+      }
+      @keyframes critical-glow {
+        0%, 100% { box-shadow: 0 0 15px rgba(139, 0, 0, 0.15); }
+        50% { box-shadow: 0 0 30px rgba(139, 0, 0, 0.3); }
+      }
+      .animate-eclipse-pulse { animation: eclipse-pulse 4s ease-in-out infinite; }
+      .animate-void-breathe { animation: void-breathe 6s ease-in-out infinite; }
+      .animate-quest-complete { animation: quest-complete 500ms cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+      .animate-critical-glow { animation: critical-glow 2s ease-in-out infinite; }
+
+      /* Input color scheme for date/time inputs */
+      input[type="datetime-local"],
+      input[type="date"],
+      input[type="time"] {
+        color-scheme: dark;
+      }
+      select {
+        color-scheme: dark;
+      }
+    </style>
+  </head>
+  <body class="noise-overlay">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+        // Force dark mode
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then(reg => console.log('SW registered:', reg))
+              .catch(err => console.log('SW failed:', err));
+          });
+        }
+    </script>
+  </body>
+</html>
