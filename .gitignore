@@ -1,6 +1,14 @@
 node_modules/
 dist/
 dist-electron/
+release/
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.snap
+android/
+ios/
 .DS_Store
 *.local
 .env

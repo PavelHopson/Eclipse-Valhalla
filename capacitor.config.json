@@ -3,12 +3,34 @@
   "appName": "Eclipse Valhalla",
   "webDir": "dist",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "iosScheme": "https"
   },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,
-      "backgroundColor": "#0f172a"
+      "launchAutoHide": true,
+      "backgroundColor": "#0A0A0F",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP",
+      "splashFullScreen": true,
+      "splashImmersive": true
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0A0A0F"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "resizeOnFullScreen": true
     }
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#0A0A0F"
+  },
+  "android": {
+    "backgroundColor": "#0A0A0F",
+    "allowMixedContent": true
   }
 }

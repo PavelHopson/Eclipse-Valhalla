@@ -12,6 +12,7 @@ import { createMainWindow, getMainWindow } from './windowManager.js';
 import { createTray, destroyTray } from './tray.js';
 import { registerWidgetIPC } from './ipc/widget.js';
 import { registerSystemIPC } from './ipc/system.js';
+import { initAutoUpdater } from './autoUpdater.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -68,6 +69,11 @@ if (!gotTheLock) {
 
     // 5. Create system tray
     createTray();
+
+    // 7. Auto-updater (production only)
+    if (app.isPackaged) {
+      initAutoUpdater(mainWindow);
+    }
 
     // 6. Handle close → minimize to tray instead
     mainWindow.on('close', (event) => {
