@@ -114,12 +114,8 @@ const AppContent: React.FC = () => {
   // -- Initialization --
   useEffect(() => {
     if (user) {
-      const freshUser = api.getUserById(user.id);
-      if (freshUser && JSON.stringify(freshUser) !== JSON.stringify(user)) {
-          setUser(freshUser);
-      }
-
-      if (freshUser && !freshUser.hasSeenOnboarding) {
+      // Load data once — don't re-check user freshness to avoid loops
+      if (!user.hasSeenOnboarding) {
           setShowOnboarding(true);
       }
 
@@ -129,15 +125,9 @@ const AppContent: React.FC = () => {
       setWorkoutLogs(api.getData('workout_logs', user.id));
 
       setIsDataLoaded(true);
-    } else {
-      localStorage.removeItem('lumina_active_session');
-      setReminders([]);
-      setNotes([]);
-      setRoutines([]);
-      setWorkoutLogs([]);
-      setIsDataLoaded(false);
     }
-  }, [user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // -- Offline/Online Listeners --
   useEffect(() => {
@@ -265,42 +255,18 @@ const AppContent: React.FC = () => {
     }
   }, [activeToast, levelUpToast]);
 
-  // -- Widget ↔ Quest Sync (every 30s) --
+  // -- Widget ↔ Quest Sync (every 60s, delayed start) --
   useEffect(() => {
-    if (!user || reminders.length === 0) return;
+    if (!user || !isDataLoaded) return;
+    const timeout = setTimeout(() => {
+      syncWidgetsWithQuests(reminders);
+    }, 5000); // Delay initial sync
     const interval = setInterval(() => {
       syncWidgetsWithQuests(reminders);
-    }, 30000);
-    // Initial sync
-    syncWidgetsWithQuests(reminders);
-    return () => clearInterval(interval);
-  }, [reminders, user]);
-
-  // -- Notification Escalation (every 60s) --
-  useEffect(() => {
-    if (!user) return;
-    // Start escalation for overdue quests
-    const now = Date.now();
-    reminders.forEach(q => {
-      if (!q.isCompleted && new Date(q.dueDateTime).getTime() < now) {
-        startEscalation(q.id);
-      }
-    });
-
-    const interval = setInterval(() => {
-      const triggered = processEscalations((questId) => {
-        return reminders.find(r => r.id === questId)?.title;
-      });
-      // Show in-app toast for each triggered notification
-      triggered.forEach(n => {
-        if (n.channel === 'in_app' || n.channel === 'push') {
-          setActiveToast({ title: n.title, desc: n.message });
-        }
-      });
     }, 60000);
-
-    return () => clearInterval(interval);
-  }, [reminders, user]);
+    return () => { clearTimeout(timeout); clearInterval(interval); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDataLoaded]);
 
   // -- Handlers --
 
