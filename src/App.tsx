@@ -279,10 +279,14 @@ class AppErrorBoundary extends React.Component<{children: React.ReactNode}, {err
   }
 }
 
+// Import toast container
+import { ToastContainer } from './design';
+
 const App = () => (
   <AppErrorBoundary>
     <LanguageProvider>
       <AppContent />
+      <ToastContainer />
     </LanguageProvider>
   </AppErrorBoundary>
 );
