@@ -10,6 +10,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Reminder } from '../types';
 import { X, Check, Pause, Play, RotateCcw, ArrowRight, Coffee } from 'lucide-react';
+import { Seal } from '../brand/Seal';
 import { getCompletionMessage, getIdentityMessage, getEscapeMessage, recordDailyCompletion, recordDailyEscape, getDailyStats, getProgressMessage } from '../services/disciplineMode';
 import { shouldShowCTA, getCTAConfig, openTelegram } from '../services/telegramCTA';
 import { getCompletionVoice, shouldBeSilent } from '../services/systemVoice';
@@ -125,10 +126,9 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
         </button>
 
         <div className="text-center px-6 max-w-md">
-          {/* Completion seal — symbolic circle */}
-          <div className="impact-done w-20 h-20 rounded-full bg-[#3DD68C06] border border-[#3DD68C15] flex items-center justify-center mx-auto mb-8"
-            style={{ boxShadow: '0 0 40px rgba(61,214,140,0.06)' }}>
-            <Check className="w-10 h-10 text-[#3DD68C]" />
+          {/* The Seal — completion confirmed */}
+          <div className="impact-done mx-auto mb-8">
+            <Seal size={80} variant="complete" animated />
           </div>
 
           {/* Emotional message */}
@@ -206,8 +206,8 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
 
       {/* Quest title */}
       <div className="text-center mb-12 px-6">
-        {/* Symbolic: thin circle above title — focus containment ring */}
-        <div className="w-6 h-6 rounded-full border border-[#5DA8FF15] mx-auto mb-4 system-idle" />
+        {/* The Seal — watching during focus */}
+        <div className="mx-auto mb-4 system-idle"><Seal size={24} variant="watching" /></div>
         <div className="text-[9px] text-[#3D3D52] uppercase tracking-[0.35em] mb-3 font-medium">Current Objective</div>
         <h1 className="text-xl md:text-2xl font-bold text-[#E8E8F0] max-w-lg leading-tight">{quest.title}</h1>
       </div>

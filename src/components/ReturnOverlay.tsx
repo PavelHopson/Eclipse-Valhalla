@@ -11,8 +11,9 @@
  */
 
 import React from 'react';
-import { Swords, AlertTriangle, Flame, ArrowRight, MessageSquare } from 'lucide-react';
+import { ArrowRight, MessageSquare } from 'lucide-react';
 import { openTelegram } from '../services/telegramCTA';
+import { Seal } from '../brand/Seal';
 
 export interface ReturnState {
   type: 'morning' | 'debt' | 'comeback';
@@ -36,9 +37,7 @@ const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDi
         {/* ═══ MORNING TRIGGER ═══ */}
         {state.type === 'morning' && (
           <>
-            <div className="w-16 h-16 rounded-full bg-[#5DAEFF06] border border-[#5DAEFF15] flex items-center justify-center mx-auto mb-8">
-              <Flame className="w-8 h-8 text-[#5DAEFF]" />
-            </div>
+            <div className="mx-auto mb-8"><Seal size={56} variant="watching" animated /></div>
             <h1 className="text-2xl font-bold text-[#E8E8F0] mb-2">
               Day {state.streak}.
             </h1>
@@ -58,9 +57,7 @@ const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDi
         {/* ═══ UNFINISHED DEBT ═══ */}
         {state.type === 'debt' && (
           <>
-            <div className="w-16 h-16 rounded-full bg-[#FF444408] border border-[#FF444415] flex items-center justify-center mx-auto mb-8">
-              <AlertTriangle className="w-8 h-8 text-[#FF4444]" />
-            </div>
+            <div className="mx-auto mb-8"><Seal size={56} variant="broken" animated /></div>
             <h1 className="text-2xl font-bold text-[#FF4444] mb-2">
               {state.abandonedCount} abandoned.
             </h1>
@@ -78,9 +75,7 @@ const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDi
         {/* ═══ COMEBACK ═══ */}
         {state.type === 'comeback' && (
           <>
-            <div className="w-16 h-16 rounded-full bg-[#FF444408] border border-[#FF444415] flex items-center justify-center mx-auto mb-8">
-              <Swords className="w-8 h-8 text-[#FF4444]" />
-            </div>
+            <div className="mx-auto mb-8"><Seal size={56} variant="broken" animated /></div>
             <h1 className="text-2xl font-bold text-[#E8E8F0] mb-2">
               {state.daysAway} days absent.
             </h1>

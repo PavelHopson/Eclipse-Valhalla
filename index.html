@@ -93,6 +93,14 @@
       }
       .impact-done { animation: impact-done 400ms cubic-bezier(0.34, 1.56, 0.64, 1); }
 
+      /* Seal: ritual draw animation */
+      @keyframes seal-draw {
+        0% { opacity: 0; transform: scale(0.8) rotate(-10deg); }
+        40% { opacity: 0.5; transform: scale(1.05) rotate(0deg); }
+        100% { opacity: 1; transform: scale(1) rotate(0deg); }
+      }
+      .seal-enter { animation: seal-draw 800ms cubic-bezier(0.16, 1, 0.3, 1); }
+
       /* Focus: Ritual entrance — descend into void */
       @keyframes ritual-enter {
         0% { opacity: 0; backdrop-filter: blur(0); }

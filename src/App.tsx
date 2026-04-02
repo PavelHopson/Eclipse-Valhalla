@@ -2,7 +2,8 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import { Reminder, Note, ViewMode, RepeatType, Priority, User, Category, Routine, WorkoutLog, PlanTier, ReminderStatus } from './types';
 import { generateId, toLocalISOString } from './utils';
-import { X, Hammer, Loader2 } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
+import { Seal } from './brand/Seal';
 import { LanguageProvider, useLanguage } from './i18n';
 import { api } from './services/storageService';
 
@@ -26,8 +27,8 @@ const FocusMode = lazy(() => import('./components/FocusMode'));
 
 const LoadingScreen = () => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-[#050508]">
-    <Hammer className="w-8 h-8 animate-bounce mb-4 text-[#2A2A3C]" />
-    <Loader2 className="w-5 h-5 animate-spin text-[#5DAEFF]" />
+    <div className="system-idle mb-4"><Seal size={40} variant="watching" /></div>
+    <Loader2 className="w-4 h-4 animate-spin text-[#5DA8FF40]" />
   </div>
 );
 
@@ -299,12 +300,10 @@ const AppContent: React.FC = () => {
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-[#050508] font-sans text-[#EAEAF2] fixed inset-0">
       {/* Mobile Header */}
-      <div className="md:hidden bg-[#050508] border-b border-[#1E1E2E] p-4 flex justify-between items-center shrink-0 z-20">
+      <div className="md:hidden bg-[#050508] border-b border-[#16162240] p-3 flex justify-between items-center shrink-0 z-20">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#5DAEFF15] border border-[#5DAEFF30] flex items-center justify-center">
-            <Hammer className="w-3.5 h-3.5 text-[#5DAEFF]" />
-          </div>
-          <span className="font-bold text-[#EAEAF2] tracking-widest uppercase font-serif text-xs">Eclipse</span>
+          <Seal size={24} variant="watching" />
+          <span className="font-bold text-[#EAEAF2] tracking-[0.12em] uppercase text-xs">Eclipse</span>
         </div>
       </div>
 

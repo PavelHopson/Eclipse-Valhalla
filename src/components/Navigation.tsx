@@ -13,10 +13,11 @@
 import React from 'react';
 import { ViewMode, User, PlanTier } from '../types';
 import {
-  Hammer, Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
+  Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
   Home, Search, Dumbbell, StickyNote, Sparkles, Image, AudioLines,
   ChevronRight, Rss,
 } from 'lucide-react';
+import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
 
 interface NavigationProps {
@@ -86,9 +87,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
 
         {/* Brand */}
         <div className="px-5 py-4 flex items-center gap-3 border-b border-[#16162240]">
-          <div className="w-8 h-8 rounded-md bg-[#5DA8FF08] border border-[#5DA8FF20] flex items-center justify-center">
-            <Hammer className="w-4 h-4 text-[#5DA8FF]" />
-          </div>
+          <Seal size={28} variant="watching" />
           <div>
             <h1 className="font-bold text-sm tracking-[0.12em] uppercase text-[#EAEAF2]">Eclipse</h1>
             <span className="text-[7px] font-semibold text-[#3D3D52] uppercase tracking-[0.25em]">Valhalla</span>
