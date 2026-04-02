@@ -89,8 +89,8 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
         <div className="px-5 py-4 flex items-center gap-3 border-b border-[#16162240]">
           <Seal size={28} variant="watching" />
           <div>
-            <h1 className="font-bold text-sm tracking-[0.12em] uppercase text-[#EAEAF2]">Eclipse</h1>
-            <span className="text-[7px] font-semibold text-[#3D3D52] uppercase tracking-[0.25em]">Valhalla</span>
+            <h1 className="font-black text-[15px] tracking-[0.08em] uppercase text-[#EAEAF2] leading-none">Eclipse</h1>
+            <span className="text-[8px] font-bold text-[#3D3D52] uppercase tracking-[0.3em]">Valhalla</span>
           </div>
         </div>
 
@@ -112,7 +112,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
             <div key={section.label} className="mb-1">
               {/* Section Label */}
               <div className="px-3 pt-4 pb-1.5">
-                <span className="text-[9px] font-bold text-[#3A3A4A] uppercase tracking-[0.2em]">{section.label}</span>
+                <span className="text-[10px] font-bold text-[#3D3D52] uppercase tracking-[0.25em]">{section.label}</span>
               </div>
 
               {/* Section Items */}
@@ -138,7 +138,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
                       className="w-4 h-4 transition-colors shrink-0"
                       style={active ? { color: accentColor } : undefined}
                     />
-                    <span className="text-sm font-medium truncate">{item.label.split('(')[0].trim()}</span>
+                    <span className="text-[13px] font-semibold truncate">{item.label.split('(')[0].trim()}</span>
                     {active && (
                       <div className="ml-auto w-1 h-1 rounded-full" style={{ backgroundColor: accentColor }} />
                     )}

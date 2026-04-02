@@ -301,9 +301,9 @@ const AppContent: React.FC = () => {
     <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-[#050508] font-sans text-[#EAEAF2] fixed inset-0">
       {/* Mobile Header */}
       <div className="md:hidden bg-[#050508] border-b border-[#16162240] p-3 flex justify-between items-center shrink-0 z-20">
-        <div className="flex items-center gap-2">
-          <Seal size={24} variant="watching" />
-          <span className="font-bold text-[#EAEAF2] tracking-[0.12em] uppercase text-xs">Eclipse</span>
+        <div className="flex items-center gap-2.5">
+          <Seal size={26} variant="watching" />
+          <span className="font-black text-[14px] text-[#EAEAF2] tracking-[0.08em] uppercase leading-none">Eclipse</span>
         </div>
       </div>
 
@@ -335,23 +335,29 @@ const AppContent: React.FC = () => {
                 </div>
               )}
 
-              {/* PRESSURE HERO */}
-              <div className="px-6 pt-4 pb-2">
-                <div className="flex items-center justify-between mb-1">
-                  <h1 className="text-lg font-bold text-[#EAEAF2]">
-                    {reminders.filter(r => !r.isCompleted).length === 0
-                      ? (isRU ? 'Нет целей. Определи задачи.' : 'No objectives. Define your targets.')
-                      : (isRU ? `${reminders.filter(r => !r.isCompleted).length} целей ожидают.` : `${reminders.filter(r => !r.isCompleted).length} objectives pending.`)}
-                  </h1>
-                  {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length > 0 && (
-                    <span className="text-[10px] font-bold text-[#FF4444] bg-[#FF444408] border border-[#FF444415] px-2 py-1 rounded-lg">
+              {/* ═══ COMMAND HERO — dominant, heavy, authoritative ═══ */}
+              <div className="px-6 pt-6 pb-3">
+                {/* Overdue badge — top right, urgent */}
+                {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length > 0 && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#E03030] animate-pulse" />
+                    <span className="text-[11px] font-bold text-[#E03030] uppercase tracking-[0.15em]">
                       {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length} {isRU ? 'ПРОСРОЧЕНО' : 'OVERDUE'}
                     </span>
-                  )}
-                </div>
-                <p className="text-xs text-[#3A3A4A]">
+                  </div>
+                )}
+
+                {/* Main headline — LARGE, dominant */}
+                <h1 className="text-2xl md:text-3xl font-black text-[#EAEAF2] leading-tight tracking-tight mb-2">
                   {reminders.filter(r => !r.isCompleted).length === 0
-                    ? (isRU ? 'Воин без целей потерян.' : 'A warrior without objectives is lost.')
+                    ? (isRU ? 'Нет целей.' : 'No objectives.')
+                    : (isRU ? `${reminders.filter(r => !r.isCompleted).length} целей.` : `${reminders.filter(r => !r.isCompleted).length} pending.`)}
+                </h1>
+
+                {/* Sub — cold, system voice */}
+                <p className="text-sm text-[#5E5E78] font-medium">
+                  {reminders.filter(r => !r.isCompleted).length === 0
+                    ? (isRU ? 'Определи задачи. Система ждёт.' : 'Define your targets. The system waits.')
                     : (isRU ? 'Каждый час промедления — выбор против себя.' : 'Every hour of delay is a choice against yourself.')}
                 </p>
               </div>
@@ -381,12 +387,12 @@ const AppContent: React.FC = () => {
                 );
               })()}
 
-              {/* QUICK QUEST INPUT — the activation point */}
-              <div className="px-6 py-3">
+              {/* ═══ COMMAND INPUT — heavy, dominant ═══ */}
+              <div className="px-6 py-2">
                 <Suspense fallback={null}>
                   <QuickQuestInput
                     onCreateQuest={(title) => saveReminder({ title, dueDateTime: new Date(Date.now() + 86400000).toISOString() })}
-                    placeholder={isRU ? 'Что ты должен сделать СЕЙЧАС? (Enter)' : 'What must you do RIGHT NOW? (Enter to create)'}
+                    placeholder={isRU ? 'Введи задачу. Нажми Enter.' : 'Enter objective. Press Enter.'}
                   />
                 </Suspense>
               </div>
@@ -394,18 +400,18 @@ const AppContent: React.FC = () => {
               {/* Active quests — tap to focus */}
               {reminders.filter(r => !r.isCompleted).length > 0 && (
                 <div className="px-6 py-2">
-                  <div className="text-[9px] text-[#3A3A4A] uppercase tracking-[0.2em] mb-2">Active · Tap to focus</div>
+                  <div className="text-[10px] text-[#5E5E78] uppercase tracking-[0.2em] font-bold mb-3">{isRU ? 'Активные' : 'Active'}</div>
                   <div className="space-y-1.5">
                     {reminders.filter(r => !r.isCompleted).slice(0, 5).map(r => {
                       const isOverdue = new Date(r.dueDateTime) < new Date();
                       return (
                         <button key={r.id} onClick={() => setFocusQuestId(r.id)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all hover:bg-[#14141F] ${
-                            isOverdue ? 'border-[#E0303012] bg-[#E0303005] state-overdue' : 'border-[#1E1E3050] bg-[#0F0F18] state-active'
+                          className={`w-full flex items-center gap-4 px-5 py-4 rounded-lg border text-left transition-all hover:bg-[#14141F] ${
+                            isOverdue ? 'border-[#E0303015] bg-[#0B0B12] state-overdue' : 'border-[#1E1E3040] bg-[#0B0B12] state-active'
                           }`}>
-                          <div className={`w-2 h-2 rounded-full shrink-0 ${isOverdue ? 'bg-[#E03030]' : 'bg-[#5DA8FF]'}`} />
-                          <span className={`text-sm font-medium flex-1 truncate ${isOverdue ? 'text-[#FF4444]' : 'text-[#EAEAF2]'}`}>{r.title}</span>
-                          <span className="text-[10px] text-[#3A3A4A]">Focus →</span>
+                          <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOverdue ? 'bg-[#E03030]' : 'bg-[#5DA8FF]'}`} />
+                          <span className={`text-[15px] font-semibold flex-1 truncate ${isOverdue ? 'text-[#E03030]' : 'text-[#EAEAF2]'}`}>{r.title}</span>
+                          <span className="text-[10px] text-[#3D3D52] uppercase tracking-wider font-medium">{isRU ? 'Фокус' : 'Focus'} →</span>
                         </button>
                       );
                     })}

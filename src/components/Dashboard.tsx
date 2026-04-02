@@ -204,10 +204,10 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
 // ═══════════════════════════════════════════
 
 const StatCard: React.FC<{ icon: React.ReactNode; value: string | number; label: string; danger?: boolean }> = ({ icon, value, label, danger }) => (
-  <div className={`bg-[#0F0F18] border rounded-xl px-3 py-3 ${danger ? 'border-[#FF444420]' : 'border-[#1E1E3050]'}`}>
-    <div className="flex items-center gap-1.5 mb-1">{icon}</div>
-    <div className={`text-xl font-bold ${danger ? 'text-[#FF4444]' : 'text-[#E8E8F0]'}`}>{value}</div>
-    <div className="text-[9px] text-[#3A3A4A] uppercase tracking-wider">{label}</div>
+  <div className={`bg-[#0B0B12] border rounded-lg px-3 py-3 ${danger ? 'border-[#E0303015]' : 'border-[#1E1E3040]'}`}>
+    <div className="flex items-center gap-1.5 mb-1.5">{icon}</div>
+    <div className={`text-2xl font-black tracking-tight ${danger ? 'text-[#E03030]' : 'text-[#EAEAF2]'}`}>{value}</div>
+    <div className="text-[10px] text-[#3D3D52] uppercase tracking-[0.15em] font-medium mt-0.5">{label}</div>
   </div>
 );
 

@@ -78,11 +78,11 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
   }
 
   return (
-    <div className={`relative bg-[#12121A] border rounded-xl overflow-hidden transition-all ${
-      flash ? 'border-[#4ADE8050] shadow-[0_0_15px_rgba(74,222,128,0.08)]' : 'border-[#2A2A3C] focus-within:border-[#5DAEFF40]'
+    <div className={`relative bg-[#08080D] border rounded-lg overflow-hidden transition-all ${
+      flash ? 'border-[#3DD68C30] shadow-[0_0_20px_rgba(61,214,140,0.06)]' : 'border-[#1E1E3050] focus-within:border-[#5DA8FF30]'
     }`}>
       <div className="flex items-center px-4">
-        <Zap className="w-4 h-4 text-[#3A3A4A] shrink-0" />
+        <span className="text-[#3D3D52] text-sm font-mono shrink-0">›</span>
         <input
           ref={inputRef}
           type="text"
@@ -90,14 +90,14 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
           onChange={e => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 px-3 py-3.5 bg-transparent text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none"
+          className="flex-1 px-2 py-4 bg-transparent text-[15px] font-medium text-[#EAEAF2] placeholder-[#3D3D52] outline-none"
         />
         {value.trim() && (
           <button
             onClick={handleSubmit}
-            className="px-3 py-1.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-lg text-xs font-bold active:scale-95 transition-transform"
+            className="px-4 py-2 bg-[#5DA8FF] text-[#050508] rounded-md text-xs font-bold uppercase tracking-wider active:scale-95 transition-transform"
           >
-            Create
+            ↵
           </button>
         )}
       </div>
