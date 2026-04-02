@@ -82,13 +82,23 @@ const AppContent: React.FC = () => {
   const [modalData, setModalData] = useState({ title: '', desc: '', date: '', repeat: RepeatType.NONE, priority: Priority.MEDIUM, category: Category.PERSONAL, subtasks: [] as any[] });
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
-  // Load data ONCE
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  // Load data ONCE + track session
   useEffect(() => {
     setReminders(api.getData('reminders', user.id));
     setNotes(api.getData('notes', user.id));
     setRoutines(api.getData('routines', user.id));
     setWorkoutLogs(api.getData('workout_logs', user.id));
     setIsDataLoaded(true);
+
+    // PMF + analytics + retention tracking
+    pmfSessionStart();
+    trackSessionStart();
+    const retention = recordSession();
+    if (retention.alerts.length > 0) {
+      dispatchAlerts(retention.alerts);
+    }
   }, []);
 
   // Save reminders when they change
@@ -141,14 +151,23 @@ const AppContent: React.FC = () => {
       setReminders(prev => prev.map(x => x.id === r.id ? { ...x, ...r } as Reminder : x));
     } else {
       setReminders(prev => [...prev, newR]);
+      pmfQuestCreated();
+      trackQuestCreated();
     }
     setIsReminderModalOpen(false);
   }, []);
 
   const toggleComplete = useCallback((id: string) => {
-    setReminders(prev => prev.map(r =>
-      r.id === id ? { ...r, isCompleted: !r.isCompleted, status: r.isCompleted ? ReminderStatus.TODO : ReminderStatus.DONE } : r
-    ));
+    setReminders(prev => {
+      const quest = prev.find(r => r.id === id);
+      if (quest && !quest.isCompleted) {
+        pmfQuestCompleted();
+        trackQuestCompleted();
+      }
+      return prev.map(r =>
+        r.id === id ? { ...r, isCompleted: !r.isCompleted, status: r.isCompleted ? ReminderStatus.TODO : ReminderStatus.DONE } : r
+      );
+    });
   }, []);
 
   const deleteReminder = useCallback((id: string) => {
@@ -226,6 +245,11 @@ const AppContent: React.FC = () => {
         <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} reminders={reminders} notes={notes} onNavigate={setCurrentView} />
       </Suspense>
 
+      {/* Feedback */}
+      <Suspense fallback={null}>
+        <FeedbackPanel isOpen={showFeedback} onClose={() => setShowFeedback(false)} userId={user.id} />
+      </Suspense>
+
       {/* Quest Modal */}
       {isReminderModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center">
@@ -281,6 +305,14 @@ class AppErrorBoundary extends React.Component<{children: React.ReactNode}, {err
 
 // Import toast container
 import { ToastContainer } from './design';
+import { pmfSessionStart, pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
+import { trackSessionStart, trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
+import { recordSession, checkCriticalQuests, dispatchAlerts } from './services/retentionService';
+
+// Lazy-load growth components
+const QuickQuestInput = lazy(() => import('./components/QuickQuestInput'));
+const FeedbackPanel = lazy(() => import('./components/FeedbackPanel'));
+const AIProviderSettings = lazy(() => import('./components/AIProviderSettings'));
 
 const App = () => (
   <AppErrorBoundary>
