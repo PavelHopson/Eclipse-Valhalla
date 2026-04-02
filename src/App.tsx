@@ -66,7 +66,8 @@ function getOrCreateUser(): User {
 // ═══════════════════════════════════════════
 
 const AppContent: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isRU = language === 'ru';
 
   const [user, setUser] = useState<User>(getOrCreateUser);
   const [currentView, setCurrentView] = useState<ViewMode>('dashboard');
@@ -335,24 +336,24 @@ const AppContent: React.FC = () => {
                 </div>
               )}
 
-              {/* PRESSURE HERO — not decoration, a threat */}
+              {/* PRESSURE HERO */}
               <div className="px-6 pt-4 pb-2">
                 <div className="flex items-center justify-between mb-1">
                   <h1 className="text-lg font-bold text-[#E8E8F0]">
                     {reminders.filter(r => !r.isCompleted).length === 0
-                      ? 'No objectives. Define your targets.'
-                      : `${reminders.filter(r => !r.isCompleted).length} objectives pending.`}
+                      ? (isRU ? 'Нет целей. Определи задачи.' : 'No objectives. Define your targets.')
+                      : (isRU ? `${reminders.filter(r => !r.isCompleted).length} целей ожидают.` : `${reminders.filter(r => !r.isCompleted).length} objectives pending.`)}
                   </h1>
                   {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length > 0 && (
                     <span className="text-[10px] font-bold text-[#FF4444] bg-[#FF444408] border border-[#FF444415] px-2 py-1 rounded-lg">
-                      {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length} OVERDUE
+                      {reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < new Date()).length} {isRU ? 'ПРОСРОЧЕНО' : 'OVERDUE'}
                     </span>
                   )}
                 </div>
                 <p className="text-xs text-[#3A3A4A]">
                   {reminders.filter(r => !r.isCompleted).length === 0
-                    ? 'A warrior without objectives is lost.'
-                    : 'Every hour of delay is a choice against yourself.'}
+                    ? (isRU ? 'Воин без целей потерян.' : 'A warrior without objectives is lost.')
+                    : (isRU ? 'Каждый час промедления — выбор против себя.' : 'Every hour of delay is a choice against yourself.')}
                 </p>
               </div>
 
@@ -386,7 +387,7 @@ const AppContent: React.FC = () => {
                 <Suspense fallback={null}>
                   <QuickQuestInput
                     onCreateQuest={(title) => saveReminder({ title, dueDateTime: new Date(Date.now() + 86400000).toISOString() })}
-                    placeholder="What must you do RIGHT NOW? (Enter to create)"
+                    placeholder={isRU ? 'Что ты должен сделать СЕЙЧАС? (Enter)' : 'What must you do RIGHT NOW? (Enter to create)'}
                   />
                 </Suspense>
               </div>
