@@ -14,7 +14,7 @@ const StickerBoard = lazy(() => import('./components/StickerBoard'));
 const CalendarView = lazy(() => import('./components/CalendarView'));
 const WorkoutView = lazy(() => import('./components/WorkoutView'));
 const SettingsView = lazy(() => import('./components/SettingsView'));
-const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const AdminPanel = lazy(() => import('./admin/AdminDashboard'));
 const GlobalSearch = lazy(() => import('./components/GlobalSearch'));
 const OracleView = lazy(() => import('./components/OracleView'));
 const NewsView = lazy(() => import('./components/NewsView'));
@@ -212,7 +212,7 @@ const AppContent: React.FC = () => {
             onUpgrade={() => setIsSubscriptionOpen(true)}
             onUpdateUser={(updates) => { const u = { ...user, ...updates }; setUser(u); localStorage.setItem('lumina_active_session', JSON.stringify(u)); }}
           />}
-          {currentView === 'admin' && <AdminPanel reminders={reminders} notes={notes} setReminders={setReminders} setNotes={setNotes} />}
+          {currentView === 'admin' && <AdminPanel />}
           {currentView === 'oracle' && <OracleView quests={reminders} />}
           {currentView === 'nexus' && <NewsView userId={user.id} onCreateQuest={(q) => saveReminder({ title: q.title, description: q.description, dueDateTime: q.dueAt })} />}
           {currentView === 'chat' && <div className="h-full p-4 md:p-6 overflow-hidden"><ChatView /></div>}
