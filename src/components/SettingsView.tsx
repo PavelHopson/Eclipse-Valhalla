@@ -1,9 +1,21 @@
+/**
+ * Eclipse Valhalla — Settings (Redesigned)
+ *
+ * Clean, professional, premium dark settings panel.
+ * Sections: Profile, AI, Language, Appearance, Data, Account.
+ */
 
 import React, { useRef, useState, Suspense, lazy } from 'react';
-import { Download, Moon, Crown, Palette, HardDrive, User as UserIcon, LogOut, Upload, Zap, Trophy, Shield, Star, Globe, Edit2, Check, X, Cpu } from 'lucide-react';
+import {
+  Download, Moon, Crown, Palette, HardDrive, LogOut, Upload,
+  Zap, Shield, Globe, Edit2, Check, X, Cpu, User as UserIcon,
+  ChevronRight, Flame, Target, MessageSquare,
+} from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { User, Reminder, Note, PlanTier, Theme } from '../types';
 import { THEME_COLORS, getNextLevelXp } from '../utils';
+import { getMode, setMode as setDisciplineMode } from '../services/disciplineMode';
+import { openTelegram } from '../services/telegramCTA';
 
 const AIProviderSettings = lazy(() => import('./AIProviderSettings'));
 
@@ -20,27 +32,33 @@ interface SettingsViewProps {
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({
-    user, onLogout, setReminders, setNotes, onUpdateTheme, onUpgrade, onUpdateUser
+  user, onLogout, setReminders, setNotes, onUpdateTheme, onUpgrade, onUpdateUser, remindersCount, notesCount,
 }) => {
   const { language, setLanguage, t } = useLanguage();
+  const isRU = language === 'ru';
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isPro = user?.plan !== PlanTier.FREE;
 
-  // Profile Editing State
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user?.name || '');
   const [editEmail, setEditEmail] = useState(user?.email || '');
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+
+  // Streak
+  let streak = 0;
+  try { const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user?.id}`) || '{}'); streak = s.days || 0; } catch {}
 
   const handleExport = () => {
     const data = {
       reminders: JSON.parse(localStorage.getItem(`reminders_${user?.id}`) || '[]'),
       notes: JSON.parse(localStorage.getItem(`notes_${user?.id}`) || '[]'),
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `valhalla-saga-${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `eclipse-valhalla-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -55,243 +73,256 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
-        if (json.reminders && Array.isArray(json.reminders)) setReminders(json.reminders);
-        if (json.notes && Array.isArray(json.notes)) setNotes(json.notes);
-        alert('Saga restored successfully!');
-      } catch (err) {
-        alert('Failed to read the scroll.');
-      }
+        if (json.reminders) setReminders(json.reminders);
+        if (json.notes) setNotes(json.notes);
+      } catch {}
     };
     reader.readAsText(file);
     e.target.value = '';
   };
 
   const handleSaveProfile = () => {
-    if (user) {
-        onUpdateUser({ name: editName, email: editEmail });
-        setIsEditing(false);
-    }
+    if (user) { onUpdateUser({ name: editName, email: editEmail }); setIsEditing(false); }
   };
 
-  const isPro = user?.plan !== PlanTier.FREE;
-
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col max-w-3xl mx-auto w-full overflow-y-auto pb-24">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-[#E8E8F0] tracking-tight font-serif uppercase">{t('settings.title')}</h2>
-        <p className="text-[#55556A] text-sm">{t('settings.subtitle')}</p>
-      </div>
+    <div className="h-full overflow-y-auto">
+      <div className="max-w-2xl mx-auto px-6 py-6 pb-24">
 
-      {/* User Profile Card */}
-      {user && (
-        <section className="mb-8 animate-in slide-in-from-bottom-4">
-          <div className="bg-[#1A1A26] rounded-2xl border border-[#2A2A3C] overflow-hidden p-6 shadow-lg relative group transition-all">
-             <div className="absolute top-0 right-0 p-6 opacity-5 text-[#E8E8F0] rotate-12 group-hover:rotate-0 transition-transform">
-                 {user.plan === PlanTier.PRO ? <Crown className="w-32 h-32" /> : <Shield className="w-32 h-32" />}
-             </div>
+        {/* ═══ HEADER ═══ */}
+        <div className="mb-8">
+          <h1 className="text-xl font-bold text-[#E8E8F0]">{isRU ? 'Настройки' : 'Settings'}</h1>
+          <p className="text-xs text-[#3A3A4A] mt-0.5">{isRU ? 'Настрой систему под себя' : 'Configure your system'}</p>
+        </div>
 
-             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
-                <div className="flex gap-4 flex-1">
-                    <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold text-[#E8E8F0] shadow-xl shrink-0 ${user.plan === PlanTier.PRO ? 'bg-gradient-to-br from-amber-500 to-orange-600' : 'bg-[#55556A]'}`}>
-                        {user.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                        {isEditing ? (
-                            <div className="space-y-3 mb-4 max-w-sm">
-                                <div>
-                                    <label className="block text-[10px] uppercase font-bold text-[#55556A] mb-1">Name</label>
-                                    <input
-                                        className="w-full bg-[#12121A] border border-[#2A2A3C] rounded px-3 py-2 text-sm font-bold text-[#E8E8F0]"
-                                        value={editName}
-                                        onChange={e => setEditName(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] uppercase font-bold text-[#55556A] mb-1">Raven (Email)</label>
-                                    <input
-                                        className="w-full bg-[#12121A] border border-[#2A2A3C] rounded px-3 py-2 text-sm font-medium text-[#E8E8F0]"
-                                        value={editEmail}
-                                        onChange={e => setEditEmail(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                <h3 className="text-2xl font-bold text-[#E8E8F0]">{user.name}</h3>
-                                <p className="text-sm text-[#55556A] mb-3 font-mono">{user.email}</p>
-                                <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider ${user.plan === PlanTier.PRO ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-[#12121A] text-[#8888A0] border border-[#2A2A3C]'}`}>
-                                    {user.plan} Class
-                                </span>
-                            </>
-                        )}
-                    </div>
-                </div>
+        {/* ═══ PROFILE CARD ═══ */}
+        {user && (
+          <div className="bg-[#0C0C14] border border-[#1A1A2E] rounded-2xl p-5 mb-6">
+            <div className="flex items-start gap-4">
+              {/* Avatar */}
+              <div className="w-14 h-14 rounded-xl bg-[#5DAEFF10] border border-[#5DAEFF20] flex items-center justify-center text-xl font-bold text-[#5DAEFF] shrink-0">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
 
-                <div className="flex items-start gap-2">
-                    {isEditing ? (
-                        <>
-                             <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-4 py-2 text-[#55556A] font-bold text-xs hover:bg-[#1F1F2B] rounded-lg transition-colors">
-                                {t('settings.cancel')}
-                             </button>
-                             <button onClick={handleSaveProfile} className="flex items-center gap-2 px-4 py-2 bg-[#5DAEFF] text-[#E8E8F0] font-bold text-xs rounded-lg shadow-md hover:bg-[#5DAEFF]/80 transition-colors">
-                                <Check className="w-4 h-4" /> {t('settings.save')}
-                             </button>
-                        </>
-                    ) : (
-                        <>
-                            <button onClick={() => setIsEditing(true)} className="p-2 text-[#55556A] hover:text-[#5DAEFF] hover:bg-[#1F1F2B] rounded-lg transition-colors" title={t('settings.edit')}>
-                                <Edit2 className="w-5 h-5" />
-                            </button>
-                            <button onClick={onLogout} className="p-2 text-[#55556A] hover:text-[#FF4444] hover:bg-[#FF4444]/10 rounded-lg transition-colors" title={t('settings.logout')}>
-                                <LogOut className="w-5 h-5" />
-                            </button>
-                        </>
-                    )}
-                </div>
-             </div>
-
-             {/* Stats Mini Grid */}
-             {isPro && !isEditing && (
-                 <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-[#2A2A3C]">
-                     <div className="flex items-center gap-3">
-                         <div className="bg-yellow-100 p-2 rounded-lg text-yellow-700"><Trophy className="w-4 h-4"/></div>
-                         <div>
-                             <p className="text-[10px] text-[#55556A] uppercase font-bold">{t('game.level')}</p>
-                             <p className="font-bold text-[#E8E8F0]">{user.level}</p>
-                         </div>
-                     </div>
-                     <div className="flex items-center gap-3">
-                         <div className="bg-[#5DAEFF]/20 p-2 rounded-lg text-[#5DAEFF]"><Zap className="w-4 h-4"/></div>
-                         <div>
-                             <p className="text-[10px] text-[#55556A] uppercase font-bold">{t('game.xp')}</p>
-                             <p className="font-bold text-[#E8E8F0]">{user.xp} <span className="text-xs text-[#55556A] font-normal">/ {getNextLevelXp(user.level)}</span></p>
-                         </div>
-                     </div>
-                 </div>
-             )}
-          </div>
-        </section>
-      )}
-
-      {/* Upgrade Banner (If Free) */}
-      {!isPro && (
-        <button onClick={onUpgrade} className="w-full bg-[#12121A] text-[#E8E8F0] p-6 rounded-2xl shadow-xl mb-8 text-left relative overflow-hidden group hover:shadow-2xl transition-all">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            <div className="flex justify-between items-center relative z-10">
-                <div>
-                    <h3 className="text-lg font-bold font-serif uppercase tracking-wider flex items-center gap-2">
-                        <Crown className="w-5 h-5 text-amber-400" />
-                        {t('settings.upgrade')}
-                    </h3>
-                    <p className="text-sm opacity-70 mt-1">Unlock Themes, AI, and Glory.</p>
-                </div>
-                <div className="w-8 h-8 bg-[#E8E8F0]/20 rounded-full flex items-center justify-center">
-                    <Star className="w-4 h-4 fill-current" />
-                </div>
-            </div>
-        </button>
-      )}
-
-      <div className="space-y-8">
-
-        {/* Section: Realm */}
-        <section>
-            <h4 className="text-xs font-bold text-[#55556A] uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
-                <Globe className="w-3 h-3" /> {t('settings.language')}
-            </h4>
-            <div className="grid grid-cols-2 gap-4">
-               <button onClick={() => setLanguage('en')} className={`p-4 rounded-xl border-2 font-bold text-sm transition-all flex flex-col items-center gap-2 ${language === 'en' ? 'border-[#E8E8F0] bg-[#1A1A26] text-[#E8E8F0]' : 'border-transparent bg-[#1A1A26] text-[#55556A]'}`}>
-                   <span className="text-2xl">🇺🇸</span> English
-               </button>
-               <button onClick={() => setLanguage('ru')} className={`p-4 rounded-xl border-2 font-bold text-sm transition-all flex flex-col items-center gap-2 ${language === 'ru' ? 'border-[#E8E8F0] bg-[#1A1A26] text-[#E8E8F0]' : 'border-transparent bg-[#1A1A26] text-[#55556A]'}`}>
-                   <span className="text-2xl">🇷🇺</span> Русский
-               </button>
-            </div>
-        </section>
-
-        {/* Section: AI Providers */}
-        <section>
-            <h4 className="text-xs font-bold text-[#55556A] uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
-                <Cpu className="w-3 h-3" /> AI Providers
-            </h4>
-            <div className="bg-[#1A1A26] rounded-2xl border border-[#2A2A3C] overflow-hidden p-4">
-                <Suspense fallback={<div className="text-xs text-[#3A3A4A] py-4 text-center">Loading AI settings...</div>}>
-                    <AIProviderSettings />
-                </Suspense>
-            </div>
-        </section>
-
-        {/* Section: Appearance */}
-        <section>
-            <h4 className="text-xs font-bold text-[#55556A] uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
-                <Palette className="w-3 h-3" /> {t('settings.appearance')}
-            </h4>
-            <div className="bg-[#1A1A26] rounded-2xl border border-[#2A2A3C] overflow-hidden divide-y divide-[#2A2A3C]">
-                 <div className="p-4 flex items-center justify-between hover:bg-[#1F1F2B] transition-colors">
-                    <div className="flex items-center gap-4">
-                        <div className="p-2 bg-[#12121A] text-[#8888A0] rounded-lg"><Moon className="w-5 h-5" /></div>
-                        <div>
-                            <h5 className="font-bold text-[#E8E8F0] text-sm">{t('settings.dark_mode')}</h5>
-                        </div>
-                    </div>
-                    {/* Dark mode toggle is handled by system/html class, this is visual representation since we use auto-detect */}
-                    <div className="text-xs text-[#55556A] font-mono">Auto/System</div>
-                </div>
-
-                <div className={`p-4 flex items-center justify-between ${!isPro ? 'opacity-50 grayscale' : ''}`}>
-                    <div className="flex items-center gap-4">
-                        <div className="p-2 bg-purple-900/30 text-purple-300 rounded-lg"><Palette className="w-5 h-5" /></div>
-                        <div>
-                            <h5 className="font-bold text-[#E8E8F0] text-sm flex items-center gap-2">
-                                {t('settings.theme')}
-                                {!isPro && <span className="text-[9px] bg-[#12121A] text-[#8888A0] px-1.5 rounded border border-[#2A2A3C]">LOCKED</span>}
-                            </h5>
-                        </div>
-                    </div>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <input value={editName} onChange={e => setEditName(e.target.value)} placeholder={isRU ? 'Имя' : 'Name'}
+                      className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] outline-none focus:border-[#5DAEFF40]" />
+                    <input value={editEmail} onChange={e => setEditEmail(e.target.value)} placeholder="Email"
+                      className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] outline-none focus:border-[#5DAEFF40]" />
                     <div className="flex gap-2">
-                        {(Object.keys(THEME_COLORS) as Theme[]).map(th => (
-                            <button
-                                key={th}
-                                disabled={!isPro}
-                                onClick={() => onUpdateTheme(th)}
-                                className={`w-8 h-8 rounded-full ${THEME_COLORS[th].primary} ${user?.theme === th ? 'ring-4 ring-[#1E1E2E] scale-110' : ''} shadow-sm border-2 border-[#1A1A26]`}
-                            />
-                        ))}
+                      <button onClick={handleSaveProfile} className="px-3 py-1.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-lg text-xs font-bold"><Check className="w-3 h-3 inline mr-1" />{isRU ? 'Сохранить' : 'Save'}</button>
+                      <button onClick={() => setIsEditing(false)} className="px-3 py-1.5 text-xs text-[#55556A]">{isRU ? 'Отмена' : 'Cancel'}</button>
                     </div>
-                </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-bold text-[#E8E8F0]">{user.name}</h2>
+                      <button onClick={() => setIsEditing(true)} className="p-1 text-[#3A3A4A] hover:text-[#55556A]"><Edit2 className="w-3 h-3" /></button>
+                    </div>
+                    {user.email && <p className="text-xs text-[#3A3A4A] font-mono">{user.email}</p>}
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${isPro ? 'bg-[#FFD70010] text-[#FFD700] border border-[#FFD70025]' : 'bg-[#12121A] text-[#55556A] border border-[#1E1E2E]'}`}>
+                        {isPro ? 'Pro' : 'Free'}
+                      </span>
+                      {streak > 0 && (
+                        <span className="text-[9px] text-[#FF6B35] flex items-center gap-1"><Flame className="w-3 h-3" />{streak}d streak</span>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-        </section>
 
-        {/* Section: Data */}
-        <section>
-            <h4 className="text-xs font-bold text-[#55556A] uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
-                <HardDrive className="w-3 h-3" /> {t('settings.data')}
-            </h4>
-            <div className="bg-[#1A1A26] rounded-2xl border border-[#2A2A3C] overflow-hidden divide-y divide-[#2A2A3C]">
-                <div className="p-4 flex items-center justify-between hover:bg-[#1F1F2B] transition-colors">
-                    <div className="flex items-center gap-4">
-                        <div className="p-2 bg-[#4ADE80]/20 text-[#4ADE80] rounded-lg"><Download className="w-5 h-5" /></div>
-                        <div>
-                            <h5 className="font-bold text-[#E8E8F0] text-sm">{t('settings.export')}</h5>
-                        </div>
-                    </div>
-                    <button onClick={handleExport} className="px-4 py-2 text-xs font-bold text-[#8888A0] border border-[#2A2A3C] rounded-lg hover:bg-[#1F1F2B] transition-colors">{t('settings.export_btn')}</button>
+            {/* Stats row */}
+            {!isEditing && (
+              <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-[#1A1A2E]">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#E8E8F0]">{remindersCount}</div>
+                  <div className="text-[9px] text-[#3A3A4A] uppercase">{isRU ? 'Квесты' : 'Quests'}</div>
                 </div>
-                <div className="p-4 flex items-center justify-between hover:bg-[#1F1F2B] transition-colors">
-                    <div className="flex items-center gap-4">
-                        <div className="p-2 bg-orange-900/30 text-orange-400 rounded-lg"><Upload className="w-5 h-5" /></div>
-                        <div>
-                            <h5 className="font-bold text-[#E8E8F0] text-sm">{t('settings.import')}</h5>
-                        </div>
-                    </div>
-                    <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleFileChange} />
-                    <button onClick={handleImportClick} className="px-4 py-2 text-xs font-bold text-[#8888A0] border border-[#2A2A3C] rounded-lg hover:bg-[#1F1F2B] transition-colors">{t('settings.import_btn')}</button>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#E8E8F0]">{user.level}</div>
+                  <div className="text-[9px] text-[#3A3A4A] uppercase">{isRU ? 'Уровень' : 'Level'}</div>
                 </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-[#E8E8F0]">{user.xp}</div>
+                  <div className="text-[9px] text-[#3A3A4A] uppercase">XP</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ UPGRADE BANNER ═══ */}
+        {!isPro && (
+          <button onClick={onUpgrade}
+            className="w-full bg-gradient-to-r from-[#5DAEFF08] to-[#7A5CFF08] border border-[#5DAEFF15] rounded-xl p-4 mb-6 text-left hover:border-[#5DAEFF30] transition-all group">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Crown className="w-5 h-5 text-[#FFD700]" />
+                <div>
+                  <span className="text-sm font-bold text-[#E8E8F0]">{isRU ? 'Перейти на Pro' : 'Upgrade to Pro'}</span>
+                  <p className="text-[10px] text-[#55556A]">{isRU ? 'AI, темы, облако, без ограничений' : 'AI, themes, cloud, unlimited'}</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#3A3A4A] group-hover:text-[#55556A]" />
             </div>
-        </section>
+          </button>
+        )}
+
+        {/* ═══ SETTINGS SECTIONS ═══ */}
+        <div className="space-y-2">
+
+          {/* AI PROVIDERS */}
+          <SettingsSection
+            icon={<Cpu className="w-4 h-4 text-[#7A5CFF]" />}
+            title={isRU ? 'AI Провайдеры' : 'AI Providers'}
+            subtitle={isRU ? 'Gemini, OpenAI, Claude, Custom' : 'Gemini, OpenAI, Claude, Custom'}
+            open={activeSection === 'ai'}
+            onToggle={() => setActiveSection(activeSection === 'ai' ? null : 'ai')}
+          >
+            <Suspense fallback={<div className="text-xs text-[#3A3A4A] py-4 text-center">{isRU ? 'Загрузка...' : 'Loading...'}</div>}>
+              <AIProviderSettings />
+            </Suspense>
+          </SettingsSection>
+
+          {/* LANGUAGE */}
+          <SettingsSection
+            icon={<Globe className="w-4 h-4 text-[#5DAEFF]" />}
+            title={isRU ? 'Язык' : 'Language'}
+            subtitle={language === 'ru' ? 'Русский' : 'English'}
+            open={activeSection === 'lang'}
+            onToggle={() => setActiveSection(activeSection === 'lang' ? null : 'lang')}
+          >
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => setLanguage('en')}
+                className={`p-3 rounded-xl border text-sm font-medium transition-all ${language === 'en' ? 'border-[#5DAEFF30] bg-[#5DAEFF08] text-[#E8E8F0]' : 'border-[#1A1A2E] text-[#55556A]'}`}>
+                🇺🇸 English
+              </button>
+              <button onClick={() => setLanguage('ru')}
+                className={`p-3 rounded-xl border text-sm font-medium transition-all ${language === 'ru' ? 'border-[#5DAEFF30] bg-[#5DAEFF08] text-[#E8E8F0]' : 'border-[#1A1A2E] text-[#55556A]'}`}>
+                🇷🇺 Русский
+              </button>
+            </div>
+          </SettingsSection>
+
+          {/* DISCIPLINE MODE */}
+          <SettingsSection
+            icon={<Target className="w-4 h-4 text-[#FF6B35]" />}
+            title={isRU ? 'Режим дисциплины' : 'Discipline Mode'}
+            subtitle={getMode() === 'hardcore' ? (isRU ? 'Жёсткий' : 'Hardcore') : (isRU ? 'Сбалансированный' : 'Balanced')}
+            open={activeSection === 'mode'}
+            onToggle={() => setActiveSection(activeSection === 'mode' ? null : 'mode')}
+          >
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => { setDisciplineMode('hardcore'); window.location.reload(); }}
+                className={`p-3 rounded-xl border text-left transition-all ${getMode() === 'hardcore' ? 'border-[#FF6B3530] bg-[#FF6B3508]' : 'border-[#1A1A2E]'}`}>
+                <div className="text-sm font-bold text-[#E8E8F0]">{isRU ? 'Жёсткий' : 'Hardcore'}</div>
+                <div className="text-[10px] text-[#3A3A4A]">{isRU ? 'Без компромиссов' : 'No mercy'}</div>
+              </button>
+              <button onClick={() => { setDisciplineMode('balanced'); window.location.reload(); }}
+                className={`p-3 rounded-xl border text-left transition-all ${getMode() === 'balanced' ? 'border-[#5DAEFF30] bg-[#5DAEFF08]' : 'border-[#1A1A2E]'}`}>
+                <div className="text-sm font-bold text-[#E8E8F0]">{isRU ? 'Сбалансированный' : 'Balanced'}</div>
+                <div className="text-[10px] text-[#3A3A4A]">{isRU ? 'Твёрдо, но спокойно' : 'Firm but calm'}</div>
+              </button>
+            </div>
+          </SettingsSection>
+
+          {/* DATA */}
+          <SettingsSection
+            icon={<HardDrive className="w-4 h-4 text-[#4ADE80]" />}
+            title={isRU ? 'Данные' : 'Data'}
+            subtitle={`${remindersCount} ${isRU ? 'квестов' : 'quests'}, ${notesCount} ${isRU ? 'заметок' : 'notes'}`}
+            open={activeSection === 'data'}
+            onToggle={() => setActiveSection(activeSection === 'data' ? null : 'data')}
+          >
+            <div className="space-y-2">
+              <button onClick={handleExport}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-[#0A0A0F] border border-[#1A1A2E] rounded-xl hover:border-[#2A2A3C] transition-all text-left">
+                <Download className="w-4 h-4 text-[#4ADE80]" />
+                <div>
+                  <div className="text-sm text-[#E8E8F0]">{isRU ? 'Экспорт данных' : 'Export Data'}</div>
+                  <div className="text-[10px] text-[#3A3A4A]">{isRU ? 'Скачать JSON файл' : 'Download JSON file'}</div>
+                </div>
+              </button>
+              <button onClick={handleImportClick}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-[#0A0A0F] border border-[#1A1A2E] rounded-xl hover:border-[#2A2A3C] transition-all text-left">
+                <Upload className="w-4 h-4 text-[#FF6B35]" />
+                <div>
+                  <div className="text-sm text-[#E8E8F0]">{isRU ? 'Импорт данных' : 'Import Data'}</div>
+                  <div className="text-[10px] text-[#3A3A4A]">{isRU ? 'Загрузить JSON файл' : 'Upload JSON file'}</div>
+                </div>
+              </button>
+              <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleFileChange} />
+            </div>
+          </SettingsSection>
+
+          {/* CONTACT */}
+          <SettingsSection
+            icon={<MessageSquare className="w-4 h-4 text-[#5DAEFF]" />}
+            title={isRU ? 'Связь' : 'Contact'}
+            subtitle="Telegram"
+            open={activeSection === 'contact'}
+            onToggle={() => setActiveSection(activeSection === 'contact' ? null : 'contact')}
+          >
+            <button onClick={() => openTelegram('generic', 'settings')}
+              className="w-full flex items-center gap-3 px-4 py-3 bg-[#0A0A0F] border border-[#1A1A2E] rounded-xl hover:border-[#5DAEFF20] transition-all text-left">
+              <MessageSquare className="w-4 h-4 text-[#5DAEFF]" />
+              <div>
+                <div className="text-sm text-[#E8E8F0]">{isRU ? 'Написать разработчику' : 'Message the creator'}</div>
+                <div className="text-[10px] text-[#3A3A4A]">Telegram @pfrfrpfr</div>
+              </div>
+            </button>
+          </SettingsSection>
+
+        </div>
+
+        {/* ═══ LOGOUT ═══ */}
+        <div className="mt-8 pt-6 border-t border-[#1A1A2E]">
+          <button onClick={onLogout}
+            className="flex items-center gap-2 px-4 py-2.5 text-xs text-[#FF4444] hover:bg-[#FF444408] rounded-lg transition-colors">
+            <LogOut className="w-4 h-4" />
+            {isRU ? 'Выйти' : 'Sign Out'}
+          </button>
+          <p className="text-[9px] text-[#2A2A3C] mt-2 px-1">Eclipse Valhalla v2.1.0</p>
+        </div>
       </div>
     </div>
   );
 };
+
+// ═══════════════════════════════════════════
+// COLLAPSIBLE SECTION
+// ═══════════════════════════════════════════
+
+const SettingsSection: React.FC<{
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}> = ({ icon, title, subtitle, open, onToggle, children }) => (
+  <div className="bg-[#0C0C14] border border-[#1A1A2E] rounded-xl overflow-hidden">
+    <button onClick={onToggle}
+      className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#12121A] transition-colors text-left">
+      {icon}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-[#E8E8F0]">{title}</div>
+        <div className="text-[10px] text-[#3A3A4A]">{subtitle}</div>
+      </div>
+      <ChevronRight className={`w-4 h-4 text-[#3A3A4A] transition-transform ${open ? 'rotate-90' : ''}`} />
+    </button>
+    {open && (
+      <div className="px-4 pb-4 pt-1 border-t border-[#1A1A2E]">
+        {children}
+      </div>
+    )}
+  </div>
+);
 
 export default SettingsView;
