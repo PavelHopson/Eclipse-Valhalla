@@ -48,9 +48,33 @@ const AppContent: React.FC = () => {
   const { t } = useLanguage();
 
   // -- Auth & User --
+  // Auto-guest: if no session, create instant guest so user lands directly in app
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('lumina_active_session');
-    return saved ? JSON.parse(saved) : null;
+    if (saved) return JSON.parse(saved);
+
+    // Auto-create guest user for instant access (no auth wall)
+    const guestUser: User = {
+      id: `guest_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      name: 'Warrior',
+      email: '',
+      plan: PlanTier.FREE,
+      xp: 0,
+      level: 1,
+      theme: 'blue' as any,
+      hasSeenOnboarding: false,
+    };
+    localStorage.setItem('lumina_active_session', JSON.stringify(guestUser));
+
+    // Also seed into users DB so storageService works
+    try {
+      const usersRaw = localStorage.getItem('lumina_users_db');
+      const users = usersRaw ? JSON.parse(usersRaw) : [];
+      users.push({ ...guestUser, password: '' });
+      localStorage.setItem('lumina_users_db', JSON.stringify(users));
+    } catch {}
+
+    return guestUser;
   });
 
   // -- App State --
