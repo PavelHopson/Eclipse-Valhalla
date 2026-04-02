@@ -1,19 +1,14 @@
 /**
- * Eclipse Valhalla — The Seal
+ * Eclipse Valhalla — The Seal (Official Logo)
  *
- * Sacred Execution Sigil.
- * Containment ring + watcher point.
+ * The Spear through the Broken Circle.
  *
- * The circle = the system's boundary. Focus. Control.
- * The line = the cut. Action. Decision. Execution.
- * The point = the watcher. The system sees.
+ * Circle = containment, the system's boundary, focus
+ * Break in circle = the gap, the vulnerability, the entry point
+ * Spear/blade = execution, the cut through chaos
+ * Point/sphere = the watcher, the observer at the tip
  *
- * Usage:
- *   <Seal />                    — default (sidebar, small)
- *   <Seal size={80} />          — Focus Mode (large, ritual)
- *   <Seal variant="complete" /> — Done state (seal of confirmation)
- *   <Seal variant="watching" /> — Idle/return (the system observes)
- *   <Seal animated />           — Ritual entrance animation
+ * Based on the official logo design.
  */
 
 import React from 'react';
@@ -35,8 +30,8 @@ export const Seal: React.FC<SealProps> = ({
   animated = false,
   className = '',
 }) => {
-  const strokeColor = color || getVariantColor(variant);
-  const strokeWidth = size < 40 ? 1.5 : size < 80 ? 2 : 2.5;
+  const c = color || getVariantColor(variant);
+  const sw = size < 40 ? 2 : size < 80 ? 2.5 : 3;
 
   return (
     <svg
@@ -47,67 +42,96 @@ export const Seal: React.FC<SealProps> = ({
       className={`${animated ? 'seal-enter' : ''} ${className}`}
       style={{ display: 'inline-block' }}
     >
-      {/* Outer containment ring */}
-      <circle
-        cx="50" cy="50" r="44"
-        stroke={strokeColor}
-        strokeWidth={strokeWidth}
-        opacity={variant === 'broken' ? 0.3 : 0.6}
-        strokeDasharray={variant === 'broken' ? '8 6' : 'none'}
-      />
-
-      {/* Inner ring (subtle, structural) */}
-      <circle
-        cx="50" cy="50" r="32"
-        stroke={strokeColor}
-        strokeWidth={strokeWidth * 0.5}
-        opacity={0.15}
-      />
-
-      {/* The Cut — vertical execution line */}
-      {variant !== 'broken' && (
-        <line
-          x1="50" y1="20" x2="50" y2="80"
-          stroke={strokeColor}
-          strokeWidth={strokeWidth}
-          opacity={variant === 'complete' ? 0.8 : 0.4}
+      {/* ═══ THE CIRCLE — containment ring, broken at top ═══ */}
+      {variant === 'broken' ? (
+        // Broken: dashed, faded
+        <circle cx="50" cy="50" r="38" stroke={c} strokeWidth={sw} opacity={0.25} strokeDasharray="6 5" />
+      ) : (
+        // Open circle — gap at top where the spear enters
+        <path
+          d={describeArc(50, 50, 38, 25, 335)}
+          stroke={c}
+          strokeWidth={sw}
           strokeLinecap="round"
+          opacity={0.85}
         />
       )}
 
-      {/* The Watcher — offset point */}
-      {(variant === 'default' || variant === 'watching') && (
+      {/* ═══ INNER ARC — subtle structural depth ═══ */}
+      {variant !== 'broken' && (
+        <path
+          d={describeArc(50, 50, 26, 40, 320)}
+          stroke={c}
+          strokeWidth={sw * 0.4}
+          strokeLinecap="round"
+          opacity={0.12}
+        />
+      )}
+
+      {/* ═══ THE SPEAR — vertical execution blade ═══ */}
+      {variant !== 'broken' && (
+        <path
+          d="M50 8 L50 92 M48 8 L50 2 L52 8"
+          stroke={c}
+          strokeWidth={sw * 0.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={variant === 'complete' ? 0.95 : 0.7}
+          fill="none"
+        />
+      )}
+
+      {/* ═══ THE WATCHER — sphere on the spear ═══ */}
+      {variant !== 'broken' && variant !== 'complete' && (
         <circle
-          cx="50" cy="38"
+          cx="50" cy="32"
           r={size < 40 ? 2.5 : 3.5}
-          fill={strokeColor}
-          opacity={variant === 'watching' ? 0.8 : 0.5}
+          fill={c}
+          opacity={variant === 'watching' ? 0.9 : 0.6}
         />
       )}
 
-      {/* Complete: checkmark-like cross at center */}
+      {/* ═══ COMPLETE — the point becomes the seal mark ═══ */}
       {variant === 'complete' && (
-        <>
-          <line x1="40" y1="50" x2="48" y2="58" stroke={strokeColor} strokeWidth={strokeWidth * 1.2} strokeLinecap="round" opacity={0.9} />
-          <line x1="48" y1="58" x2="62" y2="42" stroke={strokeColor} strokeWidth={strokeWidth * 1.2} strokeLinecap="round" opacity={0.9} />
-        </>
+        <circle
+          cx="50" cy="50"
+          r={size < 40 ? 3 : 4}
+          fill={c}
+          opacity={0.9}
+        />
       )}
 
-      {/* Broken: scattered fragments */}
+      {/* ═══ BROKEN — scattered fragments ═══ */}
       {variant === 'broken' && (
         <>
-          <line x1="35" y1="35" x2="45" y2="45" stroke={strokeColor} strokeWidth={strokeWidth} opacity={0.3} strokeLinecap="round" />
-          <line x1="55" y1="55" x2="65" y2="65" stroke={strokeColor} strokeWidth={strokeWidth} opacity={0.3} strokeLinecap="round" />
+          <line x1="50" y1="30" x2="50" y2="70" stroke={c} strokeWidth={sw * 0.6} opacity={0.2} strokeLinecap="round" strokeDasharray="4 6" />
+          <circle cx="50" cy="50" r="2" fill={c} opacity={0.15} />
         </>
       )}
     </svg>
   );
 };
 
+// ═══════════════════════════════════════════
+// SVG ARC HELPER
+// ═══════════════════════════════════════════
+
+function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number): string {
+  const start = polarToCartesian(x, y, radius, endAngle);
+  const end = polarToCartesian(x, y, radius, startAngle);
+  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+  return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
+}
+
+function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
+  const rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
 function getVariantColor(variant: SealVariant): string {
   switch (variant) {
     case 'complete': return '#3DD68C';
-    case 'watching': return '#5DA8FF';
+    case 'watching': return '#EAEAF2';
     case 'broken':   return '#E03030';
     default:         return '#EAEAF2';
   }
