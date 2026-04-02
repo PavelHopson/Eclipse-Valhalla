@@ -16,19 +16,19 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       title: t('onboard.s1_title'),
       desc: t('onboard.s1_desc'),
       icon: Star,
-      color: 'text-amber-500 bg-amber-100'
+      color: 'text-[#FBBF24] bg-[#FBBF24]/10'
     },
     {
       title: t('onboard.s2_title'),
       desc: t('onboard.s2_desc'),
       icon: Zap,
-      color: 'text-blue-500 bg-blue-100'
+      color: 'text-[#5DAEFF] bg-[#5DAEFF]/10'
     },
     {
       title: t('onboard.s3_title'),
       desc: t('onboard.s3_desc'),
       icon: Calendar,
-      color: 'text-green-500 bg-green-100'
+      color: 'text-[#4ADE80] bg-[#4ADE80]/10'
     }
   ];
 
@@ -41,11 +41,11 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
+    <div className="fixed inset-0 z-[100] bg-[#1A1A26] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-12">
            {slides.map((_, i) => (
-             <div key={i} className={`h-1.5 w-full mx-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-800'}`}></div>
+             <div key={i} className={`h-1.5 w-full mx-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-[#5DAEFF]' : 'bg-[#12121A]'}`}></div>
            ))}
         </div>
 
@@ -53,19 +53,19 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
            <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-6 ${slides[step].color} shadow-xl`}>
               {React.createElement(slides[step].icon, { className: "w-12 h-12" })}
            </div>
-           <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">{slides[step].title}</h2>
-           <p className="text-slate-500 dark:text-slate-400 text-lg">{slides[step].desc}</p>
+           <h2 className="text-3xl font-bold text-[#E8E8F0] mb-4">{slides[step].title}</h2>
+           <p className="text-[#55556A] text-lg">{slides[step].desc}</p>
         </div>
 
         <button
           onClick={handleNext}
-          className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-lg shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full py-4 bg-[#5DAEFF] text-[#E8E8F0] rounded-2xl font-bold text-lg shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           {step === slides.length - 1 ? t('onboard.start') : t('onboard.next')}
           <ArrowRight className="w-5 h-5" />
         </button>
 
-        <button onClick={onComplete} className="mt-6 text-slate-400 font-medium text-sm hover:text-slate-600">{t('onboard.skip')}</button>
+        <button onClick={onComplete} className="mt-6 text-[#55556A] font-medium text-sm hover:text-[#8888A0]">{t('onboard.skip')}</button>
       </div>
     </div>
   );

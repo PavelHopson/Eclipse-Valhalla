@@ -134,7 +134,7 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
 
   return (
     <div
-        className="h-full flex flex-col relative overflow-hidden bg-slate-50 touch-none"
+        className="h-full flex flex-col relative overflow-hidden bg-[#1A1A26] touch-none"
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
     >
@@ -142,20 +142,20 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
 
       {/* Toolbar */}
-      <div className="p-4 flex justify-between items-center bg-white/90 backdrop-blur border-b border-slate-200 z-10 shadow-sm">
+      <div className="p-4 flex justify-between items-center bg-[#1A1A26]/90 backdrop-blur border-b border-[#2A2A3C] z-10 shadow-sm">
         <div>
-            <h2 className="text-xl font-bold text-slate-800">{t('notes.title')}</h2>
-            <p className="text-xs text-slate-400">{t('notes.subtitle')}</p>
+            <h2 className="text-xl font-bold text-[#E8E8F0]">{t('notes.title')}</h2>
+            <p className="text-xs text-[#55556A]">{t('notes.subtitle')}</p>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={clearAll}
-            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-2 text-[#55556A] hover:text-[#FF4444] hover:bg-[#FF4444]/10 rounded-lg transition-colors"
             title={t('notes.clear')}
           >
             <Eraser className="w-5 h-5" />
           </button>
-          <div className="h-8 w-px bg-slate-200 mx-2"></div>
+          <div className="h-8 w-px bg-[#2A2A3C] mx-2"></div>
           <div className="flex gap-2">
              {COLORS.map((c, i) => (
                <button
@@ -174,11 +174,11 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
         {notes.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none">
             <div className="text-center">
-              <div className="w-32 h-32 border-4 border-dashed border-slate-300 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                 <Plus className="w-12 h-12 text-slate-300" />
+              <div className="w-32 h-32 border-4 border-dashed border-[#55556A] rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                 <Plus className="w-12 h-12 text-[#55556A]" />
               </div>
-              <p className="text-xl font-bold text-slate-400">{t('notes.empty_title')}</p>
-              <p className="text-slate-400 mt-2">{t('notes.empty_desc')}</p>
+              <p className="text-xl font-bold text-[#55556A]">{t('notes.empty_title')}</p>
+              <p className="text-[#55556A] mt-2">{t('notes.empty_desc')}</p>
             </div>
           </div>
         )}
@@ -223,13 +223,13 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity relative z-10">
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleMinimize(note.id); }}
-                  className="p-1 text-black/40 hover:text-slate-700 hover:bg-white/50 rounded"
+                  className="p-1 text-[#55556A] hover:text-[#E8E8F0] hover:bg-[#E8E8F0]/10 rounded"
                 >
                   {note.isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); removeNote(note.id); }}
-                  className="p-1 text-black/40 hover:text-red-600 hover:bg-white/50 rounded"
+                  className="p-1 text-[#55556A] hover:text-[#FF4444] hover:bg-[#E8E8F0]/10 rounded"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -239,7 +239,7 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
             {/* Content */}
             {!note.isMinimized && (
               <textarea
-                className="flex-1 bg-transparent p-4 outline-none resize-none text-slate-800 font-medium leading-relaxed text-sm placeholder:text-black/20 font-handwriting"
+                className="flex-1 bg-transparent p-4 outline-none resize-none text-[#E8E8F0] font-medium leading-relaxed text-sm placeholder:text-[#3A3A4A] font-handwriting"
                 value={note.content}
                 onChange={(e) => updateNoteContent(note.id, e.target.value)}
                 placeholder={t('notes.placeholder')}

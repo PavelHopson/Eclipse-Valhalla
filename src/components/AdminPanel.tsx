@@ -131,41 +131,41 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
-          { label: t('admin.metric_revenue'), value: `$0.00`, icon: BarChart3, color: 'text-green-600', bg: 'bg-green-100' },
-          { label: t('admin.metric_users'), value: dbUsers.length.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-          { label: t('admin.metric_records'), value: reminders.length + notes.length, icon: Database, color: 'text-purple-600', bg: 'bg-purple-100' },
-          { label: t('admin.metric_storage'), value: `${(storageUsage / 1024).toFixed(2)} KB`, icon: HardDrive, color: 'text-orange-600', bg: 'bg-orange-100' },
+          { label: t('admin.metric_revenue'), value: `$0.00`, icon: BarChart3, color: 'text-[#4ADE80]', bg: 'bg-[#4ADE80]/10' },
+          { label: t('admin.metric_users'), value: dbUsers.length.toString(), icon: Users, color: 'text-[#5DAEFF]', bg: 'bg-[#5DAEFF]/10' },
+          { label: t('admin.metric_records'), value: reminders.length + notes.length, icon: Database, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+          { label: t('admin.metric_storage'), value: `${(storageUsage / 1024).toFixed(2)} KB`, icon: HardDrive, color: 'text-orange-400', bg: 'bg-orange-400/10' },
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div key={idx} className="bg-[#1A1A26] p-4 rounded-xl border border-[#2A2A3C] shadow-sm flex items-center gap-4">
             <div className={`p-3 rounded-lg ${stat.bg} ${stat.color}`}>
               <stat.icon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
-              <p className="text-xl font-bold text-slate-900">{stat.value}</p>
+              <p className="text-xs font-bold text-[#55556A] uppercase tracking-wider">{stat.label}</p>
+              <p className="text-xl font-bold text-[#E8E8F0]">{stat.value}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Activity Chart */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h3 className="font-bold text-slate-800 mb-4">{t('admin.chart_activity')}</h3>
+      <div className="bg-[#1A1A26] p-6 rounded-xl border border-[#2A2A3C] shadow-sm">
+          <h3 className="font-bold text-[#E8E8F0] mb-4">{t('admin.chart_activity')}</h3>
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={activityData}>
                     <defs>
                         <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#5DAEFF" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#5DAEFF" stopOpacity={0}/>
                         </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2A2A3C" />
+                    <XAxis dataKey="name" stroke="#55556A" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#55556A" fontSize={12} tickLine={false} axisLine={false} />
                     <Tooltip />
-                    <Area type="monotone" dataKey="active" stroke="#3b82f6" fillOpacity={1} fill="url(#colorActive)" strokeWidth={2} />
-                    <Area type="monotone" dataKey="completed" stroke="#10b981" fill="transparent" strokeWidth={2} strokeDasharray="5 5" />
+                    <Area type="monotone" dataKey="active" stroke="#5DAEFF" fillOpacity={1} fill="url(#colorActive)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="completed" stroke="#4ADE80" fill="transparent" strokeWidth={2} strokeDasharray="5 5" />
                 </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -173,45 +173,45 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* System Health */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <RefreshCw className="w-5 h-5 text-slate-400" />
+        <div className="bg-[#1A1A26] p-6 rounded-xl border border-[#2A2A3C] shadow-sm">
+          <h3 className="font-bold text-[#E8E8F0] mb-4 flex items-center gap-2">
+            <RefreshCw className="w-5 h-5 text-[#55556A]" />
             {t('admin.health_title')}
           </h3>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-slate-600">{t('admin.health_storage')}</span>
-                <span className="font-bold text-slate-800">{usagePercent.toFixed(2)}%</span>
+                <span className="text-[#8888A0]">{t('admin.health_storage')}</span>
+                <span className="font-bold text-[#E8E8F0]">{usagePercent.toFixed(2)}%</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full transition-all duration-1000" style={{ width: `${Math.max(usagePercent, 1)}%` }}></div>
+              <div className="w-full bg-[#12121A] rounded-full h-2">
+                <div className="bg-[#5DAEFF] h-2 rounded-full transition-all duration-1000" style={{ width: `${Math.max(usagePercent, 1)}%` }}></div>
               </div>
             </div>
-            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <span className="text-sm text-slate-600">{t('admin.health_api')}</span>
-              <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded uppercase">{t('admin.status_operational')}</span>
+            <div className="flex items-center justify-between p-3 bg-[#12121A] rounded-lg border border-[#2A2A3C]">
+              <span className="text-sm text-[#8888A0]">{t('admin.health_api')}</span>
+              <span className="px-2 py-1 bg-[#4ADE80]/10 text-[#4ADE80] text-xs font-bold rounded uppercase">{t('admin.status_operational')}</span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <span className="text-sm text-slate-600">{t('admin.health_db')}</span>
-              <span className="text-sm font-mono text-slate-500">Local Storage DB</span>
+            <div className="flex items-center justify-between p-3 bg-[#12121A] rounded-lg border border-[#2A2A3C]">
+              <span className="text-sm text-[#8888A0]">{t('admin.health_db')}</span>
+              <span className="text-sm font-mono text-[#55556A]">Local Storage DB</span>
             </div>
           </div>
         </div>
 
         {/* Danger Zone */}
-        <div className="bg-white p-6 rounded-xl border border-red-100 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-full -mr-10 -mt-10"></div>
-          <h3 className="font-bold text-red-700 mb-4 flex items-center gap-2 relative z-10">
+        <div className="bg-[#1A1A26] p-6 rounded-xl border border-[#FF4444]/20 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-[#FF4444]/5 rounded-full -mr-10 -mt-10"></div>
+          <h3 className="font-bold text-[#FF4444] mb-4 flex items-center gap-2 relative z-10">
             <AlertTriangle className="w-5 h-5" />
             {t('admin.danger_title')}
           </h3>
-          <p className="text-sm text-slate-600 mb-6 relative z-10">
+          <p className="text-sm text-[#8888A0] mb-6 relative z-10">
             {t('admin.danger_desc')}
           </p>
           <button
             onClick={handleFactoryReset}
-            className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 relative z-10"
+            className="w-full py-2 bg-[#FF4444]/10 hover:bg-[#FF4444]/20 text-[#FF4444] border border-[#FF4444]/30 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 relative z-10"
           >
             <Trash2 className="w-4 h-4" />
             {t('admin.btn_reset')}
@@ -222,16 +222,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
   );
 
   const renderUsers = () => (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
-      <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-        <h3 className="font-bold text-slate-800">{t('admin.users_title')}</h3>
+    <div className="bg-[#1A1A26] rounded-xl border border-[#2A2A3C] shadow-sm overflow-hidden animate-in fade-in duration-500">
+      <div className="p-4 border-b border-[#2A2A3C] flex justify-between items-center bg-[#12121A]">
+        <h3 className="font-bold text-[#E8E8F0]">{t('admin.users_title')}</h3>
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input type="text" placeholder={t('admin.search_placeholder')} className="pl-9 pr-4 py-1.5 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-500" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#55556A]" />
+          <input type="text" placeholder={t('admin.search_placeholder')} className="pl-9 pr-4 py-1.5 text-sm border border-[#2A2A3C] bg-[#1A1A26] text-[#E8E8F0] rounded-lg outline-none focus:border-[#5DAEFF]" />
         </div>
       </div>
       <table className="w-full text-sm text-left">
-        <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+        <thead className="bg-[#12121A] text-[#55556A] font-medium border-b border-[#2A2A3C]">
           <tr>
             <th className="px-4 py-3">{t('admin.tbl_id')}</th>
             <th className="px-4 py-3">Name / Email</th>
@@ -241,20 +241,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
         </thead>
         <tbody>
           {dbUsers.map((u, idx) => (
-            <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50">
-              <td className="px-4 py-3 font-mono text-slate-500 text-xs">{u.id.substring(0,8)}...</td>
+            <tr key={u.id} className="border-b border-[#2A2A3C] hover:bg-[#1F1F2B]">
+              <td className="px-4 py-3 font-mono text-[#55556A] text-xs">{u.id.substring(0,8)}...</td>
               <td className="px-4 py-3">
-                  <div className="font-medium text-slate-800">{u.name}</div>
-                  <div className="text-xs text-slate-400">{u.email}</div>
+                  <div className="font-medium text-[#E8E8F0]">{u.name}</div>
+                  <div className="text-xs text-[#55556A]">{u.email}</div>
               </td>
-              <td className="px-4 py-3"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700 uppercase">{u.plan}</span></td>
+              <td className="px-4 py-3"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#2A2A3C] text-[#8888A0] uppercase">{u.plan}</span></td>
               <td className="px-4 py-3">
-                  <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-bold">User</span>
+                  <span className="px-2 py-0.5 rounded-full bg-[#4ADE80]/10 text-[#4ADE80] text-xs font-bold">User</span>
               </td>
             </tr>
           ))}
           {dbUsers.length === 0 && (
-              <tr><td colSpan={4} className="p-8 text-center text-slate-400">No users found</td></tr>
+              <tr><td colSpan={4} className="p-8 text-center text-[#55556A]">No users found</td></tr>
           )}
         </tbody>
       </table>
@@ -263,13 +263,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
 
   const renderContent = () => (
     <div className="space-y-6 animate-in fade-in duration-500">
-       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
-          <h3 className="font-bold text-slate-800">{t('admin.registry_title')} (Current Session)</h3>
+       <div className="bg-[#1A1A26] rounded-xl border border-[#2A2A3C] shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-[#2A2A3C] bg-[#12121A]">
+          <h3 className="font-bold text-[#E8E8F0]">{t('admin.registry_title')} (Current Session)</h3>
         </div>
         <div className="max-h-[400px] overflow-y-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200 sticky top-0">
+            <thead className="bg-[#12121A] text-[#55556A] font-medium border-b border-[#2A2A3C] sticky top-0">
               <tr>
                 <th className="px-4 py-3">ID</th>
                 <th className="px-4 py-3">{t('admin.tbl_task_title')}</th>
@@ -279,14 +279,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
             </thead>
             <tbody>
               {reminders.map(r => (
-                <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-slate-400">{r.id}</td>
-                  <td className="px-4 py-3 font-medium text-slate-700">{r.title}</td>
-                  <td className="px-4 py-3 text-slate-500">{new Date(r.dueDateTime).toLocaleDateString()}</td>
+                <tr key={r.id} className="border-b border-[#2A2A3C] hover:bg-[#1F1F2B] transition-colors">
+                  <td className="px-4 py-3 font-mono text-xs text-[#55556A]">{r.id}</td>
+                  <td className="px-4 py-3 font-medium text-[#8888A0]">{r.title}</td>
+                  <td className="px-4 py-3 text-[#55556A]">{new Date(r.dueDateTime).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDeleteTask(r.id)}
-                      className="text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors" title="Force Delete"
+                      className="text-[#FF4444] hover:bg-[#FF4444]/10 p-1.5 rounded transition-colors" title="Force Delete"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -295,7 +295,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
               ))}
               {reminders.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400">{t('admin.no_tasks')}</td>
+                  <td colSpan={4} className="px-4 py-8 text-center text-[#55556A]">{t('admin.no_tasks')}</td>
                 </tr>
               )}
             </tbody>
@@ -307,28 +307,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
 
   const renderDiagnostics = () => (
       <div className="space-y-6 animate-in fade-in">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-[#1A1A26] p-6 rounded-xl border border-[#2A2A3C] shadow-sm">
               <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                      <Stethoscope className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-bold text-[#E8E8F0] flex items-center gap-2">
+                      <Stethoscope className="w-5 h-5 text-[#5DAEFF]" />
                       System Diagnostics
                   </h3>
-                  <button onClick={runDiagnostics} className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700">
+                  <button onClick={runDiagnostics} className="px-4 py-2 bg-[#5DAEFF] text-[#0A0A0F] text-sm font-bold rounded-lg hover:bg-[#5DAEFF]/80">
                       Run Tests
                   </button>
               </div>
 
               <div className="space-y-3">
-                  {testResults.length === 0 && <div className="text-center py-8 text-slate-400">Run tests to check system integrity.</div>}
+                  {testResults.length === 0 && <div className="text-center py-8 text-[#55556A]">Run tests to check system integrity.</div>}
                   {testResults.map((res, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                      <div key={i} className="flex items-center justify-between p-3 bg-[#12121A] rounded-lg border border-[#2A2A3C]">
                           <div className="flex items-center gap-3">
-                              {res.status === 'pass' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
-                              {res.status === 'fail' && <XCircle className="w-5 h-5 text-red-500" />}
-                              {res.status === 'pending' && <RefreshCw className="w-5 h-5 text-slate-400 animate-spin" />}
-                              <span className="font-medium text-slate-700">{res.name}</span>
+                              {res.status === 'pass' && <CheckCircle2 className="w-5 h-5 text-[#4ADE80]" />}
+                              {res.status === 'fail' && <XCircle className="w-5 h-5 text-[#FF4444]" />}
+                              {res.status === 'pending' && <RefreshCw className="w-5 h-5 text-[#55556A] animate-spin" />}
+                              <span className="font-medium text-[#8888A0]">{res.name}</span>
                           </div>
-                          <span className={`text-sm font-mono ${res.status === 'pass' ? 'text-green-600' : res.status === 'fail' ? 'text-red-600' : 'text-slate-400'}`}>
+                          <span className={`text-sm font-mono ${res.status === 'pass' ? 'text-[#4ADE80]' : res.status === 'fail' ? 'text-[#FF4444]' : 'text-[#55556A]'}`}>
                               {res.msg}
                           </span>
                       </div>
@@ -339,24 +339,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ reminders, notes, setReminders,
   );
 
   return (
-    <div className="p-8 h-full flex flex-col w-full overflow-y-auto bg-slate-100/50">
+    <div className="p-8 h-full flex flex-col w-full overflow-y-auto bg-[#12121A]/50">
       <div className="flex justify-between items-center mb-8">
         <div>
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <ShieldCheck className="w-8 h-8 text-blue-600" />
+            <h2 className="text-3xl font-bold text-[#E8E8F0] tracking-tight flex items-center gap-2">
+                <ShieldCheck className="w-8 h-8 text-[#5DAEFF]" />
                 {t('admin.title')}
             </h2>
-            <p className="text-slate-500 mt-1">{t('admin.subtitle')}</p>
+            <p className="text-[#55556A] mt-1">{t('admin.subtitle')}</p>
         </div>
-        <div className="flex bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+        <div className="flex bg-[#1A1A26] p-1 rounded-lg border border-[#2A2A3C] shadow-sm">
             {(['dashboard', 'users', 'content', 'diagnostics'] as const).map(tab => (
                 <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all capitalize ${
                         activeTab === tab
-                        ? 'bg-slate-800 text-white shadow-md'
-                        : 'text-slate-500 hover:bg-slate-50'
+                        ? 'bg-[#5DAEFF] text-[#0A0A0F] shadow-md'
+                        : 'text-[#55556A] hover:bg-[#1F1F2B]'
                     }`}
                 >
                     {getTabLabel(tab)}
