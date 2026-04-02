@@ -60,28 +60,72 @@
         color: #E8E8F0;
       }
 
-      /* Motion keyframes */
-      @keyframes eclipse-pulse {
-        0%, 100% { box-shadow: 0 0 20px rgba(93, 174, 255, 0.05); }
-        50% { box-shadow: 0 0 40px rgba(93, 174, 255, 0.12); }
+      /* ══ RITUAL MOTION SYSTEM ══ */
+
+      /* State: Active quest — cold inner light */
+      @keyframes state-active {
+        0%, 100% { box-shadow: inset 0 0 20px rgba(93,168,255,0.03), 0 0 0 1px rgba(93,168,255,0.06); }
+        50% { box-shadow: inset 0 0 30px rgba(93,168,255,0.06), 0 0 0 1px rgba(93,168,255,0.10); }
       }
-      @keyframes void-breathe {
-        0%, 100% { opacity: 0.3; }
-        50% { opacity: 0.6; }
+      .state-active { animation: state-active 4s ease-in-out infinite; }
+
+      /* State: Overdue — heartbeat blood glow */
+      @keyframes state-overdue {
+        0%, 100% { box-shadow: inset 0 0 15px rgba(224,48,48,0.04), 0 0 0 1px rgba(224,48,48,0.08); }
+        50% { box-shadow: inset 0 0 25px rgba(224,48,48,0.08), 0 0 0 1px rgba(224,48,48,0.15); }
       }
-      @keyframes quest-complete {
-        0% { opacity: 1; transform: scale(1); filter: blur(0); }
-        50% { opacity: 0.5; transform: scale(0.98); filter: blur(1px); }
-        100% { opacity: 0; transform: scale(0.95); filter: blur(4px); }
+      .state-overdue { animation: state-overdue 2.5s ease-in-out infinite; }
+
+      /* State: Completed — dissolve into void */
+      @keyframes state-complete {
+        0% { opacity: 1; transform: scale(1); }
+        40% { opacity: 1; transform: scale(1.015); }
+        100% { opacity: 0; transform: scale(0.97); filter: blur(2px); }
       }
-      @keyframes critical-glow {
-        0%, 100% { box-shadow: 0 0 15px rgba(139, 0, 0, 0.15); }
-        50% { box-shadow: 0 0 30px rgba(139, 0, 0, 0.3); }
+      .state-complete { animation: state-complete 600ms cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+
+      /* Impact: Done button press */
+      @keyframes impact-done {
+        0% { transform: scale(1); }
+        15% { transform: scale(0.96); }
+        40% { transform: scale(1.03); box-shadow: 0 0 30px rgba(61,214,140,0.15); }
+        100% { transform: scale(1); box-shadow: none; }
       }
-      .animate-eclipse-pulse { animation: eclipse-pulse 4s ease-in-out infinite; }
-      .animate-void-breathe { animation: void-breathe 6s ease-in-out infinite; }
-      .animate-quest-complete { animation: quest-complete 500ms cubic-bezier(0.7, 0, 0.3, 1) forwards; }
-      .animate-critical-glow { animation: critical-glow 2s ease-in-out infinite; }
+      .impact-done { animation: impact-done 400ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+      /* Focus: Ritual entrance — descend into void */
+      @keyframes ritual-enter {
+        0% { opacity: 0; backdrop-filter: blur(0); }
+        30% { opacity: 0.5; }
+        100% { opacity: 1; backdrop-filter: blur(4px); }
+      }
+      .ritual-enter { animation: ritual-enter 800ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+      /* Focus: Timer ring pulse */
+      @keyframes ring-pulse {
+        0%, 100% { filter: drop-shadow(0 0 4px rgba(93,168,255,0.1)); }
+        50% { filter: drop-shadow(0 0 12px rgba(93,168,255,0.2)); }
+      }
+      .ring-pulse { animation: ring-pulse 3s ease-in-out infinite; }
+
+      /* Return: Judgment descend */
+      @keyframes judgment-enter {
+        0% { opacity: 0; transform: translateY(-20px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      .judgment-enter { animation: judgment-enter 600ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+      /* Micro: System idle — barely perceptible */
+      @keyframes system-idle {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.97; }
+      }
+      .system-idle { animation: system-idle 8s ease-in-out infinite; }
+
+      /* Legacy compat */
+      .animate-eclipse-pulse { animation: state-active 4s ease-in-out infinite; }
+      .animate-quest-complete { animation: state-complete 600ms cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+      .animate-critical-glow { animation: state-overdue 2.5s ease-in-out infinite; }
 
       /* Input color scheme for date/time inputs */
       input[type="datetime-local"],

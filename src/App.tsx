@@ -401,10 +401,10 @@ const AppContent: React.FC = () => {
                       const isOverdue = new Date(r.dueDateTime) < new Date();
                       return (
                         <button key={r.id} onClick={() => setFocusQuestId(r.id)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all hover:bg-[#12121A] ${
-                            isOverdue ? 'border-[#FF444420] bg-[#FF444406]' : 'border-[#1E1E2E] bg-[#0C0C14]'
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all hover:bg-[#14141F] ${
+                            isOverdue ? 'border-[#E0303012] bg-[#E0303005] state-overdue' : 'border-[#1E1E3050] bg-[#0F0F18] state-active'
                           }`}>
-                          <div className={`w-2 h-2 rounded-full shrink-0 ${isOverdue ? 'bg-[#FF4444] animate-pulse' : 'bg-[#5DAEFF]'}`} />
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${isOverdue ? 'bg-[#E03030]' : 'bg-[#5DA8FF]'}`} />
                           <span className={`text-sm font-medium flex-1 truncate ${isOverdue ? 'text-[#FF4444]' : 'text-[#EAEAF2]'}`}>{r.title}</span>
                           <span className="text-[10px] text-[#3A3A4A]">Focus →</span>
                         </button>

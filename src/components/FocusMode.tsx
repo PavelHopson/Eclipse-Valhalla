@@ -117,16 +117,16 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
   // ═══ COMPLETION STATE (HOLD + EMOTION + NEXT) ═══
   if (phase === 'completed') {
     return (
-      <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center">
+      <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center ritual-enter">
         <button onClick={onClose} className="absolute top-4 right-4 p-2 text-[#2A2A3C] hover:text-[#55556A]">
           <X className="w-5 h-5" />
         </button>
 
-        <div className="text-center px-6 max-w-md animate-in fade-in duration-700">
-          {/* Success icon */}
-          <div className="w-20 h-20 rounded-full bg-[#4ADE8008] border border-[#4ADE8020] flex items-center justify-center mx-auto mb-8"
-            style={{ boxShadow: '0 0 40px rgba(74,222,128,0.08)' }}>
-            <Check className="w-10 h-10 text-[#4ADE80]" />
+        <div className="text-center px-6 max-w-md">
+          {/* Completion seal — symbolic circle */}
+          <div className="impact-done w-20 h-20 rounded-full bg-[#3DD68C06] border border-[#3DD68C15] flex items-center justify-center mx-auto mb-8"
+            style={{ boxShadow: '0 0 40px rgba(61,214,140,0.06)' }}>
+            <Check className="w-10 h-10 text-[#3DD68C]" />
           </div>
 
           {/* Emotional message */}
@@ -194,23 +194,25 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
 
   // ═══ FOCUS STATE ═══
   return (
-    <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center">
-      <button onClick={onClose} className="absolute top-4 right-4 p-2 text-[#2A2A3C] hover:text-[#55556A]">
+    <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center ritual-enter">
+      <button onClick={onClose} className="absolute top-4 right-4 p-2 text-[#3D3D52] hover:text-[#5E5E78]">
         <X className="w-5 h-5" />
       </button>
 
       {/* Quest title */}
       <div className="text-center mb-12 px-6">
-        <div className="text-[10px] text-[#3A3A4A] uppercase tracking-[0.3em] mb-3">Current Objective</div>
+        {/* Symbolic: thin circle above title — focus containment ring */}
+        <div className="w-6 h-6 rounded-full border border-[#5DA8FF15] mx-auto mb-4 system-idle" />
+        <div className="text-[9px] text-[#3D3D52] uppercase tracking-[0.35em] mb-3 font-medium">Current Objective</div>
         <h1 className="text-xl md:text-2xl font-bold text-[#E8E8F0] max-w-lg leading-tight">{quest.title}</h1>
       </div>
 
-      {/* Timer */}
-      <div className="relative mb-12">
+      {/* Timer — ritual ring */}
+      <div className="relative mb-12 ring-pulse">
         <svg className="w-56 h-56 -rotate-90" viewBox="0 0 200 200">
-          <circle cx="100" cy="100" r="90" fill="none" stroke="#1A1A2E" strokeWidth="3" />
+          <circle cx="100" cy="100" r="90" fill="none" stroke="#14141F" strokeWidth="2" />
           <circle cx="100" cy="100" r="90" fill="none"
-            stroke={secondsLeft === 0 ? '#4ADE80' : '#5DAEFF'}
+            stroke={secondsLeft === 0 ? '#3DD68C' : '#5DA8FF'}
             strokeWidth="3" strokeLinecap="round"
             strokeDasharray={`${2 * Math.PI * 90}`}
             strokeDashoffset={`${2 * Math.PI * 90 * (1 - progress)}`}

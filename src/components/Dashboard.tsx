@@ -75,9 +75,9 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
               const isOD = new Date(r.dueDateTime) < new Date();
               return (
                 <div key={r.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
-                  isOD ? 'border-[#FF444425] bg-[#FF444406]' : 'border-[#FBBF2420] bg-[#FBBF2406]'
+                  isOD ? 'border-[#E0303015] bg-[#E0303006] state-overdue' : 'border-[#E8A82015] bg-[#E8A82006] state-active'
                 }`}>
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${isOD ? 'bg-[#FF4444] animate-pulse' : 'bg-[#FBBF24]'}`} />
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${isOD ? 'bg-[#E03030]' : 'bg-[#E8A820]'}`} />
                   <span className={`text-sm font-medium flex-1 truncate ${isOD ? 'text-[#FF4444]' : 'text-[#E8E8F0]'}`}>{r.title}</span>
                   <span className="text-[9px] text-[#55556A]">
                     {isOD ? (language === 'ru' ? 'Просрочено' : 'Overdue') : 'High'}
@@ -103,8 +103,8 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
           </div>
           <div className="space-y-1.5">
             {pending.filter(r => !overdue.includes(r) && r.priority !== 'High').slice(0, 5).map(r => (
-              <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 bg-[#0F0F18] border border-[#1E1E3050] rounded-xl hover:border-[#2A2A3C] transition-all">
-                <div className="w-2 h-2 rounded-full bg-[#5DAEFF] shrink-0" />
+              <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 bg-[#0F0F18] border border-[#1E1E3050] rounded-xl hover:border-[#2A2A3C] transition-all state-active">
+                <div className="w-2 h-2 rounded-full bg-[#5DA8FF] shrink-0" />
                 <span className="text-sm text-[#8888A0] flex-1 truncate">{r.title}</span>
                 <Clock className="w-3 h-3 text-[#3A3A4A]" />
               </div>
