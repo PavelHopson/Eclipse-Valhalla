@@ -18,5 +18,7 @@ ios/
 .vscode/
 .idea/
 .claude/
+.netlify/
+.vercel/
 _old/
 _organizer/
