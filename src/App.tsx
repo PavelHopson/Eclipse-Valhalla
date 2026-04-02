@@ -602,10 +602,35 @@ const AppContent: React.FC = () => {
   );
 };
 
+class AppErrorBoundary extends React.Component<{children: React.ReactNode}, {error: Error | null}> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: any) {
+    console.error('[Eclipse Valhalla] Fatal error:', error, info?.componentStack);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{background:'#0A0A0F',color:'#E8E8F0',height:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',fontFamily:'Inter,sans-serif',padding:32}}>
+          <h1 style={{fontSize:24,fontWeight:'bold',marginBottom:8}}>Eclipse Valhalla</h1>
+          <p style={{color:'#FF4444',marginBottom:16}}>System error. Resetting...</p>
+          <p style={{color:'#55556A',fontSize:12,marginBottom:24,maxWidth:400,textAlign:'center'}}>{String(this.state.error?.message || 'Unknown error')}</p>
+          <button onClick={() => { localStorage.clear(); window.location.reload(); }} style={{background:'#5DAEFF',color:'#0A0A0F',border:'none',padding:'12px 24px',borderRadius:12,fontWeight:'bold',cursor:'pointer'}}>
+            Reset & Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const App = () => (
-  <LanguageProvider>
-    <AppContent />
-  </LanguageProvider>
+  <AppErrorBoundary>
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  </AppErrorBoundary>
 );
 
 export default App;
