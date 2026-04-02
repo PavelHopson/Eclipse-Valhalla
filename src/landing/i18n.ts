@@ -24,18 +24,18 @@ const STRINGS: Record<LandingLang, Record<string, string>> = {
 
     // Hero
     'hero.title': 'Eclipse Valhalla',
-    'hero.tagline': 'Control your chaos.',
-    'hero.sub': 'Personal operating system for execution, intelligence, and discipline.',
-    'hero.cta': 'Enter Valhalla',
-    'hero.secondary': 'Learn more',
+    'hero.tagline': 'The app that doesn\'t let you quit.',
+    'hero.sub': 'Create a task. It follows you. Ignoring it makes it worse. Completing it earns XP. AI plans your day. You get disciplined or get punished.',
+    'hero.cta': 'Try Free — No signup',
+    'hero.secondary': 'See how it works',
 
     // Problem
-    'problem.title': 'The problem is not productivity.',
-    'problem.sub': 'It\'s the lack of a system.',
-    'problem.p1': 'Task managers don\'t enforce discipline.',
-    'problem.p2': 'AI assistants don\'t know your objectives.',
-    'problem.p3': 'News feeds don\'t connect to action.',
-    'problem.p4': 'Nothing ties signal to execution.',
+    'problem.title': 'Your to-do app doesn\'t care if you fail.',
+    'problem.sub': 'Eclipse Valhalla does.',
+    'problem.p1': 'Tasks sit in lists forever. Nothing happens.',
+    'problem.p2': 'You procrastinate. No consequences.',
+    'problem.p3': 'You break streaks. Nobody notices.',
+    'problem.p4': 'Your "productivity system" is a graveyard of good intentions.',
 
     // Solution
     'solution.title': 'Four systems. One command center.',
@@ -83,9 +83,9 @@ const STRINGS: Record<LandingLang, Record<string, string>> = {
     'pricing.cta.pro': 'Enter Valhalla Pro',
 
     // CTA
-    'cta.title': 'Discipline through darkness.',
-    'cta.sub': 'Stop managing tasks. Start commanding your existence.',
-    'cta.btn': 'Enter Eclipse Valhalla',
+    'cta.title': 'Your first quest in 30 seconds.',
+    'cta.sub': 'No signup. No credit card. Create a task, watch it follow you.',
+    'cta.btn': 'Start Free Now',
 
     // Footer
     'footer.copy': '© 2025 Eclipse Valhalla',
@@ -97,17 +97,17 @@ const STRINGS: Record<LandingLang, Record<string, string>> = {
     'nav.launch': 'Открыть',
 
     'hero.title': 'Eclipse Valhalla',
-    'hero.tagline': 'Контролируй хаос.',
-    'hero.sub': 'Персональная операционная система для действий, разведки и дисциплины.',
-    'hero.cta': 'Войти в Вальхаллу',
-    'hero.secondary': 'Подробнее',
+    'hero.tagline': 'Приложение, которое не даёт тебе сдаться.',
+    'hero.sub': 'Создай задачу. Она следует за тобой. Игнорирование делает хуже. Выполнение даёт XP. AI планирует день. Ты становишься дисциплинированным — или получаешь штраф.',
+    'hero.cta': 'Попробовать бесплатно',
+    'hero.secondary': 'Как это работает',
 
-    'problem.title': 'Проблема не в продуктивности.',
-    'problem.sub': 'Проблема в отсутствии системы.',
-    'problem.p1': 'Менеджеры задач не заставляют действовать.',
-    'problem.p2': 'AI-ассистенты не знают твоих целей.',
-    'problem.p3': 'Новостные ленты не связаны с действиями.',
-    'problem.p4': 'Ничто не соединяет информацию с исполнением.',
+    'problem.title': 'Твоему списку задач плевать, если ты провалишься.',
+    'problem.sub': 'Eclipse Valhalla — нет.',
+    'problem.p1': 'Задачи лежат в списках вечно. Ничего не происходит.',
+    'problem.p2': 'Ты прокрастинируешь. Без последствий.',
+    'problem.p3': 'Ты ломаешь стрики. Никто не замечает.',
+    'problem.p4': 'Твоя «система продуктивности» — кладбище добрых намерений.',
 
     'solution.title': 'Четыре системы. Один командный центр.',
     'solution.valhalla.name': 'Valhalla',
@@ -150,9 +150,9 @@ const STRINGS: Record<LandingLang, Record<string, string>> = {
     'pricing.cta.free': 'Начать бесплатно',
     'pricing.cta.pro': 'Войти в Valhalla Pro',
 
-    'cta.title': 'Дисциплина через тьму.',
-    'cta.sub': 'Хватит управлять задачами. Начни командовать своей жизнью.',
-    'cta.btn': 'Войти в Eclipse Valhalla',
+    'cta.title': 'Твой первый квест за 30 секунд.',
+    'cta.sub': 'Без регистрации. Без карты. Создай задачу — она начнёт тебя преследовать.',
+    'cta.btn': 'Начать бесплатно',
 
     'footer.copy': '© 2025 Eclipse Valhalla',
     'footer.built': 'Создано с контролируемой яростью.',

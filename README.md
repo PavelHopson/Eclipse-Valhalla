@@ -183,16 +183,26 @@ eclipse-valhalla/
 
 ## Roadmap
 
-- [x] Core quest system
-- [x] Design system + brand layer
-- [x] Widget overlay system
-- [x] Oracle AI integration
-- [x] Gamification (XP, levels, streaks)
-- [x] Electron desktop control
-- [x] Supabase backend foundation
-- [x] Auth + sync architecture
-- [x] Nexus intelligence pipeline
-- [x] Billing foundation
+### Done
+- [x] Core quest system with priority, categories, recurring
+- [x] Design system (tokens, theme, brand, motion, sigils)
+- [x] Widget overlay system (quest, focus, blocker)
+- [x] Oracle AI (planning, analysis, anti-procrastination)
+- [x] Gamification (XP, levels, streaks, discipline score)
+- [x] Electron desktop (overlay, tray, click-through, auto-update)
+- [x] Supabase backend (auth, repos, mappers, 14 tables)
+- [x] Cloud sync architecture (local-first + cloud)
+- [x] Nexus intelligence pipeline (8-stage, RSS/Telegram/Website)
+- [x] Billing foundation (plans, trial, feature gates)
+- [x] Landing page (bilingual EN/RU)
+- [x] Growth engine (onboarding, funnels, referrals, milestones)
+- [x] Mobile adaptation layer (Capacitor bridge, responsive)
+- [x] Push notifications (web + native + escalation)
+- [x] 19-doc documentation suite
+- [x] Installers (Win/Mac/Linux/mobile-ready)
+- [x] PMF tracking system
+
+### Next
 - [ ] Stripe payment integration
 - [ ] Real-time Supabase sync
 - [ ] Telegram bot ingestion
