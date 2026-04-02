@@ -12,6 +12,7 @@ import { Reminder } from '../types';
 import { X, Check, Pause, Play, RotateCcw, ArrowRight, Coffee } from 'lucide-react';
 import { getCompletionMessage, getIdentityMessage, getEscapeMessage, recordDailyCompletion, recordDailyEscape, getDailyStats, getProgressMessage } from '../services/disciplineMode';
 import { shouldShowCTA, getCTAConfig, openTelegram } from '../services/telegramCTA';
+import { getCompletionVoice, shouldBeSilent } from '../services/systemVoice';
 import { MessageSquare } from 'lucide-react';
 
 interface FocusModeProps {
@@ -32,6 +33,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
   const [completionMsg] = useState(() => getCompletionMessage());
   const [identityMsg, setIdentityMsg] = useState<string | null>(null);
   const [dailyProgress, setDailyProgress] = useState<string | null>(null);
+  const [systemVoice] = useState(() => shouldBeSilent() ? null : getCompletionVoice(false));
 
   const nextQuests = pendingQuests.filter(q => q.id !== quest.id).slice(0, 3);
 
@@ -130,8 +132,11 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
           </div>
 
           {/* Emotional message */}
-          <h2 className="text-xl md:text-2xl font-bold text-[#E8E8F0] mb-2">{completionMsg.line1}</h2>
-          <p className="text-sm text-[#4ADE80] font-medium mb-3">{completionMsg.line2}</p>
+          <h2 className="text-xl md:text-2xl font-bold text-[#EAEAF2] mb-2">{completionMsg.line1}</h2>
+          <p className="text-sm text-[#3DD68C] font-medium mb-2">{completionMsg.line2}</p>
+
+          {/* System voice — cold acknowledgment (or silence) */}
+          {systemVoice && <p className="text-[10px] text-[#3D3D52] font-mono mb-3">{systemVoice}</p>}
 
           {/* Identity reinforcement (30% chance, after 2+ completions) */}
           {identityMsg && (

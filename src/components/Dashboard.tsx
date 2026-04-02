@@ -15,6 +15,8 @@ import { Reminder, ViewMode, User } from '../types';
 import { useLanguage } from '../i18n';
 import { Swords, Calendar, CheckCircle, AlertTriangle, ArrowRight, Flame, Target, Clock } from 'lucide-react';
 import { getDailyStats } from '../services/disciplineMode';
+import { getTimeAdjustment, getTimePressure, checkRareMoment } from '../services/systemVoice';
+import ProgressRing from './ProgressRing';
 
 interface DashboardProps {
   reminders: Reminder[];
@@ -35,33 +37,70 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
 
   // Streak
   let streak = 0;
-  try {
-    const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user?.id}`) || '{}');
-    streak = s.days || 0;
-  } catch {}
+  try { const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user?.id}`) || '{}'); streak = s.days || 0; } catch {}
 
-  const hour = new Date().getHours();
-  const greeting = language === 'ru'
-    ? (hour < 12 ? 'Утренний цикл' : hour < 18 ? 'Дневной цикл' : 'Вечерний цикл')
-    : (hour < 12 ? 'Dawn Cycle' : hour < 18 ? 'Active Cycle' : 'Night Cycle');
+  // Time-based system
+  const timeAdj = getTimeAdjustment();
+  const isRU = language === 'ru';
+  const timePressure = getTimePressure(pending.length, isRU);
+  const totalToday = pending.length + completedToday.length;
+
+  // Rare moment check
+  const rareMoment = checkRareMoment({
+    completedToday: stats.completed,
+    escapesToday: stats.escapes,
+    streak,
+    pendingCount: pending.length,
+    totalCompleted: completed.length,
+  }, isRU);
 
   return (
     <div className="h-full overflow-y-auto pb-8">
 
-      {/* ═══ STATS BAR ═══ */}
+      {/* ═══ PROGRESS + STATS ═══ */}
       <div className="px-6 pt-5 pb-3">
-        <div className="grid grid-cols-4 gap-3">
-          <StatCard icon={<Swords className="w-4 h-4 text-[#5DAEFF]" />} value={pending.length} label={language === 'ru' ? 'Активных' : 'Active'} />
-          <StatCard icon={<AlertTriangle className="w-4 h-4 text-[#FF4444]" />} value={overdue.length} label={language === 'ru' ? 'Просрочено' : 'Overdue'} danger={overdue.length > 0} />
-          <StatCard icon={<CheckCircle className="w-4 h-4 text-[#4ADE80]" />} value={stats.completed} label={language === 'ru' ? 'Сегодня' : 'Today'} />
-          <StatCard icon={<Flame className="w-4 h-4 text-[#FF6B35]" />} value={streak > 0 ? `${streak}d` : '—'} label={language === 'ru' ? 'Стрик' : 'Streak'} />
+        <div className="flex items-center gap-5 mb-4">
+          {/* Daily progress ring */}
+          <ProgressRing completed={stats.completed} total={Math.max(totalToday, 1)} size={72} strokeWidth={3} />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[9px] uppercase tracking-[0.25em] font-semibold" style={{ color: '#5E5E78' }}>
+                {isRU ? timeAdj.labelRu : timeAdj.label}
+              </span>
+              <span className="text-[8px] text-[#3D3D52]">·</span>
+              <span className="text-[9px] text-[#3D3D52]">{new Date().toLocaleDateString(isRU ? 'ru-RU' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+            </div>
+            {streak > 0 && (
+              <div className="flex items-center gap-1 mb-1">
+                <Flame className="w-3 h-3 text-[#E86835]" />
+                <span className="text-xs font-bold text-[#E86835]">{streak}d</span>
+                <span className="text-[9px] text-[#3D3D52]">{isRU ? 'стрик' : 'streak'}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Stat pills */}
+        <div className="grid grid-cols-3 gap-2">
+          <StatCard icon={<Swords className="w-3.5 h-3.5 text-[#5DA8FF]" />} value={pending.length} label={isRU ? 'Актив.' : 'Active'} />
+          <StatCard icon={<AlertTriangle className="w-3.5 h-3.5 text-[#E03030]" />} value={overdue.length} label={isRU ? 'Просроч.' : 'Overdue'} danger={overdue.length > 0} />
+          <StatCard icon={<CheckCircle className="w-3.5 h-3.5 text-[#3DD68C]" />} value={stats.completed} label={isRU ? 'Сегодня' : 'Today'} />
         </div>
       </div>
 
-      {/* ═══ CYCLE INDICATOR ═══ */}
-      <div className="px-6 pb-2">
-        <span className="text-[9px] text-[#3A3A4A] uppercase tracking-[0.25em]">{greeting} · {new Date().toLocaleDateString(language === 'ru' ? 'ru-RU' : 'en-US', { weekday: 'long', day: 'numeric', month: 'short' })}</span>
-      </div>
+      {/* ═══ TIME PRESSURE ═══ */}
+      {timePressure && (
+        <div className="mx-6 mb-2 px-3 py-2 rounded-lg bg-[#E0303006] border border-[#E0303010]">
+          <p className="text-[10px] text-[#E03030] font-medium">{timePressure}</p>
+        </div>
+      )}
+
+      {/* ═══ RARE MOMENT ═══ */}
+      {rareMoment && (
+        <div className="mx-6 mb-2 px-3 py-2 rounded-lg bg-[#D4A82806] border border-[#D4A82810]">
+          <p className="text-[10px] text-[#D4A828] font-medium italic">{rareMoment}</p>
+        </div>
+      )}
 
       {/* ═══ HIGH PRIORITY / OVERDUE ═══ */}
       {(overdue.length > 0 || highPriority.length > 0) && (
