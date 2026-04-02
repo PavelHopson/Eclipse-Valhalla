@@ -15,7 +15,7 @@ import { ViewMode, User, PlanTier } from '../types';
 import {
   Hammer, Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
   Home, Search, Dumbbell, StickyNote, Sparkles, Image, AudioLines,
-  ChevronRight,
+  ChevronRight, Rss,
 } from 'lucide-react';
 import { useLanguage } from '../i18n';
 
@@ -60,6 +60,12 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
       label: 'ORACLE',
       items: [
         { id: 'oracle', label: t('nav.oracle'), icon: Sparkles, accent: '#4ADE80' },
+      ],
+    },
+    {
+      label: 'NEXUS',
+      items: [
+        { id: 'nexus', label: 'Nexus Feed', icon: Rss, accent: '#FBBF24' },
       ],
     },
     {

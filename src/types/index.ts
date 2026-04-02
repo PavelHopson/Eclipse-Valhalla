@@ -150,4 +150,4 @@ export interface TTSState {
   error: string | null;
 }
 
-export type ViewMode = 'dashboard' | 'reminders' | 'stickers' | 'calendar' | 'workouts' | 'settings' | 'admin' | 'oracle' | 'chat' | 'image' | 'tts';
+export type ViewMode = 'dashboard' | 'reminders' | 'stickers' | 'calendar' | 'workouts' | 'settings' | 'admin' | 'oracle' | 'chat' | 'image' | 'tts' | 'nexus';

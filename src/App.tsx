@@ -30,6 +30,8 @@ const GlobalSearch = lazy(() => import('./components/GlobalSearch'));
 
 // --- AI VIEWS ---
 const OracleView = lazy(() => import('./components/OracleView'));
+const NewsView = lazy(() => import('./components/NewsView'));
+const MobileWidgetBoard = lazy(() => import('./components/MobileWidgetBoard'));
 const ChatView = lazy(() => import('./components/ChatView').then(m => ({ default: m.ChatView })));
 const ImageView = lazy(() => import('./components/ImageView').then(m => ({ default: m.ImageView })));
 const TTSView = lazy(() => import('./components/TTSView').then(m => ({ default: m.TTSView })));
@@ -470,6 +472,22 @@ const AppContent: React.FC = () => {
 
             {/* Oracle AI */}
             {currentView === 'oracle' && <OracleView quests={reminders} />}
+
+            {/* Nexus Intelligence Feed */}
+            {currentView === 'nexus' && user && (
+              <NewsView
+                userId={user.id}
+                onCreateQuest={(quest) => {
+                  saveReminder({
+                    title: quest.title,
+                    description: quest.description,
+                    dueDateTime: quest.dueAt,
+                    priority: quest.priority === 'high' ? Priority.HIGH : quest.priority === 'medium' ? Priority.MEDIUM : Priority.LOW,
+                    category: Category.EDUCATION,
+                  });
+                }}
+              />
+            )}
 
             {/* Forge: AI Tools */}
             {currentView === 'chat' && (
