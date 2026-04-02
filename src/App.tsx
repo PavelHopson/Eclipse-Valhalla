@@ -88,7 +88,9 @@ const AppContent: React.FC = () => {
   const [focusQuestId, setFocusQuestId] = useState<string | null>(null);
   const focusQuest = reminders.find(r => r.id === focusQuestId) || null;
   const [returnMessage, setReturnMessage] = useState<string | null>(null);
-  const [returnOverlay, setReturnOverlay] = useState<any>(null); // ReturnState | null
+  const [returnOverlay, setReturnOverlay] = useState<any>(null);
+  const [weeklySummary, setWeeklySummary] = useState<any>(null);
+  const [antiBurnout, setAntiBurnout] = useState<string | null>(null);
 
   // Load data ONCE + track session
   useEffect(() => {
@@ -171,6 +173,15 @@ const AppContent: React.FC = () => {
       if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
         Notification.requestPermission();
       }
+
+      // Record day + check weekly summary
+      const completedCount = loadedReminders.filter((r: any) => r.isCompleted).length;
+      const createdCount = loadedReminders.length;
+      recordDay(completedCount, createdCount);
+
+      // Weekly identity lock (shows every 7 days)
+      const weekly = getWeeklySummary();
+      if (weekly) setWeeklySummary(weekly);
 
       // Schedule inactivity pressure notifications (2-3 hours from now)
       const pendingCount = loadedReminders.filter((r: any) => !r.isCompleted).length;
@@ -345,15 +356,29 @@ const AppContent: React.FC = () => {
                 </p>
               </div>
 
-              {/* DAILY WINS + MODE */}
+              {/* DAILY PROGRESS (today vs yesterday) */}
               {(() => {
                 const stats = getDailyStats();
-                return stats.completed > 0 ? (
-                  <div className="mx-6 mb-1 flex items-center gap-3">
-                    <span className="text-xs text-[#4ADE80] font-medium">{stats.completed} completed today</span>
-                    {stats.completed >= 3 && <span className="text-[9px] text-[#FFD700]">Momentum.</span>}
+                const completedToday = reminders.filter(r => r.isCompleted).length;
+                const comparison = getDailyComparison(completedToday);
+                const burnout = getAntiBurnoutMessage(stats.completed, (() => {
+                  try { const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user.id}`) || '{}'); return s.days || 0; } catch { return 0; }
+                })());
+
+                return (
+                  <div className="mx-6 mb-1 space-y-1">
+                    {comparison.message && (
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-medium ${comparison.trend === 'up' ? 'text-[#4ADE80]' : comparison.trend === 'down' ? 'text-[#FBBF24]' : 'text-[#8888A0]'}`}>
+                          {comparison.message}
+                        </span>
+                      </div>
+                    )}
+                    {burnout && (
+                      <div className="text-[10px] text-[#7A5CFF] italic">{burnout}</div>
+                    )}
                   </div>
-                ) : null;
+                );
               })()}
 
               {/* QUICK QUEST INPUT — the activation point */}
@@ -449,6 +474,29 @@ const AppContent: React.FC = () => {
         <FeedbackPanel isOpen={showFeedback} onClose={() => setShowFeedback(false)} userId={user.id} />
       </Suspense>
 
+      {/* Weekly Summary — identity lock every 7 days */}
+      {weeklySummary && !returnOverlay && !focusQuest && (
+        <div className="fixed inset-0 z-[73] bg-[#06060B] flex items-center justify-center">
+          <div className="max-w-md mx-auto px-6 text-center">
+            <div className="text-[10px] text-[#7A5CFF] uppercase tracking-[0.3em] mb-4">Weekly Review</div>
+            <h1 className="text-2xl font-bold text-[#E8E8F0] mb-2">{weeklySummary.activeDays}/7 days active</h1>
+            <p className="text-sm text-[#8888A0] mb-2">{weeklySummary.message}</p>
+            <p className="text-xs text-[#5DAEFF] italic mb-6">"{weeklySummary.identityMessage}"</p>
+            <div className="flex items-center justify-center gap-6 mb-8 text-xs text-[#55556A]">
+              <div><span className="text-lg font-bold text-[#E8E8F0]">{weeklySummary.totalCompleted}</span><br/>completed</div>
+              <div><span className="text-lg font-bold text-[#E8E8F0]">{weeklySummary.avgPerDay}</span><br/>avg/day</div>
+              <div><span className={`text-lg font-bold ${weeklySummary.trend === 'improving' ? 'text-[#4ADE80]' : weeklySummary.trend === 'declining' ? 'text-[#FF4444]' : 'text-[#8888A0]'}`}>
+                {weeklySummary.trend === 'improving' ? '↑' : weeklySummary.trend === 'declining' ? '↓' : '→'}
+              </span><br/>trend</div>
+            </div>
+            <button onClick={() => setWeeklySummary(null)}
+              className="px-8 py-3 bg-[#5DAEFF] text-[#06060B] rounded-xl text-sm font-bold shadow-[0_0_25px_rgba(93,174,255,0.15)] transition-all">
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Return Overlay — confrontation on app open */}
       {returnOverlay && (
         <Suspense fallback={null}>
@@ -536,7 +584,8 @@ import { ToastContainer } from './design';
 import { pmfSessionStart, pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
 import { trackSessionStart, trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
 import { recordSession, checkCriticalQuests, dispatchAlerts } from './services/retentionService';
-import { getDailyStats, getMode, setMode as setDisciplineMode, type DisciplineMode } from './services/disciplineMode';
+import { getDailyStats, getMode, setMode as setDisciplineMode } from './services/disciplineMode';
+import { recordDay, getDailyComparison, getWeeklySummary, getAntiBurnoutMessage } from './services/progressionService';
 
 // Lazy-load growth components
 const QuickQuestInput = lazy(() => import('./components/QuickQuestInput'));
