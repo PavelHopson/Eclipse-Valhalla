@@ -86,6 +86,7 @@ export interface ExerciseTemplate {
   name: string;
   targetSets: number;
   targetReps: string;
+  videoUrl?: string;
 }
 
 export interface Routine {

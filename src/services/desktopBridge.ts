@@ -33,6 +33,7 @@ interface ValhallaElectronAPI {
   setAutoStart: (enabled: boolean) => Promise<{ success: boolean; enabled?: boolean }>;
   getAutoStart: () => Promise<{ enabled: boolean }>;
   getAppInfo: () => Promise<{ version: string; name: string; platform: string; isPackaged: boolean }>;
+  pickVideoFile: () => Promise<{ canceled: boolean; path?: string; fileUrl?: string; error?: string }>;
 }
 
 declare global {
@@ -149,6 +150,10 @@ class DesktopBridge {
       platform: 'web',
       isPackaged: false,
     };
+  }
+
+  async pickVideoFile() {
+    return this.api?.pickVideoFile() ?? { canceled: true };
   }
 }
 

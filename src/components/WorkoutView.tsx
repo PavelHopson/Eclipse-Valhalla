@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routine, WorkoutLog, ExerciseTemplate, WorkoutExerciseResult, WorkoutSetResult } from '../types';
 import { useLanguage } from '../i18n';
+import { desktop } from '../services/desktopBridge';
 import { generateId, formatDate, playNotificationSound } from '../utils';
 import {
   Plus, Dumbbell, Play, Clock, CheckCircle2, X, Save, History,
@@ -41,6 +42,12 @@ interface WorkoutViewProps {
   logs: WorkoutLog[];
   setRoutines: React.Dispatch<React.SetStateAction<Routine[]>>;
   setLogs: React.Dispatch<React.SetStateAction<WorkoutLog[]>>;
+}
+
+interface VideoPlaybackState {
+  title: string;
+  url: string;
+  mode: 'youtube' | 'direct';
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -139,6 +146,76 @@ const formatDurationLong = (sec: number, ru: boolean): string => {
   return `${m}m ${s}s`;
 };
 
+const YOUTUBE_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be']);
+const DIRECT_VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.m4v', '.avi', '.mkv'];
+
+const extractYouTubeVideoId = (input: string): string | null => {
+  const value = input.trim();
+  if (!value) return null;
+
+  if (/^[\w-]{11}$/.test(value)) {
+    return value;
+  }
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    if (!YOUTUBE_HOSTS.has(host)) return null;
+
+    if (host === 'youtu.be') {
+      const shortId = url.pathname.split('/').filter(Boolean)[0];
+      return shortId || null;
+    }
+
+    const queryId = url.searchParams.get('v');
+    if (queryId) return queryId;
+
+    const segments = url.pathname.split('/').filter(Boolean);
+    const embedIndex = segments.findIndex(segment => segment === 'embed' || segment === 'shorts' || segment === 'live');
+    if (embedIndex >= 0 && segments[embedIndex + 1]) {
+      return segments[embedIndex + 1];
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
+const isDirectVideoUrl = (input: string): boolean => {
+  const normalized = input.trim().toLowerCase();
+  return DIRECT_VIDEO_EXTENSIONS.some(extension => normalized.includes(extension));
+};
+
+const normalizeVideoSource = (input?: string | null): Omit<VideoPlaybackState, 'title'> | null => {
+  const value = input?.trim();
+  if (!value) return null;
+
+  const youtubeId = extractYouTubeVideoId(value);
+  if (youtubeId) {
+    return {
+      mode: 'youtube',
+      url: `https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`,
+    };
+  }
+
+  if (value.startsWith('file:///') || isDirectVideoUrl(value)) {
+    return {
+      mode: 'direct',
+      url: value,
+    };
+  }
+
+  if (/^[a-zA-Z]:\\/.test(value)) {
+    return {
+      mode: 'direct',
+      url: `file:///${value.replace(/\\/g, '/')}`,
+    };
+  }
+
+  return null;
+};
+
 /* ────────────────────────────────────────────────────────────
    Component
    ──────────────────────────────────────────────────────────── */
@@ -160,7 +237,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   const [sessionDuration, setSessionDuration] = useState(0);
   const [sessionData, setSessionData] = useState<WorkoutExerciseResult[]>([]);
   const [expandedExercise, setExpandedExercise] = useState<number | null>(null);
-  const [videoExercise, setVideoExercise] = useState<string | null>(null); // exercise nameKey for video
+  const [videoPlayback, setVideoPlayback] = useState<VideoPlaybackState | null>(null);
 
   // Rest timer
   const [restTimer, setRestTimer] = useState(0);
@@ -227,6 +304,44 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   const removeExerciseFromRoutine = (index: number) => {
     setNewExercises(prev => prev.filter((_, i) => i !== index));
   };
+
+  const pickVideoForExercise = async (index: number) => {
+    const picked = await desktop.pickVideoFile();
+    if (!picked.canceled && 'fileUrl' in picked && picked.fileUrl) {
+      updateExerciseInRoutine(index, 'videoUrl', picked.fileUrl);
+    }
+  };
+
+  const resolveExerciseVideo = useCallback((exerciseName: string, customUrl?: string) => {
+    const customVideo = normalizeVideoSource(customUrl);
+    if (customVideo) {
+      return {
+        ...customVideo,
+        title: exerciseName,
+      };
+    }
+
+    const videoKey = Object.keys(EXERCISE_VIDEOS).find(key =>
+      t(key).toLowerCase() === exerciseName.toLowerCase()
+    );
+
+    if (!videoKey) {
+      return null;
+    }
+
+    return {
+      title: exerciseName,
+      mode: 'youtube' as const,
+      url: `https://www.youtube.com/embed/${EXERCISE_VIDEOS[videoKey]}?rel=0&modestbranding=1`,
+    };
+  }, [t]);
+
+  const openExerciseVideo = useCallback((exerciseName: string, customUrl?: string) => {
+    const video = resolveExerciseVideo(exerciseName, customUrl);
+    if (video) {
+      setVideoPlayback(video);
+    }
+  }, [resolveExerciseVideo]);
 
   const handleImportRoutine = (rec: typeof RECOMMENDED_WORKOUTS[0]) => {
     const routine: Routine = {
@@ -524,19 +639,23 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                       <div className="flex items-center gap-2">
                         {/* Video button */}
                         {(() => {
-                          // Find video for this exercise by matching name
-                          const videoKey = Object.keys(EXERCISE_VIDEOS).find(key =>
-                            t(key).toLowerCase() === exercise.exerciseName.toLowerCase()
-                          );
-                          if (videoKey) {
-                            return (
-                              <button onClick={(e) => { e.stopPropagation(); setVideoExercise(videoKey); }}
-                                className="p-1.5 rounded-lg transition-colors" style={{ backgroundColor: `${V.accent}10`, color: V.accent }}>
-                                <Video className="w-3.5 h-3.5" />
-                              </button>
-                            );
+                          const customVideoUrl = activeRoutine?.exercises[exIdx]?.videoUrl;
+                          const hasVideo = !!resolveExerciseVideo(exercise.exerciseName, customVideoUrl);
+                          if (!hasVideo) {
+                            return null;
                           }
-                          return null;
+
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openExerciseVideo(exercise.exerciseName, customVideoUrl);
+                              }}
+                              className="p-1.5 rounded-lg transition-colors"
+                              style={{ backgroundColor: `${V.accent}10`, color: V.accent }}>
+                              <Video className="w-3.5 h-3.5" />
+                            </button>
+                          );
                         })()}
                         {/* Mini progress */}
                         <div className="flex gap-1">
@@ -1137,8 +1256,9 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                 </label>
                 <div className="space-y-2">
                   {newExercises.map((ex, i) => (
-                    <div key={ex.id} className="flex gap-2 items-center p-3 rounded-xl"
+                    <div key={ex.id} className="p-3 rounded-xl space-y-3"
                       style={{ backgroundColor: V.bg2, border: `1px solid ${V.border}` }}>
+                      <div className="flex gap-2 items-center">
                       <div className="w-7 h-7 flex items-center justify-center text-xs font-bold rounded-lg shrink-0"
                         style={{ backgroundColor: V.bg3, color: V.textTertiary }}>
                         {i + 1}
@@ -1175,6 +1295,54 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                         onMouseLeave={(e) => { e.currentTarget.style.color = V.textDisabled; }}>
                         <X className="w-3.5 h-3.5" />
                       </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider"
+                          style={{ color: V.textDisabled }}>
+                          {isRu ? 'Видео упражнения' : 'Exercise video'}
+                        </label>
+                        <div className="flex flex-col md:flex-row gap-2">
+                          <input
+                            className="flex-1 rounded-xl px-3 py-2 text-sm outline-none"
+                            style={{ backgroundColor: V.bg3, border: `1px solid ${V.border}`, color: V.text }}
+                            placeholder={isRu ? 'YouTube ссылка или file:///video.mp4' : 'YouTube URL or file:///video.mp4'}
+                            value={ex.videoUrl || ''}
+                            onChange={(e) => updateExerciseInRoutine(i, 'videoUrl', e.target.value)}
+                          />
+                          {desktop.isDesktop && (
+                            <button
+                              type="button"
+                              onClick={() => pickVideoForExercise(i)}
+                              className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+                              style={{
+                                backgroundColor: `${V.accent}10`,
+                                color: V.accent,
+                                border: `1px solid ${V.accent}20`,
+                              }}>
+                              {isRu ? 'Файл с ПК' : 'Pick file'}
+                            </button>
+                          )}
+                          {!!ex.videoUrl && (
+                            <button
+                              type="button"
+                              onClick={() => updateExerciseInRoutine(i, 'videoUrl', '')}
+                              className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+                              style={{
+                                backgroundColor: `${V.danger}10`,
+                                color: V.danger,
+                                border: `1px solid ${V.danger}20`,
+                              }}>
+                              {isRu ? 'Очистить' : 'Clear'}
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[11px]" style={{ color: V.textDisabled }}>
+                          {isRu
+                            ? 'Поддерживаются YouTube-ссылки и локальные видеофайлы с компьютера.'
+                            : 'Supports YouTube links and local video files from your computer.'}
+                        </p>
+                      </div>
                     </div>
                   ))}
 
@@ -1220,30 +1388,38 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       {/* ═══════════════════════════════════════════
            VIDEO MODAL
          ═══════════════════════════════════════════ */}
-      {videoExercise && EXERCISE_VIDEOS[videoExercise] && (
+      {videoPlayback && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center">
-          <div className="absolute inset-0 bg-[#06060B]/90 backdrop-blur-sm" onClick={() => setVideoExercise(null)} />
+          <div className="absolute inset-0 bg-[#06060B]/90 backdrop-blur-sm" onClick={() => setVideoPlayback(null)} />
           <div className="relative w-full max-w-2xl mx-4">
             <div className="bg-[#0C0C14] border border-[#1A1A2E] rounded-2xl overflow-hidden shadow-2xl">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-[#1A1A2E]">
                 <div className="flex items-center gap-2">
                   <Video className="w-4 h-4" style={{ color: V.accent }} />
-                  <span className="text-sm font-bold" style={{ color: V.text }}>{t(videoExercise)}</span>
+                  <span className="text-sm font-bold" style={{ color: V.text }}>{videoPlayback.title}</span>
                 </div>
-                <button onClick={() => setVideoExercise(null)} className="p-1.5 rounded-lg hover:bg-[#1F1F2B] transition-colors">
+                <button onClick={() => setVideoPlayback(null)} className="p-1.5 rounded-lg hover:bg-[#1F1F2B] transition-colors">
                   <X className="w-4 h-4" style={{ color: V.textTertiary }} />
                 </button>
               </div>
-              {/* YouTube embed */}
               <div className="aspect-video">
-                <iframe
-                  src={`https://www.youtube.com/embed/${EXERCISE_VIDEOS[videoExercise]}?rel=0&modestbranding=1`}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={t(videoExercise)}
-                />
+                {videoPlayback.mode === 'youtube' ? (
+                  <iframe
+                    src={videoPlayback.url}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={videoPlayback.title}
+                  />
+                ) : (
+                  <video
+                    src={videoPlayback.url}
+                    className="w-full h-full bg-black"
+                    controls
+                    playsInline
+                  />
+                )}
               </div>
             </div>
           </div>

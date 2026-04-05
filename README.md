@@ -28,7 +28,7 @@ Eclipse Valhalla is a **personal execution system** — not a to-do app. It enfo
 
 **Web (instant, no signup):** https://pavelhopson.github.io/Eclipse-Valhalla/
 
-**Desktop (Windows):** [Download .exe](https://github.com/PavelHopson/Eclipse-Valhalla/releases/latest)
+**Desktop (Windows):** [Download installer or portable build](https://github.com/PavelHopson/Eclipse-Valhalla/releases/latest)
 
 **Mobile:** Open the web link on your phone. Works as a web app. Native iOS/Android apps coming soon.
 
@@ -54,7 +54,7 @@ Eclipse Valhalla is a **personal execution system** — not a to-do app. It enfo
 | **Discipline** | Streak tracking. Daily comparison. Weekly identity review. |
 | **Oracle AI** | Plans your day. Analyzes productivity. Calls out procrastination. |
 | **Nexus Feed** | RSS/Telegram/Website news. AI ranking. Convert articles to quests. |
-| **Workouts** | Training routines with sets/reps. Exercise videos. Session tracking. |
+| **Workouts** | Training routines with sets/reps. Built-in exercise videos plus your own trainer links or local files. Session tracking. |
 | **Notifications** | Browser push. 2h/5h pressure reminders. Escalation chain. |
 
 ---
@@ -107,6 +107,14 @@ npm run dev
 npm run electron:dev    # Development
 npm run dist:win        # Build Windows installer
 ```
+
+### Windows install in 3 steps
+
+1. Download `EclipseValhalla-...-win-x64.exe` from the latest release.
+2. Run the installer and keep the desktop/start menu shortcuts enabled.
+3. Open `Eclipse Valhalla` and configure AI keys only if you want cloud or AI features.
+
+Portable build is also published for users who prefer running the app without installation.
 
 ### Mobile (Capacitor)
 

@@ -80,4 +80,8 @@ contextBridge.exposeInMainWorld('valhalla', {
   /** Get app info */
   getAppInfo: () =>
     ipcRenderer.invoke('system:getInfo'),
+
+  /** Pick a local workout video file */
+  pickVideoFile: () =>
+    ipcRenderer.invoke('system:pickVideoFile'),
 });

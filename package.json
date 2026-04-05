@@ -59,15 +59,18 @@
     "productName": "Eclipse Valhalla",
     "copyright": "Copyright 2025 Eclipse Valhalla",
     "artifactName": "EclipseValhalla-${version}-${os}-${arch}.${ext}",
+    "asar": true,
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "!node_modules/**/*"
+      "node_modules/**/*",
+      "package.json"
     ],
     "directories": {
       "output": "release"
     },
     "win": {
+      "icon": "node_modules/app-builder-lib/templates/icons/proton-native/proton-native.ico",
       "target": [
         {
           "target": "nsis",
@@ -89,7 +92,9 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Eclipse Valhalla"
+      "shortcutName": "Eclipse Valhalla",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
     },
     "mac": {
       "target": [

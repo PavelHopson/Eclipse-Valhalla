@@ -8,7 +8,7 @@
  * - App info
  */
 
-import { ipcMain, Notification, app } from 'electron';
+import { ipcMain, Notification, app, dialog } from 'electron';
 import { minimizeToTray, restoreFromTray, setAlwaysOnTop } from '../windowManager.js';
 import { updateTrayMenu } from '../tray.js';
 
@@ -91,5 +91,36 @@ export function registerSystemIPC() {
       platform: process.platform,
       isPackaged: app.isPackaged,
     };
+  });
+
+  // -- PICK LOCAL VIDEO FILE --
+  ipcMain.handle('system:pickVideoFile', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        title: 'Select workout video',
+        properties: ['openFile'],
+        filters: [
+          { name: 'Video Files', extensions: ['mp4', 'webm', 'mov', 'm4v', 'avi', 'mkv'] },
+        ],
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { canceled: true };
+      }
+
+      const filePath = result.filePaths[0];
+      const normalized = filePath.replace(/\\/g, '/');
+
+      return {
+        canceled: false,
+        path: filePath,
+        fileUrl: `file:///${normalized}`,
+      };
+    } catch (error) {
+      return {
+        canceled: true,
+        error: String(error),
+      };
+    }
   });
 }
