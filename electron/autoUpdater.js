@@ -8,17 +8,32 @@
  * Publish config in package.json "build.publish".
  */
 
-import { autoUpdater } from 'electron-updater';
-import { BrowserWindow, dialog } from 'electron';
+import { createRequire } from 'module';
+import { dialog } from 'electron';
+
+const require = createRequire(import.meta.url);
+
+let autoUpdater = null;
+try {
+  ({ autoUpdater } = require('electron-updater'));
+} catch (error) {
+  console.warn('[Updater] electron-updater is unavailable:', String(error));
+}
 
 let _updateAvailable = false;
 let _isChecking = false;
 let _latestVersion = null;
 
+const hasAutoUpdater = () => !!autoUpdater;
+
 /**
  * Initialize auto-updater. Call after app is ready.
  */
 export function initAutoUpdater(mainWindow) {
+  if (!hasAutoUpdater()) {
+    return;
+  }
+
   // Config
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
@@ -103,6 +118,10 @@ export function initAutoUpdater(mainWindow) {
  * Manual check trigger.
  */
 export function checkForUpdates() {
+  if (!hasAutoUpdater()) {
+    return;
+  }
+
   try {
     _isChecking = true;
     autoUpdater.checkForUpdates().finally(() => {
@@ -115,6 +134,14 @@ export function checkForUpdates() {
 }
 
 export async function checkForUpdatesNow() {
+  if (!hasAutoUpdater()) {
+    return {
+      success: false,
+      status: 'unavailable',
+      message: 'Auto-update module is unavailable in this build.',
+    };
+  }
+
   if (process.env.NODE_ENV === 'development') {
     return {
       success: false,
@@ -169,7 +196,7 @@ export async function checkForUpdatesNow() {
  * Install pending update.
  */
 export function installUpdate() {
-  if (_updateAvailable) {
+  if (hasAutoUpdater() && _updateAvailable) {
     autoUpdater.quitAndInstall(false, true);
   }
 }
@@ -178,7 +205,7 @@ export function installUpdate() {
  * Get current app version.
  */
 export function getAppVersion() {
-  return autoUpdater.currentVersion?.version || '2.1.0';
+  return autoUpdater?.currentVersion?.version || '2.1.0';
 }
 
 export function getUpdaterState() {
