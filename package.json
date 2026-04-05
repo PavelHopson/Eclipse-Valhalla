@@ -94,7 +94,11 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Eclipse Valhalla",
       "runAfterFinish": true,
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "EclipseValhalla-Setup-${version}-win-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "EclipseValhalla-Portable-${version}-win-${arch}.${ext}"
     },
     "mac": {
       "target": [
