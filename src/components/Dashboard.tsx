@@ -1,8 +1,7 @@
 /**
- * Eclipse Valhalla — Dashboard (Tertiary Layer)
+ * Eclipse Valhalla - Dashboard (Tertiary Layer)
  *
- * Minimal. Only stats + nav shortcuts.
- * Hero zone and quest list are in App.tsx (primary/secondary layers).
+ * Minimal operational context under the main pressure surfaces.
  */
 
 import React from 'react';
@@ -29,42 +28,50 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
   const totalToday = pending.length + stats.completed;
 
   let streak = 0;
-  try { const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user?.id}`) || '{}'); streak = s.days || 0; } catch {}
+  try {
+    const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user?.id}`) || '{}');
+    streak = s.days || 0;
+  } catch {}
 
   return (
-    <div className="px-6 pb-8">
-      {/* ═══ PROGRESS + TIME ═══ */}
-      <div className="flex items-center gap-5 py-4 border-t border-[#16162220] mt-2">
-        <ProgressRing completed={stats.completed} total={Math.max(totalToday, 1)} size={56} strokeWidth={2.5} />
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-[#5E5E78] uppercase tracking-[0.25em] font-bold">{isRU ? timeAdj.labelRu : timeAdj.label}</span>
-            <span className="text-[9px] text-[#3D3D52]">·</span>
-            <span className="text-[9px] text-[#3D3D52]">{new Date().toLocaleDateString(isRU ? 'ru-RU' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-          </div>
-          {streak > 0 && (
-            <div className="flex items-center gap-1.5 mt-1">
-              <Flame className="w-3.5 h-3.5 text-[#E86835]" />
-              <span className="text-[13px] font-bold text-[#E86835]">{streak}d</span>
-              <span className="text-[9px] text-[#3D3D52]">{isRU ? 'стрик' : 'streak'}</span>
+    <div className="px-4 pb-8 md:px-6">
+      <div className="rounded-[24px] border border-white/8 bg-[#121212]/92 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.3)]">
+        <div className="mt-1 flex items-center gap-5 border-b border-white/6 pb-4">
+          <ProgressRing completed={stats.completed} total={Math.max(totalToday, 1)} size={56} strokeWidth={2.5} />
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#7F7A72]">{isRU ? timeAdj.labelRu : timeAdj.label}</span>
+              <span className="text-[9px] text-[#5F5A54]">•</span>
+              <span className="text-[9px] text-[#5F5A54]">
+                {new Date().toLocaleDateString(isRU ? 'ru-RU' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+              </span>
             </div>
-          )}
+            {streak > 0 && (
+              <div className="mt-1 flex items-center gap-1.5">
+                <Flame className="h-3.5 w-3.5 text-[#D8C18E]" />
+                <span className="text-[13px] font-bold text-[#D8C18E]">{streak}d</span>
+                <span className="text-[9px] text-[#5F5A54]">{isRU ? 'стрик' : 'streak'}</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ═══ NAV SHORTCUTS ═══ */}
-      <div className="grid grid-cols-3 gap-2 mt-2">
-        {[
-          { view: 'reminders' as ViewMode, icon: Swords, label: isRU ? 'Квесты' : 'Quests', color: '#5DA8FF' },
-          { view: 'calendar' as ViewMode, icon: Calendar, label: isRU ? 'Календарь' : 'Calendar', color: '#7B5CFF' },
-          { view: 'oracle' as ViewMode, icon: Target, label: isRU ? 'Оракул' : 'Oracle', color: '#3DD68C' },
-        ].map(item => (
-          <button key={item.view} onClick={() => setView(item.view)}
-            className="flex flex-col items-center gap-2.5 py-5 bg-[#08080D] border border-[#16162240] rounded-lg hover:border-[#2A2A3C70] hover:bg-[#0B0B12] transition-all">
-            <item.icon className="w-5 h-5" style={{ color: item.color }} />
-            <span className="text-[10px] text-[#5E5E78] font-semibold uppercase tracking-wider">{item.label}</span>
-          </button>
-        ))}
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {[
+            { view: 'reminders' as ViewMode, icon: Swords, label: isRU ? 'Квесты' : 'Quests', color: '#6C8FB8' },
+            { view: 'calendar' as ViewMode, icon: Calendar, label: isRU ? 'Календарь' : 'Calendar', color: '#B89B5E' },
+            { view: 'oracle' as ViewMode, icon: Target, label: isRU ? 'Оракул' : 'Oracle', color: '#8E9B79' },
+          ].map(item => (
+            <button
+              key={item.view}
+              onClick={() => setView(item.view)}
+              className="flex flex-col items-center gap-2.5 rounded-[18px] border border-white/8 bg-[#171717] py-5 transition-all hover:border-white/14 hover:bg-[#1D1D1D]"
+            >
+              <item.icon className="h-5 w-5" style={{ color: item.color }} />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7F7A72]">{item.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

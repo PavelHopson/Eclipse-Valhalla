@@ -1,20 +1,16 @@
 /**
- * Eclipse Valhalla — Focus Mode
+ * Eclipse Valhalla - Focus Mode
  *
- * One quest. One timer. No escape.
- *
- * Post-completion: emotional hit + next quest prompt.
- * Tab escape: detected and punished.
+ * Fullscreen pressure chamber.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Reminder } from '../types';
-import { X, Check, Pause, Play, RotateCcw, ArrowRight, Coffee } from 'lucide-react';
+import { X, Check, Pause, Play, RotateCcw, ArrowRight, Coffee, MessageSquare } from 'lucide-react';
 import { Seal } from '../brand/Seal';
 import { getCompletionMessage, getIdentityMessage, getEscapeMessage, recordDailyCompletion, recordDailyEscape, getDailyStats, getProgressMessage } from '../services/disciplineMode';
-import { shouldShowCTA, getCTAConfig, openTelegram } from '../services/telegramCTA';
+import { openTelegram } from '../services/telegramCTA';
 import { getCompletionVoice, shouldBeSilent } from '../services/systemVoice';
-import { MessageSquare } from 'lucide-react';
 
 interface FocusModeProps {
   quest: Reminder;
@@ -38,19 +34,20 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
 
   const nextQuests = pendingQuests.filter(q => q.id !== quest.id).slice(0, 3);
 
-  // Timer
   useEffect(() => {
     if (!isRunning || phase !== 'focus') return;
     const interval = setInterval(() => {
       setSecondsLeft(prev => {
-        if (prev <= 1) { setIsRunning(false); return 0; }
+        if (prev <= 1) {
+          setIsRunning(false);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
   }, [isRunning, phase]);
 
-  // ═══ TAB ESCAPE DETECTION ═══
   useEffect(() => {
     if (phase !== 'focus') return;
 
@@ -72,192 +69,213 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
     setIsRunning(false);
     onComplete(quest.id);
 
-    // Record daily stats + get identity/progress messages
     const stats = recordDailyCompletion();
     setIdentityMsg(getIdentityMessage(stats.completed));
     setDailyProgress(getProgressMessage(stats.completed));
   }, [quest.id, onComplete]);
 
-  const handleReturnFromEscape = () => {
-    setPhase('focus');
-    setIsRunning(true);
-  };
-
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const progress = 1 - (secondsLeft / FOCUS_DURATION);
+  const progress = 1 - secondsLeft / FOCUS_DURATION;
 
-  // ═══ ESCAPE STATE ═══
   if (phase === 'escaped') {
     return (
-      <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center">
-        <div className="text-center px-6 max-w-md">
-          <div className="text-6xl mb-6 opacity-30">⚠</div>
-          <h2 className="text-2xl font-bold text-[#FF4444] mb-3">You left.</h2>
-          <p className="text-sm text-[#55556A] mb-2">
-            {getEscapeMessage()}
-          </p>
-          <p className="text-xs text-[#3A3A4A] mb-8">
-            Escape count this session: {escapeCount}
-          </p>
-          <button onClick={handleReturnFromEscape}
-            className="px-8 py-4 bg-[#5DAEFF] text-[#06060B] rounded-xl text-sm font-bold shadow-[0_0_30px_rgba(93,174,255,0.15)] hover:shadow-[0_0_40px_rgba(93,174,255,0.25)] transition-all mb-3">
-            Return to objective
-          </button>
+      <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#0A0A0A] ritual-enter">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(122,31,36,0.22),transparent_38%)]" />
+        <div className="relative w-full max-w-xl px-6">
+          <div className="rounded-[28px] border border-[#7A1F2438] bg-[#121212]/96 p-8 text-center shadow-[0_26px_90px_rgba(0,0,0,0.55)] judgment-enter">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-[#7A1F2433] bg-[#7A1F2410]">
+              <Seal size={42} variant="broken" color="#A33036" animated />
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">Return breach</div>
+            <h2 className="mt-4 font-ritual text-3xl text-[#F2F1EE]">You stepped away.</h2>
+            <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[#B4B0A7]">{getEscapeMessage()}</p>
+            <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-[#C05A60]">Escapes this session: {escapeCount}</p>
 
-          {escapeCount >= 3 && (
-            <button onClick={() => openTelegram('escape_repeat', 'focus_escape')}
-              className="flex items-center gap-2 mx-auto text-[10px] text-[#55556A] hover:text-[#8888A0] transition-colors">
-              <MessageSquare className="w-3 h-3" />
-              This pattern needs intervention. Talk to creator.
-            </button>
-          )}
+            <div className="mt-8 space-y-3">
+              <button
+                onClick={() => {
+                  setPhase('focus');
+                  setIsRunning(true);
+                }}
+                className="w-full rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-6 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A]"
+              >
+                Return to execution
+              </button>
+
+              {escapeCount >= 3 && (
+                <button
+                  onClick={() => openTelegram('escape_repeat', 'focus_escape')}
+                  className="mx-auto inline-flex items-center gap-2 text-[11px] font-semibold text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  This pattern needs intervention
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // ═══ COMPLETION STATE (HOLD + EMOTION + NEXT) ═══
   if (phase === 'completed') {
     return (
-      <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center ritual-enter">
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 text-[#2A2A3C] hover:text-[#55556A]">
-          <X className="w-5 h-5" />
+      <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#0A0A0A] ritual-enter">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,155,94,0.20),transparent_32%)]" />
+        <button onClick={onClose} className="absolute right-5 top-5 p-2 text-[#5F5A54] transition-colors hover:text-[#B4B0A7]">
+          <X className="h-5 w-5" />
         </button>
 
-        <div className="text-center px-6 max-w-md">
-          {/* The Seal — completion confirmed */}
-          <div className="impact-done mx-auto mb-8">
-            <Seal size={80} variant="complete" animated />
-          </div>
-
-          {/* Emotional message */}
-          <h2 className="text-xl md:text-2xl font-bold text-[#EAEAF2] mb-2">{completionMsg.line1}</h2>
-          <p className="text-sm text-[#3DD68C] font-medium mb-2">{completionMsg.line2}</p>
-
-          {/* System voice — cold acknowledgment (or silence) */}
-          {systemVoice && <p className="text-[10px] text-[#3D3D52] font-mono mb-3">{systemVoice}</p>}
-
-          {/* Identity reinforcement (30% chance, after 2+ completions) */}
-          {identityMsg && (
-            <p className="text-xs text-[#5DAEFF] italic mb-3">"{identityMsg}"</p>
-          )}
-
-          {/* Daily progress */}
-          {dailyProgress && (
-            <p className="text-[10px] text-[#55556A] mb-6">{dailyProgress}</p>
-          )}
-
-          {/* Escape penalty note */}
-          {escapeCount > 0 && !identityMsg && (
-            <p className="text-[10px] text-[#FF4444] mb-6">
-              You escaped {escapeCount} time{escapeCount > 1 ? 's' : ''} during this session. Work on that.
-            </p>
-          )}
-
-          {/* NEXT QUEST PROMPT — the compulsion */}
-          {nextQuests.length > 0 ? (
-            <div className="space-y-3 mb-6">
-              <p className="text-[10px] text-[#3A3A4A] uppercase tracking-[0.2em]">Next objective</p>
-              {nextQuests.slice(0, 1).map(q => (
-                <button key={q.id} onClick={() => onStartNext(q.id)}
-                  className="w-full flex items-center gap-3 px-5 py-4 bg-[#5DAEFF] hover:bg-[#4A9AEE] text-[#06060B] rounded-xl font-bold text-sm shadow-[0_0_30px_rgba(93,174,255,0.15)] transition-all">
-                  <ArrowRight className="w-5 h-5" />
-                  {q.title}
-                </button>
-              ))}
+        <div className="relative w-full max-w-2xl px-6">
+          <div className="rounded-[32px] border border-[#B89B5E33] bg-[#121212]/96 p-8 text-center shadow-[0_28px_100px_rgba(0,0,0,0.58)]">
+            <div className="impact-done mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full border border-[#B89B5E30] bg-[#B89B5E10]">
+              <Seal size={56} variant="complete" color="#B89B5E" animated />
             </div>
-          ) : (
-            <p className="text-xs text-[#3A3A4A] mb-6">All objectives cleared.</p>
-          )}
 
-          {/* Contextual Telegram CTA (after success streak) */}
-          {(() => {
-            const stats = getDailyStats();
-            if (stats.completed >= 3) {
-              return (
-                <button onClick={() => openTelegram('success_streak', 'focus_done')}
-                  className="flex items-center gap-2 mx-auto text-[10px] text-[#5DAEFF] hover:text-[#4A9AEE] transition-colors mb-3">
-                  <MessageSquare className="w-3 h-3" />
-                  Executing consistently? Get advanced guidance.
+            <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">Completion state</div>
+            <h2 className="mt-4 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">{completionMsg.line1}</h2>
+            <p className="mt-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#D8C18E]">{completionMsg.line2}</p>
+
+            {systemVoice && <p className="mt-4 text-[11px] uppercase tracking-[0.2em] text-[#5F5A54]">{systemVoice}</p>}
+            {identityMsg && <p className="mt-4 text-sm italic text-[#D8C18E]">"{identityMsg}"</p>}
+            {dailyProgress && <p className="mt-3 text-sm text-[#B4B0A7]">{dailyProgress}</p>}
+            {escapeCount > 0 && !identityMsg && (
+              <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-[#C05A60]">
+                Escapes during session: {escapeCount}
+              </p>
+            )}
+
+            <div className="mt-8 rounded-[20px] border border-white/8 bg-white/[0.02] p-4 text-left">
+              <div className="text-[10px] uppercase tracking-[0.24em] text-[#7F7A72]">Identity reinforcement</div>
+              <p className="mt-3 text-sm leading-6 text-[#F2F1EE]">
+                Completion is now part of the record. The system only trusts repetition.
+              </p>
+            </div>
+
+            <div className="mt-8 space-y-3">
+              {nextQuests.length > 0 ? (
+                <button
+                  onClick={() => onStartNext(nextQuests[0].id)}
+                  className="mx-auto inline-flex w-full max-w-lg items-center justify-center gap-2 rounded-[16px] border border-[#6C8FB833] bg-[#6C8FB8] px-6 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#7C9FC7]"
+                >
+                  Next objective: {nextQuests[0].title}
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-              );
-            }
-            return null;
-          })()}
+              ) : (
+                <p className="text-sm text-[#B4B0A7]">All visible objectives are sealed.</p>
+              )}
 
-          {/* Rest option — deliberately smaller */}
-          <button onClick={onClose}
-            className="flex items-center gap-2 mx-auto px-4 py-2 text-xs text-[#3A3A4A] hover:text-[#55556A] transition-colors">
-            <Coffee className="w-3.5 h-3.5" />
-            Rest
-          </button>
+              {(() => {
+                const stats = getDailyStats();
+                if (stats.completed >= 3) {
+                  return (
+                    <button
+                      onClick={() => openTelegram('success_streak', 'focus_done')}
+                      className="mx-auto inline-flex items-center gap-2 text-[11px] font-semibold text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Consistency unlocked. Request advanced guidance.
+                    </button>
+                  );
+                }
+                return null;
+              })()}
+
+              <button onClick={onClose} className="mx-auto inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[#7F7A72] transition-colors hover:text-[#B4B0A7]">
+                <Coffee className="h-3.5 w-3.5" />
+                Exit chamber
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // ═══ FOCUS STATE ═══
   return (
-    <div className="fixed inset-0 z-[80] bg-[#050508] flex flex-col items-center justify-center ritual-enter">
-      <button onClick={onClose} className="absolute top-4 right-4 p-2 text-[#3D3D52] hover:text-[#5E5E78]">
-        <X className="w-5 h-5" />
+    <div className="fixed inset-0 z-[80] overflow-hidden bg-[#0A0A0A] ritual-enter">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(108,143,184,0.10),transparent_34%)]" />
+      <div className="absolute left-1/2 top-1/2 h-[68vh] w-[68vh] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/5" />
+      <div className="absolute left-1/2 top-1/2 h-[56vh] w-[56vh] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#6C8FB81F]" />
+
+      <button onClick={onClose} className="absolute right-5 top-5 z-10 p-2 text-[#5F5A54] transition-colors hover:text-[#B4B0A7]">
+        <X className="h-5 w-5" />
       </button>
 
-      {/* Quest title */}
-      <div className="text-center mb-12 px-6">
-        {/* The Seal — watching during focus */}
-        <div className="mx-auto mb-4 system-idle"><Seal size={24} variant="watching" /></div>
-        <div className="text-[9px] text-[#3D3D52] uppercase tracking-[0.35em] mb-3 font-medium">Current Objective</div>
-        <h1 className="text-xl md:text-2xl font-bold text-[#E8E8F0] max-w-lg leading-tight">{quest.title}</h1>
-      </div>
-
-      {/* Timer — ritual ring */}
-      <div className="relative mb-12 ring-pulse">
-        <svg className="w-56 h-56 -rotate-90" viewBox="0 0 200 200">
-          <circle cx="100" cy="100" r="90" fill="none" stroke="#14141F" strokeWidth="2" />
-          <circle cx="100" cy="100" r="90" fill="none"
-            stroke={secondsLeft === 0 ? '#3DD68C' : '#5DA8FF'}
-            strokeWidth="3" strokeLinecap="round"
-            strokeDasharray={`${2 * Math.PI * 90}`}
-            strokeDashoffset={`${2 * Math.PI * 90 * (1 - progress)}`}
-            className="transition-all duration-1000" />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-mono font-bold text-[#E8E8F0] tracking-wider">
-            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-          </span>
-          <span className="text-[10px] text-[#3A3A4A] uppercase tracking-widest mt-2">
-            {secondsLeft === 0 ? 'Time up' : isRunning ? 'Focused' : 'Paused'}
-          </span>
+      <div className="relative flex h-full flex-col items-center justify-center px-6 text-center">
+        <div className="mb-8">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#B89B5E26] bg-[#B89B5E0D] system-idle">
+            <Seal size={24} variant="watching" color="#B89B5E" />
+          </div>
+          <div className="text-[10px] uppercase tracking-[0.34em] text-[#7F7A72]">Focus mode</div>
+          <h1 className="mx-auto mt-5 max-w-3xl font-ritual text-[30px] leading-[1.1] text-[#F2F1EE] md:text-[42px]">
+            {quest.title}
+          </h1>
+          <p className="mt-4 text-[11px] uppercase tracking-[0.22em] text-[#B4B0A7]">
+            No switching. No drift. One objective.
+          </p>
         </div>
+
+        <div className="relative mb-10 ring-pulse">
+          <svg className="h-72 w-72 -rotate-90 md:h-80 md:w-80" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+            <circle cx="100" cy="100" r="72" fill="none" stroke="rgba(184,155,94,0.10)" strokeWidth="1" />
+            <circle
+              cx="100"
+              cy="100"
+              r="90"
+              fill="none"
+              stroke={secondsLeft === 0 ? '#B89B5E' : '#6C8FB8'}
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={`${2 * Math.PI * 90}`}
+              strokeDashoffset={`${2 * Math.PI * 90 * (1 - progress)}`}
+              className="transition-all duration-1000"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#7F7A72]">
+              {secondsLeft === 0 ? 'Threshold' : isRunning ? 'Locked' : 'Paused'}
+            </div>
+            <div className="mt-4 font-mono text-6xl font-bold tracking-[0.08em] text-[#F2F1EE]">
+              {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsRunning(!isRunning)}
+            className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.02] text-[#B4B0A7] transition-all hover:border-white/16 hover:text-[#F2F1EE]"
+          >
+            {isRunning ? <Pause className="h-4.5 w-4.5" /> : <Play className="h-4.5 w-4.5" />}
+          </button>
+
+          <button
+            onClick={handleComplete}
+            className="inline-flex min-w-[200px] items-center justify-center gap-2 rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-8 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A]"
+          >
+            <Check className="h-4.5 w-4.5" />
+            Seal completion
+          </button>
+
+          <button
+            onClick={() => {
+              setSecondsLeft(FOCUS_DURATION);
+              setIsRunning(true);
+            }}
+            className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.02] text-[#B4B0A7] transition-all hover:border-white/16 hover:text-[#F2F1EE]"
+          >
+            <RotateCcw className="h-4.5 w-4.5" />
+          </button>
+        </div>
+
+        <div className="mt-8 max-w-xl text-[11px] uppercase tracking-[0.18em] text-[#7F7A72]">
+          {secondsLeft === 0 ? 'The window is open. Finish it now or name the failure.' : 'The chamber remains sealed until execution is complete.'}
+        </div>
+        {escapeCount > 0 && <div className="mt-3 text-[11px] uppercase tracking-[0.18em] text-[#C05A60]">Escape attempts: {escapeCount}</div>}
       </div>
-
-      {/* Controls */}
-      <div className="flex items-center gap-4">
-        <button onClick={() => setIsRunning(!isRunning)}
-          className="w-12 h-12 rounded-xl bg-[#12121A] border border-[#1E1E2E] flex items-center justify-center text-[#55556A] hover:text-[#8888A0] hover:border-[#2A2A3C] transition-all">
-          {isRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-        </button>
-
-        <button onClick={handleComplete}
-          className="px-10 py-4 bg-[#4ADE80] hover:bg-[#3ACF70] text-[#06060B] rounded-xl text-base font-bold shadow-[0_0_30px_rgba(74,222,128,0.15)] hover:shadow-[0_0_40px_rgba(74,222,128,0.25)] transition-all flex items-center gap-2">
-          <Check className="w-5 h-5" />Done
-        </button>
-
-        <button onClick={() => { setSecondsLeft(FOCUS_DURATION); setIsRunning(true); }}
-          className="w-12 h-12 rounded-xl bg-[#12121A] border border-[#1E1E2E] flex items-center justify-center text-[#55556A] hover:text-[#8888A0] hover:border-[#2A2A3C] transition-all">
-          <RotateCcw className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Pressure */}
-      <p className="mt-8 text-xs text-[#2A2A3C]">
-        {secondsLeft === 0 ? 'Time is up. Finish or admit failure.' : 'Do not leave. Do not switch tabs. Execute.'}
-      </p>
-      {escapeCount > 0 && (
-        <p className="mt-2 text-[10px] text-[#FF4444]">Escape attempts: {escapeCount}</p>
-      )}
     </div>
   );
 };

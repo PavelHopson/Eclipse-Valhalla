@@ -1,13 +1,7 @@
 /**
- * Eclipse Valhalla — Return Overlay
+ * Eclipse Valhalla - Return Overlay
  *
- * Shows on app open when there's unfinished business.
- * Three scenarios:
- *   1. Morning trigger (first open of the day)
- *   2. Unfinished debt (abandoned objectives from yesterday)
- *   3. Inactivity pressure (came back after days away)
- *
- * This is NOT a welcome screen. This is a confrontation.
+ * Re-entry is confrontation, not comfort.
  */
 
 import React from 'react';
@@ -20,7 +14,7 @@ export interface ReturnState {
   streak: number;
   abandonedCount: number;
   daysAway: number;
-  topAbandoned?: string; // title of most urgent abandoned quest
+  topAbandoned?: string;
 }
 
 interface ReturnOverlayProps {
@@ -30,84 +24,82 @@ interface ReturnOverlayProps {
 }
 
 const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDismiss }) => {
+  const title =
+    state.type === 'morning' ? `Day ${state.streak}.` :
+    state.type === 'debt' ? `${state.abandonedCount} abandoned.` :
+    `${state.daysAway} days absent.`;
+
+  const body =
+    state.type === 'morning'
+      ? state.streak > 1
+        ? `${state.streak} days of continuity are on the line. Show proof.`
+        : 'The system has opened a new day. Establish control immediately.'
+      : state.type === 'debt'
+      ? 'You left without closure. The record stayed open.'
+      : 'The loop collapsed while you were gone. Discipline does not restart on its own.';
+
+  const detail =
+    state.type === 'morning'
+      ? state.abandonedCount > 0
+        ? `${state.abandonedCount} unfinished objective${state.abandonedCount > 1 ? 's' : ''} are still waiting.`
+        : 'No excuses have been written yet.'
+      : state.type === 'debt'
+      ? state.topAbandoned
+        ? `Most urgent: ${state.topAbandoned}`
+        : 'Old pressure is still active.'
+      : 'Day 1 begins only when you act.';
+
+  const variant = state.type === 'morning' ? 'watching' : 'broken';
+  const accent = state.type === 'morning' ? '#B89B5E' : '#A33036';
+
   return (
-    <div className="fixed inset-0 z-[75] bg-[#050508] flex items-center justify-center ritual-enter">
-      <div className="max-w-md mx-auto px-6 text-center judgment-enter">
+    <div className="fixed inset-0 z-[75] flex items-center justify-center bg-[#0A0A0A]/96 px-6 ritual-enter">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(108,143,184,0.10),transparent_32%)]" />
 
-        {/* ═══ MORNING TRIGGER ═══ */}
-        {state.type === 'morning' && (
-          <>
-            <div className="mx-auto mb-8"><Seal size={56} variant="watching" animated /></div>
-            <h1 className="text-2xl font-bold text-[#E8E8F0] mb-2">
-              Day {state.streak}.
-            </h1>
-            <p className="text-sm text-[#55556A] mb-2">
-              {state.streak > 1
-                ? `${state.streak} days of discipline. Don't break it.`
-                : 'The system is watching. What will you execute today?'}
-            </p>
-            {state.abandonedCount > 0 && (
-              <p className="text-xs text-[#FF4444] mb-6">
-                {state.abandonedCount} unfinished objective{state.abandonedCount > 1 ? 's' : ''} from yesterday.
-              </p>
-            )}
-          </>
-        )}
+      <div className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-[#121212]/96 p-8 text-center shadow-[0_28px_100px_rgba(0,0,0,0.58)] judgment-enter">
+        <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute left-8 top-8 hidden h-24 w-24 rounded-full border border-white/5 md:block" />
+        <div className="absolute right-8 top-8 hidden h-10 w-10 rounded-full border border-[#B89B5E24] md:block" />
 
-        {/* ═══ UNFINISHED DEBT ═══ */}
-        {state.type === 'debt' && (
-          <>
-            <div className="mx-auto mb-8"><Seal size={56} variant="broken" animated /></div>
-            <h1 className="text-2xl font-bold text-[#FF4444] mb-2">
-              {state.abandonedCount} abandoned.
-            </h1>
-            <p className="text-sm text-[#55556A] mb-2">
-              You left without finishing. The system remembers.
-            </p>
-            {state.topAbandoned && (
-              <p className="text-xs text-[#8888A0] mb-6">
-                Most urgent: "{state.topAbandoned}"
-              </p>
-            )}
-          </>
-        )}
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border bg-black/20" style={{ borderColor: `${accent}33` }}>
+          <Seal size={40} variant={variant} color={accent} animated />
+        </div>
 
-        {/* ═══ COMEBACK ═══ */}
-        {state.type === 'comeback' && (
-          <>
-            <div className="mx-auto mb-8"><Seal size={56} variant="broken" animated /></div>
-            <h1 className="text-2xl font-bold text-[#E8E8F0] mb-2">
-              {state.daysAway} days absent.
-            </h1>
-            <p className="text-sm text-[#FF4444] mb-2">
-              Streak destroyed. Discipline collapsed.
-            </p>
-            <p className="text-xs text-[#55556A] mb-6">
-              Day 1 begins now. Prove you're still here.
-            </p>
-          </>
-        )}
+        <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">Return protocol</div>
+        <h1 className="mt-4 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">{title}</h1>
+        <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-[#B4B0A7]">{body}</p>
+        <p className="mt-4 text-[11px] uppercase tracking-[0.18em]" style={{ color: accent }}>{detail}</p>
 
-        {/* CTA */}
-        <button onClick={onStartFirst}
-          className="w-full px-8 py-4 bg-[#5DAEFF] hover:bg-[#4A9AEE] text-[#06060B] rounded-xl text-sm font-bold shadow-[0_0_30px_rgba(93,174,255,0.15)] hover:shadow-[0_0_40px_rgba(93,174,255,0.25)] transition-all flex items-center justify-center gap-2 mb-3">
-          <ArrowRight className="w-5 h-5" />
-          {state.abandonedCount > 0 ? 'Face your objectives' : 'Start first objective'}
-        </button>
+        <div className="mt-8 rounded-[20px] border border-white/8 bg-white/[0.02] p-4 text-left">
+          <div className="text-[10px] uppercase tracking-[0.22em] text-[#7F7A72]">System expectation</div>
+          <p className="mt-3 text-sm leading-6 text-[#F2F1EE]">
+            Re-entry only matters if it becomes action in the next minute.
+          </p>
+        </div>
 
-        {/* Telegram CTA for streak break / comeback */}
-        {(state.type === 'comeback' || (state.type === 'debt' && state.abandonedCount >= 3)) && (
-          <button onClick={() => openTelegram('streak_break', 'return_overlay')}
-            className="flex items-center gap-2 mx-auto text-[10px] text-[#55556A] hover:text-[#8888A0] transition-colors mb-3">
-            <MessageSquare className="w-3 h-3" />
-            Need accountability? Talk to the creator.
+        <div className="mt-8 space-y-3">
+          <button
+            onClick={onStartFirst}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-8 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A]"
+          >
+            {state.abandonedCount > 0 ? 'Face the objectives' : 'Start first objective'}
+            <ArrowRight className="h-4 w-4" />
           </button>
-        )}
 
-        <button onClick={onDismiss}
-          className="text-[10px] text-[#2A2A3C] hover:text-[#3A3A4A] transition-colors">
-          dismiss
-        </button>
+          {(state.type === 'comeback' || (state.type === 'debt' && state.abandonedCount >= 3)) && (
+            <button
+              onClick={() => openTelegram('streak_break', 'return_overlay')}
+              className="mx-auto inline-flex items-center gap-2 text-[11px] font-semibold text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              Need accountability pressure
+            </button>
+          )}
+
+          <button onClick={onDismiss} className="text-[11px] uppercase tracking-[0.16em] text-[#5F5A54] transition-colors hover:text-[#B4B0A7]">
+            Dismiss
+          </button>
+        </div>
       </div>
     </div>
   );

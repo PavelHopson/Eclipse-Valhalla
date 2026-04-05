@@ -1,12 +1,11 @@
 /**
- * Eclipse Valhalla — Quick Quest Input
+ * Eclipse Valhalla - Quick Quest Input
  *
- * Single-input quest creation. 60-second first win.
- * Press Enter → quest created + widget spawned + feedback.
+ * Fast, central, deliberate.
  */
 
 import React, { useState, useRef } from 'react';
-import { Plus, Zap, Briefcase, Heart, User } from 'lucide-react';
+import { ArrowUpRight, Briefcase, HeartPulse, UserRound } from 'lucide-react';
 
 type QuestTag = 'work' | 'health' | 'life';
 
@@ -16,15 +15,15 @@ interface QuickQuestInputProps {
   compact?: boolean;
 }
 
-const TAGS: { id: QuestTag; icon: any; label: string; color: string }[] = [
-  { id: 'work', icon: Briefcase, label: 'Work', color: '#5DAEFF' },
-  { id: 'health', icon: Heart, label: 'Health', color: '#4ADE80' },
-  { id: 'life', icon: User, label: 'Life', color: '#7A5CFF' },
+const TAGS: { id: QuestTag; icon: any; label: string; accent: string }[] = [
+  { id: 'work', icon: Briefcase, label: 'Work', accent: '#6C8FB8' },
+  { id: 'health', icon: HeartPulse, label: 'Health', accent: '#8E9B79' },
+  { id: 'life', icon: UserRound, label: 'Life', accent: '#B89B5E' },
 ];
 
 const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
   onCreateQuest,
-  placeholder = 'New objective... (Enter to create)',
+  placeholder = 'State the objective. Press Enter.',
   compact = false,
 }) => {
   const [value, setValue] = useState('');
@@ -32,24 +31,15 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
   const [tag, setTag] = useState<QuestTag | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = () => {
+  const submit = () => {
     const title = value.trim();
     if (!title) return;
 
     onCreateQuest(title, tag || undefined);
     setValue('');
     setFlash(true);
-    setTimeout(() => setFlash(false), 600);
-
-    // Refocus for rapid entry
+    window.setTimeout(() => setFlash(false), 700);
     inputRef.current?.focus();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSubmit();
-    }
   };
 
   if (compact) {
@@ -60,71 +50,101 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
           type="text"
           value={value}
           onChange={e => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={e => e.key === 'Enter' && submit()}
           placeholder={placeholder}
-          className={`flex-1 px-3 py-2 bg-[#12121A] border rounded-lg text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none transition-all ${
-            flash ? 'border-[#4ADE8060] shadow-[0_0_10px_rgba(74,222,128,0.1)]' : 'border-[#2A2A3C] focus:border-[#5DAEFF40]'
+          className={`flex-1 rounded-[12px] border bg-[#121212] px-3 py-2.5 text-sm text-[#F2F1EE] outline-none transition-all ${
+            flash ? 'border-[#8E9B793D] shadow-[0_0_16px_rgba(142,155,121,0.12)]' : 'border-white/10 focus:border-[#6C8FB855]'
           }`}
         />
         <button
-          onClick={handleSubmit}
+          onClick={submit}
           disabled={!value.trim()}
-          className="px-3 py-2 bg-[#5DAEFF] text-[#0A0A0F] rounded-lg font-bold disabled:opacity-20 transition-opacity active:scale-95"
+          className="rounded-[12px] bg-[#6C8FB8] px-3 py-2.5 font-bold text-[#0A0A0A] transition-all disabled:opacity-20"
         >
-          <Plus className="w-4 h-4" />
+          <ArrowUpRight className="h-4 w-4" />
         </button>
       </div>
     );
   }
 
   return (
-    <div className={`relative bg-[#08080D] border rounded-lg overflow-hidden transition-all ${
-      flash ? 'border-[#3DD68C30] shadow-[0_0_20px_rgba(61,214,140,0.06)]' : 'border-[#1E1E3050] focus-within:border-[#5DA8FF30]'
-    }`}>
-      <div className="flex items-center px-4">
-        <span className="text-[#3D3D52] text-sm font-mono shrink-0">›</span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={e => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="flex-1 px-2 py-4 bg-transparent text-[15px] font-medium text-[#EAEAF2] placeholder-[#3D3D52] outline-none"
-        />
-        {value.trim() && (
+    <section
+      className={`relative overflow-hidden rounded-[24px] border bg-[#121212]/96 transition-all ${
+        flash ? 'border-[#8E9B793D] shadow-[0_0_24px_rgba(142,155,121,0.12)]' : 'border-white/8'
+      }`}
+    >
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `
+            linear-gradient(180deg, rgba(255,255,255,0.02), transparent 28%),
+            radial-gradient(circle at 50% 0%, rgba(108, 143, 184, 0.08), transparent 32%)
+          `,
+        }}
+      />
+      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#6C8FB833] to-transparent" />
+
+      <div className="relative px-5 py-5 md:px-6 md:py-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[#7F7A72]">Quest input</div>
+            <div className="mt-2 font-ritual text-lg text-[#F2F1EE]">Give the day a command.</div>
+          </div>
+          <div className="rounded-full border border-[#B89B5E24] bg-[#B89B5E10] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#D8C18E]">
+            Signal → Quest
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="relative flex-1">
+            <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[12px] uppercase tracking-[0.24em] text-[#5F5A54]">
+              ///
+            </div>
+            <input
+              ref={inputRef}
+              type="text"
+              value={value}
+              onChange={e => setValue(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && submit()}
+              placeholder={placeholder}
+              className="w-full rounded-[16px] border border-[#6C8FB826] bg-[#0F0F0F] py-5 pl-16 pr-5 text-[16px] font-semibold text-[#F2F1EE] placeholder-[#5F5A54] outline-none transition-all focus:border-[#B89B5E40] focus:shadow-[0_0_0_1px_rgba(184,155,94,0.25)]"
+            />
+          </div>
+
           <button
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-[#5DA8FF] text-[#050508] rounded-md text-xs font-bold uppercase tracking-wider active:scale-95 transition-transform"
+            onClick={submit}
+            disabled={!value.trim()}
+            className="inline-flex h-[60px] items-center justify-center gap-2 rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-6 text-sm font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A] disabled:cursor-not-allowed disabled:opacity-25"
           >
-            ↵
+            Seal quest
+            <ArrowUpRight className="h-4 w-4" />
           </button>
-        )}
-      </div>
+        </div>
 
-      {/* Quest type tags — 1 click, optional */}
-      <div className="flex items-center gap-1 px-4 pb-2">
-        {TAGS.map(t => {
-          const Icon = t.icon;
-          const active = tag === t.id;
-          return (
-            <button key={t.id} onClick={() => setTag(active ? null : t.id)}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-medium transition-all ${
-                active ? `border` : 'text-[#3A3A4A] hover:text-[#55556A]'
-              }`}
-              style={active ? { color: t.color, borderColor: `${t.color}30`, backgroundColor: `${t.color}08` } : undefined}>
-              <Icon className="w-2.5 h-2.5" />
-              {t.label}
-            </button>
-          );
-        })}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {TAGS.map(item => {
+            const Icon = item.icon;
+            const active = tag === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setTag(active ? null : item.id)}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] transition-all ${
+                  active ? '' : 'border-white/8 bg-white/[0.02] text-[#7F7A72] hover:text-[#B4B0A7]'
+                }`}
+                style={active ? { borderColor: `${item.accent}40`, backgroundColor: `${item.accent}12`, color: item.accent } : undefined}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {item.label}
+              </button>
+            );
+          })}
+          <span className="text-[10px] uppercase tracking-[0.18em] text-[#5F5A54]">
+            Enter confirms immediately
+          </span>
+        </div>
       </div>
-
-      {/* Success flash */}
-      {flash && (
-        <div className="absolute inset-0 bg-[#4ADE8008] pointer-events-none animate-pulse" />
-      )}
-    </div>
+    </section>
   );
 };
 

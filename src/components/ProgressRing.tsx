@@ -1,8 +1,7 @@
 /**
  * Eclipse Valhalla — Progress Ring
  *
- * Daily execution arc. Not a bar. A sacred circle.
- * Cold when incomplete. Green when done. Always watching.
+ * Daily execution arc. Cold under pressure, gold when sealed.
  */
 
 import React from 'react';
@@ -28,8 +27,8 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
   const offset = circumference * (1 - progress);
 
   // Color based on progress
-  const color = progress >= 1 ? '#3DD68C' : progress >= 0.5 ? '#5DA8FF' : '#5E5E78';
-  const trackColor = '#14141F';
+  const color = progress >= 1 ? '#B89B5E' : progress >= 0.5 ? '#6C8FB8' : '#5F5A54';
+  const trackColor = '#232323';
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
@@ -54,7 +53,7 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
       {showLabel && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xs font-bold" style={{ color }}>{completed}</span>
-          <span className="text-[8px]" style={{ color: '#3D3D52' }}>/{total}</span>
+          <span className="text-[8px]" style={{ color: '#5F5A54' }}>/{total}</span>
         </div>
       )}
     </div>
