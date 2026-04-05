@@ -1,9 +1,12 @@
-
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Reminder, RepeatType, Priority, PlanTier, ReminderStatus } from '../types';
 import { formatDate, getPriorityColor, parseSmartTask } from '../utils';
-import { Plus, Bell, CheckCircle2, Circle, Trash2, Clock, Calendar, Filter, ArrowUpDown, LayoutList, Kanban, Sparkles, Lock } from 'lucide-react';
+import {
+  Plus, CheckCircle2, Circle, Trash2, Clock, Calendar, LayoutList, Kanban,
+  Sparkles, Lock, ArrowRight, ShieldAlert, FilePenLine, Swords,
+} from 'lucide-react';
 import { useLanguage } from '../i18n';
+import { Seal } from '../brand/Seal';
 
 interface ReminderViewProps {
   reminders: Reminder[];
@@ -13,242 +16,364 @@ interface ReminderViewProps {
   onEditReminder: (reminder: Reminder) => void;
   onAddSmartTask: (task: Partial<Reminder>) => void;
   onStatusChange: (id: string, status: ReminderStatus) => void;
+  onStartFocus: (id: string) => void;
   userPlan: PlanTier;
   onUpgrade: () => void;
 }
 
 const ReminderView: React.FC<ReminderViewProps> = ({
-    reminders, toggleComplete, deleteReminder, onOpenCreateModal, onEditReminder, onAddSmartTask, onStatusChange, userPlan, onUpgrade
+  reminders,
+  toggleComplete,
+  deleteReminder,
+  onOpenCreateModal,
+  onEditReminder,
+  onAddSmartTask,
+  onStatusChange,
+  onStartFocus,
+  userPlan,
+  onUpgrade,
 }) => {
-  const { t, language } = useLanguage();
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('active');
+  const { language } = useLanguage();
+  const isRU = language === 'ru';
+  const [filter, setFilter] = useState<'active' | 'all' | 'completed' | 'abandoned'>('active');
   const [viewType, setViewType] = useState<'list' | 'board'>('list');
   const [aiInput, setAiInput] = useState('');
 
-  // AI Smart Input Handler
-  const handleAiSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (userPlan === PlanTier.FREE) {
-        onUpgrade();
-        return;
-    }
-    if (!aiInput.trim()) return;
-    const parsed = parseSmartTask(aiInput);
-    onAddSmartTask(parsed);
-    setAiInput('');
-  };
+  const now = new Date();
 
-  // Sort: Active first, then Priority (High->Low), then Date
-  const sortedReminders = [...reminders].sort((a, b) => {
-    if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
+  const sortedReminders = useMemo(() => {
     const pWeight = { [Priority.HIGH]: 3, [Priority.MEDIUM]: 2, [Priority.LOW]: 1 };
-    if (pWeight[a.priority] !== pWeight[b.priority]) return pWeight[b.priority] - pWeight[a.priority];
-    return new Date(a.dueDateTime).getTime() - new Date(b.dueDateTime).getTime();
-  });
+    return [...reminders].sort((a, b) => {
+      if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
+      const aOverdue = !a.isCompleted && new Date(a.dueDateTime) < now;
+      const bOverdue = !b.isCompleted && new Date(b.dueDateTime) < now;
+      if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+      if (pWeight[a.priority] !== pWeight[b.priority]) return pWeight[b.priority] - pWeight[a.priority];
+      return new Date(a.dueDateTime).getTime() - new Date(b.dueDateTime).getTime();
+    });
+  }, [reminders, now]);
 
   const filteredReminders = sortedReminders.filter(r => {
+    const overdue = !r.isCompleted && new Date(r.dueDateTime) < now;
     if (filter === 'active') return !r.isCompleted;
     if (filter === 'completed') return r.isCompleted;
+    if (filter === 'abandoned') return overdue;
     return true;
   });
 
-  const getFilterLabel = (f: string) => {
-      switch(f) {
-          case 'active': return t('tasks.filter_active');
-          case 'completed': return t('tasks.filter_completed');
-          default: return t('tasks.filter_all');
-      }
+  const pendingCount = reminders.filter(r => !r.isCompleted).length;
+  const overdueCount = reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < now).length;
+  const completedCount = reminders.filter(r => r.isCompleted).length;
+
+  const handleAiSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (userPlan === PlanTier.FREE) {
+      onUpgrade();
+      return;
+    }
+    if (!aiInput.trim()) return;
+    onAddSmartTask(parseSmartTask(aiInput));
+    setAiInput('');
   };
 
-  // --- KANBAN COLUMNS ---
   const columns = [
-      { id: ReminderStatus.TODO, title: 'To Do', color: 'bg-[#12121A] border-[#2A2A3C]' },
-      { id: ReminderStatus.IN_PROGRESS, title: 'In Progress', color: 'bg-[#5DAEFF10] border-[#5DAEFF30]' },
-      { id: ReminderStatus.DONE, title: 'Done', color: 'bg-[#4ADE8015] border-[#4ADE8015]' }
+    { id: ReminderStatus.TODO, title: isRU ? 'Ожидают боя' : 'Waiting for battle', tone: 'border-white/8 bg-[#171717]' },
+    { id: ReminderStatus.IN_PROGRESS, title: isRU ? 'В бою' : 'Engaged', tone: 'border-[#6C8FB830] bg-[#6C8FB80D]' },
+    { id: ReminderStatus.DONE, title: isRU ? 'Запечатаны' : 'Sealed', tone: 'border-[#B89B5E30] bg-[#B89B5E0D]' },
   ];
 
   return (
-    <div className="p-4 md:p-8 h-full flex flex-col max-w-6xl mx-auto w-full pb-24 md:pb-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-[#E8E8F0] tracking-tight font-serif">{t('tasks.title')}</h2>
-          <p className="text-[#55556A] mt-1 text-sm">
-            {t('tasks.subtitle_1')} <span className="font-semibold text-[#5DAEFF]">{reminders.filter(r => !r.isCompleted).length}</span> {t('tasks.subtitle_2')}
-          </p>
-        </div>
-        <div className="flex items-center justify-between md:justify-end gap-2">
-            <div className="flex bg-[#12121A] p-1 rounded-lg border border-[#2A2A3C]">
-                <button onClick={() => setViewType('list')} className={`p-2 rounded-md ${viewType === 'list' ? 'bg-[#12121A] shadow text-[#5DAEFF]' : 'text-[#55556A]'}`} title={t('tasks.view_list')}><LayoutList className="w-5 h-5"/></button>
-                <button onClick={() => setViewType('board')} className={`p-2 rounded-md ${viewType === 'board' ? 'bg-[#12121A] shadow text-[#5DAEFF]' : 'text-[#55556A]'}`} title={t('tasks.view_board')}><Kanban className="w-5 h-5"/></button>
+    <div className="mx-auto flex h-full w-full max-w-6xl flex-col p-4 pb-24 md:p-8 md:pb-8">
+      <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#121212]/96 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.38)]">
+        <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#A3303640] to-transparent" />
+        <div className="absolute inset-y-8 left-0 w-px bg-gradient-to-b from-transparent via-white/8 to-transparent" />
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_80%_0%,rgba(122,31,36,0.14),transparent_24%),radial-gradient(circle_at_20%_20%,rgba(108,143,184,0.08),transparent_28%)]" />
+
+        <div className="relative flex flex-col gap-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">
+                {isRU ? 'Execution arena' : 'Execution arena'}
+              </div>
+              <h1 className="mt-3 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">
+                {isRU ? 'Поле боя задач' : 'Field of objectives'}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#B4B0A7]">
+                {overdueCount > 0
+                  ? isRU ? 'Просроченные цели уже стали долгом. Вход в квест должен ощущаться как начало боя.' : 'Overdue targets have already become debt. Entering a quest should feel like entering battle.'
+                  : isRU ? 'Это не список задач. Это арена исполнения и выбора приоритетной цели.' : 'This is not a task list. It is an execution arena for selecting the next target.'}
+              </p>
             </div>
-            <button
-            onClick={onOpenCreateModal}
-            className="flex items-center justify-center gap-2 bg-[#5DAEFF] hover:bg-blue-700 text-[#E8E8F0] px-4 py-2 rounded-xl shadow-lg shadow-[#5DAEFF20] transition-all font-medium text-sm active:scale-95"
-            >
-            <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">{t('tasks.new_task')}</span>
-            </button>
+
+            <div className="grid grid-cols-3 gap-3">
+              <ArenaStat label={isRU ? 'Active objectives' : 'Active objectives'} value={pendingCount} accent="#6C8FB8" />
+              <ArenaStat label={isRU ? 'Abandoned' : 'Abandoned'} value={overdueCount} accent="#A33036" pulse={overdueCount > 0} />
+              <ArenaStat label={isRU ? 'Sealed' : 'Sealed'} value={completedCount} accent="#B89B5E" />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <form onSubmit={handleAiSubmit} className="relative flex-1">
+              <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7F7A72]">
+                {userPlan === PlanTier.FREE ? <Lock className="h-4 w-4" /> : <Sparkles className="h-4 w-4 text-[#B89B5E]" />}
+              </div>
+              <input
+                type="text"
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                placeholder={
+                  userPlan === PlanTier.FREE
+                    ? (isRU ? 'Тактический парсер доступен в Pro' : 'Tactical parser is available in Pro')
+                    : (isRU ? 'Опиши цель естественным языком. Система превратит её в квест.' : 'Describe the objective in natural language. The system will forge a quest.')
+                }
+                readOnly={userPlan === PlanTier.FREE}
+                onClick={() => userPlan === PlanTier.FREE && onUpgrade()}
+                className={`w-full rounded-[16px] border bg-[#0F0F0F] py-4 pl-12 pr-4 text-sm outline-none transition-all ${
+                  userPlan === PlanTier.FREE
+                    ? 'cursor-pointer border-white/8 text-[#7F7A72]'
+                    : 'border-[#B89B5E26] text-[#F2F1EE] focus:border-[#B89B5E45] focus:shadow-[0_0_0_1px_rgba(184,155,94,0.18)]'
+                }`}
+              />
+            </form>
+
+            <div className="flex items-center gap-2">
+              <div className="flex rounded-[14px] border border-white/8 bg-[#171717] p-1">
+                <button onClick={() => setViewType('list')} className={`rounded-[10px] p-2 ${viewType === 'list' ? 'bg-[#232323] text-[#F2F1EE]' : 'text-[#7F7A72]'}`}>
+                  <LayoutList className="h-4 w-4" />
+                </button>
+                <button onClick={() => setViewType('board')} className={`rounded-[10px] p-2 ${viewType === 'board' ? 'bg-[#232323] text-[#F2F1EE]' : 'text-[#7F7A72]'}`}>
+                  <Kanban className="h-4 w-4" />
+                </button>
+              </div>
+              <button
+                onClick={onOpenCreateModal}
+                className="inline-flex items-center gap-2 rounded-[14px] border border-[#B89B5E30] bg-[#B89B5E] px-4 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A]"
+              >
+                <Plus className="h-4 w-4" />
+                {isRU ? 'Новый поход' : 'New battle'}
+              </button>
+            </div>
+          </div>
         </div>
+      </section>
+
+      <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
+        {[
+          { id: 'active', label: isRU ? 'Active objectives' : 'Active objectives' },
+          { id: 'all', label: isRU ? 'Unfinished' : 'All signals' },
+          { id: 'abandoned', label: isRU ? 'Abandoned' : 'Abandoned' },
+          { id: 'completed', label: isRU ? 'Sealed' : 'Sealed' },
+        ].map(item => (
+          <button
+            key={item.id}
+            onClick={() => setFilter(item.id as typeof filter)}
+            className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-all ${
+              filter === item.id ? 'border-[#B89B5E33] bg-[#B89B5E12] text-[#D8C18E]' : 'border-white/8 bg-[#171717] text-[#7F7A72] hover:text-[#B4B0A7]'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
-      {/* AI Smart Input */}
-      <form onSubmit={handleAiSubmit} className="relative mb-6 group">
-         <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${userPlan === PlanTier.FREE ? 'text-[#55556A]' : 'text-[#7A5CFF]'}`}>
-             {userPlan === PlanTier.FREE ? <Lock className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
-         </div>
-         <input
-            type="text"
-            value={aiInput}
-            onChange={(e) => setAiInput(e.target.value)}
-            placeholder={userPlan === PlanTier.FREE ? t('tasks.ai_locked') : t('tasks.ai_placeholder')}
-            readOnly={userPlan === PlanTier.FREE}
-            onClick={() => userPlan === PlanTier.FREE && onUpgrade()}
-            className={`w-full pl-12 pr-4 py-3.5 rounded-xl border outline-none transition-all shadow-sm text-sm md:text-base ${
-                userPlan === PlanTier.FREE
-                ? 'bg-[#12121A] text-[#55556A] cursor-pointer border-[#1E1E2E]'
-                : 'bg-[#1A1A26] border-[#7A5CFF30] focus:ring-2 focus:ring-[#7A5CFF] focus:border-transparent text-[#E8E8F0]'
-            }`}
-         />
-      </form>
-
-      {/* View Content */}
       {viewType === 'list' ? (
-        <>
-            {/* Filters */}
-            <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                {(['active', 'all', 'completed'] as const).map((f) => (
-                <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold capitalize transition-all whitespace-nowrap shrink-0 ${
-                    filter === f
-                        ? 'bg-[#E8E8F0] text-[#12121A] shadow-md'
-                        : 'bg-[#1A1A26] text-[#8888A0] hover:bg-[#1F1F2B] border border-[#2A2A3C]'
-                    }`}
-                >
-                    {getFilterLabel(f)}
-                </button>
-                ))}
+        <div className="mt-4 flex-1 overflow-hidden rounded-[24px] border border-white/8 bg-[#121212]/92 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+          {filteredReminders.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center px-8 text-center">
+              <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-full border border-white/8 bg-[#171717]">
+                <Seal size={40} variant={filter === 'abandoned' ? 'broken' : 'watching'} color={filter === 'abandoned' ? '#A33036' : '#6C8FB8'} />
+              </div>
+              <h3 className="font-ritual text-2xl text-[#F2F1EE]">
+                {filter === 'abandoned'
+                  ? (isRU ? 'Долгов нет.' : 'No abandoned fronts.')
+                  : (isRU ? 'Арена пуста.' : 'The arena is empty.')}
+              </h3>
+              <p className="mt-3 max-w-md text-sm leading-6 text-[#7F7A72]">
+                {filter === 'abandoned'
+                  ? (isRU ? 'Ничего не просрочено. Это редкий хороший знак.' : 'Nothing is overdue. That is a rare good sign.')
+                  : (isRU ? 'Добавь новую цель, чтобы день снова обрёл направление.' : 'Add a new objective so the day regains direction.')}
+              </p>
             </div>
-
-            {/* List */}
-            <div className="bg-[#1A1A26] rounded-2xl shadow-sm border border-[#2A2A3C] flex-1 overflow-hidden flex flex-col relative">
-                {filteredReminders.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-[#55556A] p-8 text-center bg-[#12121A]/30">
-                    <div className="w-24 h-24 bg-[#1A1A26] rounded-full flex items-center justify-center mb-4 shadow-sm border border-[#2A2A3C]">
-                    <Bell className="w-10 h-10 opacity-20 text-[#55556A]" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-[#55556A]">{t('tasks.empty_title')}</h3>
-                    <p className="text-sm max-w-xs mt-2 text-[#55556A]">{t('tasks.empty_desc')}</p>
-                </div>
-                ) : (
-                <div className="overflow-y-auto flex-1 p-2 space-y-2">
-                    {filteredReminders.map(reminder => (
-                    <div
-                        key={reminder.id}
-                        onClick={() => onEditReminder(reminder)}
-                        className={`group p-4 rounded-xl border border-transparent hover:border-[#2A2A3C] hover:shadow-md transition-all flex items-start gap-4 cursor-pointer active:scale-[0.98] ${
-                        reminder.isCompleted ? 'bg-[#12121A]/50 opacity-75' : 'bg-[#1A1A26]'
-                        }`}
+          ) : (
+            <div className="h-full overflow-y-auto p-3 md:p-4">
+              <div className="space-y-3">
+                {filteredReminders.map(reminder => {
+                  const isOverdue = !reminder.isCompleted && new Date(reminder.dueDateTime) < now;
+                  return (
+                    <article
+                      key={reminder.id}
+                      className={`group relative overflow-hidden rounded-[22px] border p-4 transition-all ${
+                        reminder.isCompleted
+                          ? 'border-[#B89B5E24] bg-[#B89B5E0A] opacity-75'
+                          : isOverdue
+                          ? 'border-[#7A1F2438] bg-[#7A1F240F] state-overdue'
+                          : 'border-white/8 bg-[#171717] hover:border-white/14'
+                      }`}
                     >
+                      <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-white/12 to-transparent" />
+                      <div className="absolute left-4 right-4 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+                      <div className="flex items-start gap-4">
                         <button
-                        onClick={(e) => { e.stopPropagation(); toggleComplete(reminder.id); }}
-                        className={`mt-1 shrink-0 transition-colors p-1 -ml-1 ${
-                            reminder.isCompleted ? 'text-green-500' : 'text-[#8888A0] hover:text-[#5DAEFF]'
-                        }`}
+                          onClick={() => toggleComplete(reminder.id)}
+                          className={`mt-1 shrink-0 rounded-full p-1 transition-colors ${
+                            reminder.isCompleted ? 'text-[#B89B5E]' : 'text-[#7F7A72] hover:text-[#D8C18E]'
+                          }`}
                         >
-                        {reminder.isCompleted ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
+                          {reminder.isCompleted ? <CheckCircle2 className="h-6 w-6" /> : <Circle className="h-6 w-6" />}
                         </button>
 
-                        <div className="flex-1 min-w-0 pt-0.5">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h3 className={`font-semibold text-sm md:text-base break-words ${reminder.isCompleted ? 'text-[#55556A] line-through' : 'text-[#E8E8F0]'}`}>
-                            {reminder.title}
-                            </h3>
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[#7F7A72]">
+                              <Swords className="h-3 w-3" />
+                              {reminder.isCompleted ? (isRU ? 'Печать' : 'Sealed') : isOverdue ? (isRU ? 'Критическая цель' : 'Critical target') : (isRU ? 'Цель' : 'Target')}
+                            </span>
                             {!reminder.isCompleted && (
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wide ${getPriorityColor(reminder.priority)}`}>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-[0.15em] ${getPriorityColor(reminder.priority)}`}>
                                 {reminder.priority}
-                            </span>
+                              </span>
                             )}
-                        </div>
+                          </div>
 
-                        {reminder.description && (
-                            <p className="text-xs md:text-sm text-[#55556A] line-clamp-2 mb-2 font-normal">{reminder.description}</p>
-                        )}
+                          <h3 className={`text-lg font-bold ${reminder.isCompleted ? 'line-through text-[#7F7A72]' : isOverdue ? 'text-[#F4D6D8]' : 'text-[#F2F1EE]'}`}>
+                            {reminder.title}
+                          </h3>
 
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-[#55556A] font-medium mt-2">
-                            <span className="flex items-center gap-1.5 bg-[#12121A] px-2 py-1 rounded-md border border-[#2A2A3C]">
-                            <Calendar className="w-3.5 h-3.5" />
-                            {formatDate(reminder.dueDateTime, language)}
+                          {reminder.description && (
+                            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#B4B0A7]">{reminder.description}</p>
+                          )}
+
+                          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                            <span className="inline-flex items-center gap-1.5 rounded-[10px] border border-white/8 bg-black/20 px-3 py-1.5 text-[#B4B0A7]">
+                              <Calendar className="h-3.5 w-3.5" />
+                              {formatDate(reminder.dueDateTime, language)}
                             </span>
-
                             {reminder.repeatType !== RepeatType.NONE && (
-                            <span className="flex items-center gap-1.5 text-[#5DAEFF] bg-[#5DAEFF10] px-2 py-1 rounded-md border border-[#5DAEFF30]">
-                                <Clock className="w-3.5 h-3.5" />
+                              <span className="inline-flex items-center gap-1.5 rounded-[10px] border border-[#6C8FB826] bg-[#6C8FB80F] px-3 py-1.5 text-[#9AB7D4]">
+                                <Clock className="h-3.5 w-3.5" />
                                 {reminder.repeatType}
-                            </span>
+                              </span>
                             )}
-                        </div>
+                            {isOverdue && (
+                              <span className="inline-flex items-center gap-1.5 rounded-[10px] border border-[#7A1F2438] bg-[#7A1F2412] px-3 py-1.5 text-[#C05A60]">
+                                <ShieldAlert className="h-3.5 w-3.5" />
+                                {isRU ? 'Долг открыт' : 'Debt opened'}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        <button
-                        onClick={(e) => { e.stopPropagation(); deleteReminder(reminder.id); }}
-                        className="p-2 text-[#55556A] hover:text-[#FF4444] hover:bg-[#FF444410] rounded-lg md:opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                        <Trash2 className="w-5 h-5" />
-                        </button>
-                    </div>
+                        <div className="flex shrink-0 flex-col items-end gap-2">
+                          {!reminder.isCompleted && (
+                            <button
+                              onClick={() => onStartFocus(reminder.id)}
+                              className={`inline-flex items-center gap-2 rounded-[14px] border px-4 py-2.5 text-xs font-extrabold uppercase tracking-[0.12em] transition-all ${
+                                isOverdue
+                                  ? 'border-[#7A1F2438] bg-[#A33036] text-white hover:bg-[#B13B41]'
+                                  : 'border-[#6C8FB830] bg-[#6C8FB8] text-[#0A0A0A] hover:bg-[#7C9FC7]'
+                              }`}
+                            >
+                              {isRU ? 'В бой' : 'Engage'}
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => onEditReminder(reminder)}
+                              className="rounded-[12px] border border-white/8 bg-black/20 p-2 text-[#7F7A72] transition-colors hover:text-[#F2F1EE]"
+                            >
+                              <FilePenLine className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => deleteReminder(reminder.id)}
+                              className="rounded-[12px] border border-[#7A1F2424] bg-[#7A1F240A] p-2 text-[#7F7A72] transition-colors hover:text-[#C05A60]"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="mt-4 flex-1 overflow-x-auto pb-4">
+          <div className="flex min-w-max gap-4 pr-4 md:min-w-0">
+            {columns.map(col => (
+              <section key={col.id} className={`w-[84vw] min-w-[300px] rounded-[24px] border p-4 md:w-auto md:flex-1 ${col.tone}`}>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#B4B0A7]">{col.title}</h3>
+                  <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[10px] font-bold text-[#7F7A72]">
+                    {reminders.filter(r => (r.status || (r.isCompleted ? ReminderStatus.DONE : ReminderStatus.TODO)) === col.id).length}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {reminders
+                    .filter(r => (r.status || (r.isCompleted ? ReminderStatus.DONE : ReminderStatus.TODO)) === col.id)
+                    .map(r => (
+                      <div key={r.id} className="rounded-[18px] border border-white/8 bg-[#171717] p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-sm font-bold text-[#F2F1EE]">{r.title}</div>
+                            <div className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[#7F7A72]">{formatDate(r.dueDateTime, language)}</div>
+                          </div>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border uppercase tracking-[0.14em] ${getPriorityColor(r.priority)}`}>{r.priority}</span>
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                          {col.id !== ReminderStatus.TODO && (
+                            <button onClick={() => onStatusChange(r.id, ReminderStatus.TODO)} className="rounded-[12px] border border-white/8 bg-black/20 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B4B0A7]">
+                              {isRU ? 'Назад' : 'Reset'}
+                            </button>
+                          )}
+                          {col.id === ReminderStatus.TODO && (
+                            <button onClick={() => onStatusChange(r.id, ReminderStatus.IN_PROGRESS)} className="rounded-[12px] border border-[#6C8FB830] bg-[#6C8FB80F] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#9AB7D4]">
+                              {isRU ? 'В бой' : 'Engage'}
+                            </button>
+                          )}
+                          {col.id === ReminderStatus.IN_PROGRESS && (
+                            <>
+                              <button onClick={() => onStartFocus(r.id)} className="rounded-[12px] border border-[#B89B5E30] bg-[#B89B5E] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#0A0A0A]">
+                                {isRU ? 'Фокус' : 'Focus'}
+                              </button>
+                              <button onClick={() => onStatusChange(r.id, ReminderStatus.DONE)} className="rounded-[12px] border border-[#B89B5E30] bg-[#B89B5E10] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#D8C18E]">
+                                {isRU ? 'Запечатать' : 'Seal'}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     ))}
                 </div>
-                )}
-            </div>
-        </>
-      ) : (
-          // KANBAN BOARD - Mobile Optimized with Snap Scrolling
-          <div className="flex-1 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0">
-              <div className="flex gap-4 h-full min-w-max md:min-w-0 pr-4">
-                  {columns.map(col => (
-                      <div key={col.id} className={`flex-1 rounded-2xl border p-3 flex flex-col snap-center w-[85vw] md:w-auto md:min-w-[280px] ${col.color}`}>
-                          <h3 className="font-bold text-sm uppercase tracking-wider mb-3 text-[#55556A] px-2 flex justify-between sticky top-0">
-                              {col.title}
-                              <span className="bg-[#12121A] px-2 rounded-full text-xs border border-[#2A2A3C]">
-                                  {reminders.filter(r => (r.status || (r.isCompleted ? ReminderStatus.DONE : ReminderStatus.TODO)) === col.id).length}
-                              </span>
-                          </h3>
-                          <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-                              {reminders
-                                .filter(r => (r.status || (r.isCompleted ? ReminderStatus.DONE : ReminderStatus.TODO)) === col.id)
-                                .map(r => (
-                                    <div key={r.id} className="bg-[#1A1A26] p-3 rounded-xl shadow-sm border border-[#2A2A3C] hover:shadow-md transition-all active:scale-95">
-                                        <p className="font-semibold text-sm text-[#E8E8F0] mb-1 line-clamp-2">{r.title}</p>
-                                        <div className="flex justify-between items-center mt-2">
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border ${getPriorityColor(r.priority)}`}>{r.priority}</span>
-
-                                            {/* Move Controls */}
-                                            <div className="flex gap-1">
-                                                {col.id !== ReminderStatus.TODO && (
-                                                    <button onClick={() => onStatusChange(r.id, ReminderStatus.TODO)} className="px-2 py-1 bg-[#12121A] rounded text-[10px] font-bold text-[#8888A0]">←</button>
-                                                )}
-                                                {col.id === ReminderStatus.TODO && (
-                                                    <button onClick={() => onStatusChange(r.id, ReminderStatus.IN_PROGRESS)} className="px-2 py-1 bg-[#5DAEFF10] rounded text-[#5DAEFF] text-[10px] font-bold">→</button>
-                                                )}
-                                                {col.id === ReminderStatus.IN_PROGRESS && (
-                                                    <button onClick={() => onStatusChange(r.id, ReminderStatus.DONE)} className="px-2 py-1 bg-[#4ADE8015] rounded text-[#4ADE80] text-[10px] font-bold">✓</button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                              }
-                          </div>
-                      </div>
-                  ))}
-              </div>
+              </section>
+            ))}
           </div>
+        </div>
       )}
     </div>
   );
 };
+
+const ArenaStat = ({
+  label,
+  value,
+  accent,
+  pulse = false,
+}: {
+  label: string;
+  value: number;
+  accent: string;
+  pulse?: boolean;
+}) => (
+  <div className={`rounded-[18px] border px-4 py-3 ${pulse ? 'state-overdue' : ''}`} style={{ borderColor: `${accent}30`, backgroundColor: `${accent}10` }}>
+    <div className="text-[10px] uppercase tracking-[0.18em]" style={{ color: `${accent}` }}>{label}</div>
+    <div className="mt-2 text-2xl font-extrabold text-[#F2F1EE]">{value}</div>
+  </div>
+);
 
 export default ReminderView;

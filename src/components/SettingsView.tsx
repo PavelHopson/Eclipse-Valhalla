@@ -1,19 +1,10 @@
-/**
- * Eclipse Valhalla — Settings (Redesigned)
- *
- * Clean, professional, premium dark settings panel.
- * Sections: Profile, AI, Language, Appearance, Data, Account.
- */
-
 import React, { useRef, useState, Suspense, lazy } from 'react';
 import {
-  Download, Moon, Crown, Palette, HardDrive, LogOut, Upload,
-  Zap, Shield, Globe, Edit2, Check, X, Cpu, User as UserIcon,
-  ChevronRight, Flame, Target, MessageSquare,
+  Download, Crown, HardDrive, LogOut, Upload, Globe, Edit2, Check,
+  Cpu, ChevronRight, Flame, Target, MessageSquare, SlidersHorizontal,
 } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { User, Reminder, Note, PlanTier, Theme } from '../types';
-import { THEME_COLORS, getNextLevelXp } from '../utils';
 import { getMode, setMode as setDisciplineMode } from '../services/disciplineMode';
 import { openTelegram } from '../services/telegramCTA';
 
@@ -32,9 +23,17 @@ interface SettingsViewProps {
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({
-  user, onLogout, setReminders, setNotes, onUpdateTheme, onUpgrade, onUpdateUser, remindersCount, notesCount,
+  user,
+  onLogout,
+  setReminders,
+  setNotes,
+  onUpdateTheme,
+  onUpgrade,
+  onUpdateUser,
+  remindersCount,
+  notesCount,
 }) => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const isRU = language === 'ru';
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isPro = user?.plan !== PlanTier.FREE;
@@ -42,13 +41,15 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user?.name || '');
   const [editEmail, setEditEmail] = useState(user?.email || '');
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string | null>('behavior');
 
-  // Streak
   let streak = 0;
-  try { const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user?.id}`) || '{}'); streak = s.days || 0; } catch {}
+  try {
+    const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user?.id}`) || '{}');
+    streak = s.days || 0;
+  } catch {}
 
-  const handleExport = () => {
+  const exportData = () => {
     const data = {
       reminders: JSON.parse(localStorage.getItem(`reminders_${user?.id}`) || '[]'),
       notes: JSON.parse(localStorage.getItem(`notes_${user?.id}`) || '[]'),
@@ -65,8 +66,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleImportClick = () => fileInputRef.current?.click();
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -81,247 +81,277 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     e.target.value = '';
   };
 
-  const handleSaveProfile = () => {
-    if (user) { onUpdateUser({ name: editName, email: editEmail }); setIsEditing(false); }
-  };
-
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-2xl mx-auto px-6 py-6 pb-24">
-
-        {/* ═══ HEADER ═══ */}
-        <div className="mb-8">
-          <h1 className="text-xl font-bold text-[#E8E8F0]">{isRU ? 'Настройки' : 'Settings'}</h1>
-          <p className="text-xs text-[#3A3A4A] mt-0.5">{isRU ? 'Настрой систему под себя' : 'Configure your system'}</p>
-        </div>
-
-        {/* ═══ PROFILE CARD ═══ */}
-        {user && (
-          <div className="bg-[#0C0C14] border border-[#1A1A2E] rounded-2xl p-5 mb-6">
-            <div className="flex items-start gap-4">
-              {/* Avatar */}
-              <div className="w-14 h-14 rounded-xl bg-[#5DAEFF10] border border-[#5DAEFF20] flex items-center justify-center text-xl font-bold text-[#5DAEFF] shrink-0">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                {isEditing ? (
-                  <div className="space-y-2">
-                    <input value={editName} onChange={e => setEditName(e.target.value)} placeholder={isRU ? 'Имя' : 'Name'}
-                      className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] outline-none focus:border-[#5DAEFF40]" />
-                    <input value={editEmail} onChange={e => setEditEmail(e.target.value)} placeholder="Email"
-                      className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] outline-none focus:border-[#5DAEFF40]" />
-                    <div className="flex gap-2">
-                      <button onClick={handleSaveProfile} className="px-3 py-1.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-lg text-xs font-bold"><Check className="w-3 h-3 inline mr-1" />{isRU ? 'Сохранить' : 'Save'}</button>
-                      <button onClick={() => setIsEditing(false)} className="px-3 py-1.5 text-xs text-[#55556A]">{isRU ? 'Отмена' : 'Cancel'}</button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-base font-bold text-[#E8E8F0]">{user.name}</h2>
-                      <button onClick={() => setIsEditing(true)} className="p-1 text-[#3A3A4A] hover:text-[#55556A]"><Edit2 className="w-3 h-3" /></button>
-                    </div>
-                    {user.email && <p className="text-xs text-[#3A3A4A] font-mono">{user.email}</p>}
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${isPro ? 'bg-[#FFD70010] text-[#FFD700] border border-[#FFD70025]' : 'bg-[#12121A] text-[#55556A] border border-[#1E1E2E]'}`}>
-                        {isPro ? 'Pro' : 'Free'}
-                      </span>
-                      {streak > 0 && (
-                        <span className="text-[9px] text-[#FF6B35] flex items-center gap-1"><Flame className="w-3 h-3" />{streak}d streak</span>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
+    <div className="h-full overflow-y-auto bg-[#0A0A0A]">
+      <div className="mx-auto max-w-4xl px-6 py-6 pb-24">
+        <section className="rounded-[28px] border border-white/10 bg-[#121212]/96 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.38)]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">System control</div>
+              <h1 className="mt-2 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">{isRU ? 'Контур управления' : 'Control chamber'}</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-[#B4B0A7]">
+                {isRU
+                  ? 'Настройки не должны быть скучными. Здесь ты определяешь, как система давит, подсказывает и реагирует.'
+                  : 'Settings should not feel generic. This is where you define how the system pressures, guides, and reacts.'}
+              </p>
             </div>
 
-            {/* Stats row */}
-            {!isEditing && (
-              <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-[#1A1A2E]">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-[#E8E8F0]">{remindersCount}</div>
-                  <div className="text-[9px] text-[#3A3A4A] uppercase">{isRU ? 'Квесты' : 'Quests'}</div>
+            <div className="flex flex-wrap gap-2">
+              <InfoChip label={isRU ? 'Mode' : 'Mode'} value={getMode() === 'hardcore' ? 'Hardcore' : 'Balanced'} accent={getMode() === 'hardcore' ? '#A33036' : '#6C8FB8'} />
+              <InfoChip label={isRU ? 'Plan' : 'Plan'} value={isPro ? 'Pro' : 'Free'} accent={isPro ? '#B89B5E' : '#7F7A72'} />
+              <InfoChip label={isRU ? 'Streak' : 'Streak'} value={`${streak}d`} accent="#B89B5E" />
+            </div>
+          </div>
+        </section>
+
+        {user && (
+          <section className="mt-6 rounded-[24px] border border-white/8 bg-[#121212]/92 p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="flex items-start gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-[18px] border border-[#6C8FB826] bg-[#6C8FB810] text-2xl font-extrabold text-[#9AB7D4]">
+                  {user.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-[#E8E8F0]">{user.level}</div>
-                  <div className="text-[9px] text-[#3A3A4A] uppercase">{isRU ? 'Уровень' : 'Level'}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-[#E8E8F0]">{user.xp}</div>
-                  <div className="text-[9px] text-[#3A3A4A] uppercase">XP</div>
+                <div className="min-w-0">
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full rounded-[12px] border border-white/10 bg-[#0F0F0F] px-3 py-2 text-sm text-[#F2F1EE] outline-none" />
+                      <input value={editEmail} onChange={e => setEditEmail(e.target.value)} className="w-full rounded-[12px] border border-white/10 bg-[#0F0F0F] px-3 py-2 text-sm text-[#F2F1EE] outline-none" />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            onUpdateUser({ name: editName, email: editEmail });
+                            setIsEditing(false);
+                          }}
+                          className="rounded-[12px] border border-[#B89B5E30] bg-[#B89B5E] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A]"
+                        >
+                          <Check className="mr-1 inline h-3.5 w-3.5" />
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-2xl font-bold text-[#F2F1EE]">{user.name}</h2>
+                        <button onClick={() => setIsEditing(true)} className="rounded-full p-2 text-[#7F7A72] hover:text-[#F2F1EE]">
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      {user.email && <div className="mt-1 text-sm text-[#7F7A72]">{user.email}</div>}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${isPro ? 'border-[#B89B5E30] bg-[#B89B5E10] text-[#D8C18E]' : 'border-white/8 bg-[#171717] text-[#7F7A72]'}`}>
+                          {isPro ? 'Pro access' : 'Free access'}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-[#B89B5E28] bg-[#B89B5E10] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#D8C18E]">
+                          <Flame className="h-3 w-3" />
+                          {streak}d streak
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
+
+              <div className="grid grid-cols-3 gap-3 md:min-w-[320px]">
+                <MiniStat label={isRU ? 'Quests' : 'Quests'} value={remindersCount} />
+                <MiniStat label={isRU ? 'Level' : 'Level'} value={user.level} />
+                <MiniStat label="XP" value={user.xp} />
+              </div>
+            </div>
+          </section>
         )}
 
-        {/* ═══ UPGRADE BANNER ═══ */}
         {!isPro && (
-          <button onClick={onUpgrade}
-            className="w-full bg-gradient-to-r from-[#5DAEFF08] to-[#7A5CFF08] border border-[#5DAEFF15] rounded-xl p-4 mb-6 text-left hover:border-[#5DAEFF30] transition-all group">
-            <div className="flex items-center justify-between">
+          <button
+            onClick={onUpgrade}
+            className="mt-6 w-full rounded-[22px] border border-[#B89B5E30] bg-[#B89B5E10] p-5 text-left transition-all hover:bg-[#B89B5E16]"
+          >
+            <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <Crown className="w-5 h-5 text-[#FFD700]" />
+                <Crown className="h-5 w-5 text-[#D8C18E]" />
                 <div>
-                  <span className="text-sm font-bold text-[#E8E8F0]">{isRU ? 'Перейти на Pro' : 'Upgrade to Pro'}</span>
-                  <p className="text-[10px] text-[#55556A]">{isRU ? 'AI, темы, облако, без ограничений' : 'AI, themes, cloud, unlimited'}</p>
+                  <div className="text-sm font-bold text-[#F2F1EE]">{isRU ? 'Перейти на Pro' : 'Upgrade to Pro'}</div>
+                  <div className="text-[11px] uppercase tracking-[0.14em] text-[#B89B5E]">{isRU ? 'AI / themes / cloud / unlimited' : 'AI / themes / cloud / unlimited'}</div>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#3A3A4A] group-hover:text-[#55556A]" />
+              <ChevronRight className="h-4 w-4 text-[#D8C18E]" />
             </div>
           </button>
         )}
 
-        {/* ═══ SETTINGS SECTIONS ═══ */}
-        <div className="space-y-2">
-
-          {/* AI PROVIDERS */}
+        <div className="mt-6 space-y-3">
           <SettingsSection
-            icon={<Cpu className="w-4 h-4 text-[#7A5CFF]" />}
-            title={isRU ? 'AI Провайдеры' : 'AI Providers'}
-            subtitle={isRU ? 'Gemini, OpenAI, Claude, Custom' : 'Gemini, OpenAI, Claude, Custom'}
+            icon={<Target className="h-4 w-4 text-[#A33036]" />}
+            title={isRU ? 'System behavior' : 'System behavior'}
+            subtitle={isRU ? 'Режим давления и реакция системы' : 'Pressure mode and system response'}
+            open={activeSection === 'behavior'}
+            onToggle={() => setActiveSection(activeSection === 'behavior' ? null : 'behavior')}
+          >
+            <div className="grid gap-3 md:grid-cols-2">
+              <ModeCard
+                title="Hardcore"
+                description={isRU ? 'Максимальное давление, меньше мягких сообщений, жёстче возврат.' : 'Maximum pressure, less softness, harsher return states.'}
+                active={getMode() === 'hardcore'}
+                accent="#A33036"
+                onClick={() => { setDisciplineMode('hardcore'); window.location.reload(); }}
+              />
+              <ModeCard
+                title="Balanced"
+                description={isRU ? 'Система остаётся строгой, но сохраняет больше пространства для восстановления.' : 'The system stays strict while leaving more room for recovery.'}
+                active={getMode() === 'balanced'}
+                accent="#6C8FB8"
+                onClick={() => { setDisciplineMode('balanced'); window.location.reload(); }}
+              />
+            </div>
+          </SettingsSection>
+
+          <SettingsSection
+            icon={<Cpu className="h-4 w-4 text-[#B89B5E]" />}
+            title={isRU ? 'Oracle stack' : 'Oracle stack'}
+            subtitle="Gemini / OpenAI / Claude / Custom"
             open={activeSection === 'ai'}
             onToggle={() => setActiveSection(activeSection === 'ai' ? null : 'ai')}
           >
-            <Suspense fallback={<div className="text-xs text-[#3A3A4A] py-4 text-center">{isRU ? 'Загрузка...' : 'Loading...'}</div>}>
+            <Suspense fallback={<div className="py-6 text-center text-sm text-[#7F7A72]">Loading...</div>}>
               <AIProviderSettings />
             </Suspense>
           </SettingsSection>
 
-          {/* LANGUAGE */}
           <SettingsSection
-            icon={<Globe className="w-4 h-4 text-[#5DAEFF]" />}
-            title={isRU ? 'Язык' : 'Language'}
+            icon={<Globe className="h-4 w-4 text-[#6C8FB8]" />}
+            title={isRU ? 'Language' : 'Language'}
             subtitle={language === 'ru' ? 'Русский' : 'English'}
-            open={activeSection === 'lang'}
-            onToggle={() => setActiveSection(activeSection === 'lang' ? null : 'lang')}
+            open={activeSection === 'language'}
+            onToggle={() => setActiveSection(activeSection === 'language' ? null : 'language')}
           >
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => setLanguage('en')}
-                className={`p-3 rounded-xl border text-sm font-medium transition-all ${language === 'en' ? 'border-[#5DAEFF30] bg-[#5DAEFF08] text-[#E8E8F0]' : 'border-[#1A1A2E] text-[#55556A]'}`}>
-                🇺🇸 English
-              </button>
-              <button onClick={() => setLanguage('ru')}
-                className={`p-3 rounded-xl border text-sm font-medium transition-all ${language === 'ru' ? 'border-[#5DAEFF30] bg-[#5DAEFF08] text-[#E8E8F0]' : 'border-[#1A1A2E] text-[#55556A]'}`}>
-                🇷🇺 Русский
-              </button>
+            <div className="grid gap-3 md:grid-cols-2">
+              <OptionButton label="English" active={language === 'en'} onClick={() => setLanguage('en')} />
+              <OptionButton label="Русский" active={language === 'ru'} onClick={() => setLanguage('ru')} />
             </div>
           </SettingsSection>
 
-          {/* DISCIPLINE MODE */}
           <SettingsSection
-            icon={<Target className="w-4 h-4 text-[#FF6B35]" />}
-            title={isRU ? 'Режим дисциплины' : 'Discipline Mode'}
-            subtitle={getMode() === 'hardcore' ? (isRU ? 'Жёсткий' : 'Hardcore') : (isRU ? 'Сбалансированный' : 'Balanced')}
-            open={activeSection === 'mode'}
-            onToggle={() => setActiveSection(activeSection === 'mode' ? null : 'mode')}
-          >
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => { setDisciplineMode('hardcore'); window.location.reload(); }}
-                className={`p-3 rounded-xl border text-left transition-all ${getMode() === 'hardcore' ? 'border-[#FF6B3530] bg-[#FF6B3508]' : 'border-[#1A1A2E]'}`}>
-                <div className="text-sm font-bold text-[#E8E8F0]">{isRU ? 'Жёсткий' : 'Hardcore'}</div>
-                <div className="text-[10px] text-[#3A3A4A]">{isRU ? 'Без компромиссов' : 'No mercy'}</div>
-              </button>
-              <button onClick={() => { setDisciplineMode('balanced'); window.location.reload(); }}
-                className={`p-3 rounded-xl border text-left transition-all ${getMode() === 'balanced' ? 'border-[#5DAEFF30] bg-[#5DAEFF08]' : 'border-[#1A1A2E]'}`}>
-                <div className="text-sm font-bold text-[#E8E8F0]">{isRU ? 'Сбалансированный' : 'Balanced'}</div>
-                <div className="text-[10px] text-[#3A3A4A]">{isRU ? 'Твёрдо, но спокойно' : 'Firm but calm'}</div>
-              </button>
-            </div>
-          </SettingsSection>
-
-          {/* DATA */}
-          <SettingsSection
-            icon={<HardDrive className="w-4 h-4 text-[#4ADE80]" />}
-            title={isRU ? 'Данные' : 'Data'}
-            subtitle={`${remindersCount} ${isRU ? 'квестов' : 'quests'}, ${notesCount} ${isRU ? 'заметок' : 'notes'}`}
+            icon={<HardDrive className="h-4 w-4 text-[#8E9B79]" />}
+            title={isRU ? 'Data vault' : 'Data vault'}
+            subtitle={isRU ? `${remindersCount} квестов / ${notesCount} заметок` : `${remindersCount} quests / ${notesCount} notes`}
             open={activeSection === 'data'}
             onToggle={() => setActiveSection(activeSection === 'data' ? null : 'data')}
           >
-            <div className="space-y-2">
-              <button onClick={handleExport}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-[#0A0A0F] border border-[#1A1A2E] rounded-xl hover:border-[#2A2A3C] transition-all text-left">
-                <Download className="w-4 h-4 text-[#4ADE80]" />
-                <div>
-                  <div className="text-sm text-[#E8E8F0]">{isRU ? 'Экспорт данных' : 'Export Data'}</div>
-                  <div className="text-[10px] text-[#3A3A4A]">{isRU ? 'Скачать JSON файл' : 'Download JSON file'}</div>
-                </div>
-              </button>
-              <button onClick={handleImportClick}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-[#0A0A0F] border border-[#1A1A2E] rounded-xl hover:border-[#2A2A3C] transition-all text-left">
-                <Upload className="w-4 h-4 text-[#FF6B35]" />
-                <div>
-                  <div className="text-sm text-[#E8E8F0]">{isRU ? 'Импорт данных' : 'Import Data'}</div>
-                  <div className="text-[10px] text-[#3A3A4A]">{isRU ? 'Загрузить JSON файл' : 'Upload JSON file'}</div>
-                </div>
-              </button>
-              <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleFileChange} />
+            <div className="space-y-3">
+              <ActionRow icon={<Download className="h-4 w-4 text-[#8E9B79]" />} title={isRU ? 'Экспортировать данные' : 'Export data'} subtitle={isRU ? 'Скачать состояние системы в JSON' : 'Download the system state as JSON'} onClick={exportData} />
+              <ActionRow icon={<Upload className="h-4 w-4 text-[#B89B5E]" />} title={isRU ? 'Импортировать данные' : 'Import data'} subtitle={isRU ? 'Загрузить резервную копию JSON' : 'Load a JSON backup'} onClick={() => fileInputRef.current?.click()} />
+              <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={importData} />
             </div>
           </SettingsSection>
 
-          {/* CONTACT */}
           <SettingsSection
-            icon={<MessageSquare className="w-4 h-4 text-[#5DAEFF]" />}
-            title={isRU ? 'Связь' : 'Contact'}
-            subtitle="Telegram"
+            icon={<SlidersHorizontal className="h-4 w-4 text-[#6C8FB8]" />}
+            title={isRU ? 'System access' : 'System access'}
+            subtitle={isRU ? 'Связь и поддержка' : 'Contact and support'}
             open={activeSection === 'contact'}
             onToggle={() => setActiveSection(activeSection === 'contact' ? null : 'contact')}
           >
-            <button onClick={() => openTelegram('generic', 'settings')}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-[#0A0A0F] border border-[#1A1A2E] rounded-xl hover:border-[#5DAEFF20] transition-all text-left">
-              <MessageSquare className="w-4 h-4 text-[#5DAEFF]" />
-              <div>
-                <div className="text-sm text-[#E8E8F0]">{isRU ? 'Написать разработчику' : 'Message the creator'}</div>
-                <div className="text-[10px] text-[#3A3A4A]">Telegram @pfrfrpfr</div>
-              </div>
-            </button>
+            <ActionRow icon={<MessageSquare className="h-4 w-4 text-[#6C8FB8]" />} title={isRU ? 'Написать создателю' : 'Message the creator'} subtitle="Telegram @pfrfrpfr" onClick={() => openTelegram('generic', 'settings')} />
           </SettingsSection>
-
         </div>
 
-        {/* ═══ LOGOUT ═══ */}
-        <div className="mt-8 pt-6 border-t border-[#1A1A2E]">
-          <button onClick={onLogout}
-            className="flex items-center gap-2 px-4 py-2.5 text-xs text-[#FF4444] hover:bg-[#FF444408] rounded-lg transition-colors">
-            <LogOut className="w-4 h-4" />
-            {isRU ? 'Выйти' : 'Sign Out'}
+        <div className="mt-8 border-t border-white/8 pt-6">
+          <button onClick={onLogout} className="inline-flex items-center gap-2 rounded-[14px] border border-[#7A1F2430] bg-[#7A1F240D] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#C05A60]">
+            <LogOut className="h-4 w-4" />
+            {isRU ? 'Выйти' : 'Sign out'}
           </button>
-          <p className="text-[9px] text-[#2A2A3C] mt-2 px-1">Eclipse Valhalla v2.1.0</p>
+          <div className="mt-3 text-[11px] uppercase tracking-[0.14em] text-[#5F5A54]">Eclipse Valhalla v2.1.0</div>
         </div>
       </div>
     </div>
   );
 };
 
-// ═══════════════════════════════════════════
-// COLLAPSIBLE SECTION
-// ═══════════════════════════════════════════
-
-const SettingsSection: React.FC<{
+const SettingsSection = ({
+  icon,
+  title,
+  subtitle,
+  open,
+  onToggle,
+  children,
+}: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
-}> = ({ icon, title, subtitle, open, onToggle, children }) => (
-  <div className="bg-[#0C0C14] border border-[#1A1A2E] rounded-xl overflow-hidden">
-    <button onClick={onToggle}
-      className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#12121A] transition-colors text-left">
+}) => (
+  <section className="overflow-hidden rounded-[22px] border border-white/8 bg-[#121212]/92">
+    <button onClick={onToggle} className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-white/[0.02]">
       {icon}
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-[#E8E8F0]">{title}</div>
-        <div className="text-[10px] text-[#3A3A4A]">{subtitle}</div>
+      <div className="flex-1">
+        <div className="text-sm font-bold text-[#F2F1EE]">{title}</div>
+        <div className="text-[11px] uppercase tracking-[0.14em] text-[#7F7A72]">{subtitle}</div>
       </div>
-      <ChevronRight className={`w-4 h-4 text-[#3A3A4A] transition-transform ${open ? 'rotate-90' : ''}`} />
+      <ChevronRight className={`h-4 w-4 text-[#7F7A72] transition-transform ${open ? 'rotate-90' : ''}`} />
     </button>
-    {open && (
-      <div className="px-4 pb-4 pt-1 border-t border-[#1A1A2E]">
-        {children}
-      </div>
-    )}
+    {open && <div className="border-t border-white/8 px-5 py-5">{children}</div>}
+  </section>
+);
+
+const ModeCard = ({
+  title,
+  description,
+  active,
+  accent,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  active: boolean;
+  accent: string;
+  onClick: () => void;
+}) => (
+  <button onClick={onClick} className={`rounded-[18px] border p-4 text-left ${active ? '' : 'border-white/8 bg-[#171717]'}`} style={active ? { borderColor: `${accent}40`, backgroundColor: `${accent}12` } : undefined}>
+    <div className="text-sm font-bold text-[#F2F1EE]">{title}</div>
+    <div className="mt-2 text-sm leading-6 text-[#B4B0A7]">{description}</div>
+  </button>
+);
+
+const OptionButton = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
+  <button onClick={onClick} className={`rounded-[16px] border px-4 py-4 text-left text-sm font-bold ${active ? 'border-[#6C8FB833] bg-[#6C8FB812] text-[#F2F1EE]' : 'border-white/8 bg-[#171717] text-[#B4B0A7]'}`}>
+    {label}
+  </button>
+);
+
+const ActionRow = ({
+  icon,
+  title,
+  subtitle,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+}) => (
+  <button onClick={onClick} className="flex w-full items-center gap-3 rounded-[16px] border border-white/8 bg-[#171717] px-4 py-4 text-left transition-colors hover:bg-[#1D1D1D]">
+    {icon}
+    <div className="flex-1">
+      <div className="text-sm font-bold text-[#F2F1EE]">{title}</div>
+      <div className="text-[11px] uppercase tracking-[0.14em] text-[#7F7A72]">{subtitle}</div>
+    </div>
+    <ChevronRight className="h-4 w-4 text-[#7F7A72]" />
+  </button>
+);
+
+const MiniStat = ({ label, value }: { label: string; value: string | number }) => (
+  <div className="rounded-[16px] border border-white/8 bg-[#171717] p-3 text-center">
+    <div className="text-2xl font-extrabold text-[#F2F1EE]">{value}</div>
+    <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-[#7F7A72]">{label}</div>
+  </div>
+);
+
+const InfoChip = ({ label, value, accent }: { label: string; value: string; accent: string }) => (
+  <div className="rounded-full border px-3 py-1.5" style={{ borderColor: `${accent}30`, backgroundColor: `${accent}10` }}>
+    <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: accent }}>{label}</span>
+    <span className="ml-2 text-sm font-extrabold text-[#F2F1EE]">{value}</span>
   </div>
 );
 

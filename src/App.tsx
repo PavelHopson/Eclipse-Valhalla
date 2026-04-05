@@ -437,6 +437,7 @@ const AppContent: React.FC = () => {
             onEditReminder={(r) => { setEditingId(r.id); setModalData({title: r.title, desc: r.description, date: r.dueDateTime, repeat: r.repeatType, priority: r.priority, category: r.category, subtasks: r.subtasks || []}); setIsReminderModalOpen(true); }}
             onAddSmartTask={(r) => saveReminder(r)}
             onStatusChange={(id, status) => setReminders(prev => prev.map(r => r.id === id ? { ...r, status, isCompleted: status === ReminderStatus.DONE } : r))}
+            onStartFocus={(id) => setFocusQuestId(id)}
             userPlan={user.plan}
             onUpgrade={() => setIsSubscriptionOpen(true)}
           />}

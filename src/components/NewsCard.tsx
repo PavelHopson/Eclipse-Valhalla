@@ -1,10 +1,6 @@
-/**
- * Eclipse Valhalla — Nexus News Card
- */
-
 import React from 'react';
 import { NewsItem } from '../news';
-import { Bookmark, ExternalLink, Swords, Check, Clock } from 'lucide-react';
+import { Bookmark, Swords, Check, Clock, Signal, ArrowRight } from 'lucide-react';
 
 interface NewsCardProps {
   item: NewsItem;
@@ -15,94 +11,92 @@ interface NewsCardProps {
 
 const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvertToQuest }) => {
   const age = getTimeAgo(item.publishedAt);
-  const importColor = item.importanceScore >= 70 ? '#FF4444'
-    : item.importanceScore >= 40 ? '#FBBF24'
-    : '#5DAEFF';
+  const signalColor = item.importanceScore >= 70 ? '#A33036' : item.importanceScore >= 40 ? '#B89B5E' : '#6C8FB8';
+  const signalLabel = item.importanceScore >= 70 ? 'Critical signal' : item.importanceScore >= 40 ? 'High signal' : 'Signal';
 
   return (
-    <div
-      className={`bg-[#1A1A26] border border-[#2A2A3C] rounded-xl overflow-hidden transition-all hover:border-[#3A3A52] ${
-        item.read ? 'opacity-60' : ''
-      }`}
-    >
-      {/* Image */}
+    <article className={`group overflow-hidden rounded-[24px] border bg-[#121212]/94 transition-all hover:-translate-y-1 ${
+      item.read ? 'border-white/6 opacity-70' : 'border-[#6C8FB822] hover:border-[#6C8FB838]'
+    }`}>
       {item.imageUrl && (
-        <div className="h-32 overflow-hidden">
+        <div className="relative h-40 overflow-hidden border-b border-white/8">
           <img
             src={item.imageUrl}
             alt=""
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent" />
         </div>
       )}
 
-      <div className="p-4 space-y-2">
-        {/* Meta line */}
-        <div className="flex items-center gap-2 text-[10px] text-[#55556A]">
-          <Clock className="w-3 h-3" />
+      <div className="space-y-4 p-5">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[#7F7A72]">
+          <Clock className="h-3.5 w-3.5" />
           <span>{age}</span>
-          <div className="w-1 h-1 rounded-full bg-[#2A2A3C]" />
-
-          {/* Importance badge */}
-          <span
-            className="px-1.5 py-0.5 rounded-full font-bold border"
-            style={{ color: importColor, borderColor: `${importColor}30`, backgroundColor: `${importColor}08` }}
-          >
-            {item.importanceScore}
+          <span className="text-white/20">/</span>
+          <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-bold" style={{ color: signalColor, borderColor: `${signalColor}33`, backgroundColor: `${signalColor}12` }}>
+            <Signal className="h-3 w-3" />
+            {signalLabel}
           </span>
-
-          {item.saved && (
-            <Bookmark className="w-3 h-3 text-[#FBBF24] ml-auto fill-current" />
-          )}
+          {item.saved && <Bookmark className="ml-auto h-3.5 w-3.5 fill-current text-[#B89B5E]" />}
         </div>
 
-        {/* Title */}
-        <h3 className={`text-sm font-semibold leading-tight ${item.read ? 'text-[#55556A]' : 'text-[#E8E8F0]'}`}>
-          {item.title}
-        </h3>
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-[#7F7A72]">{item.category || 'Signal source'}</div>
+          <h3 className={`mt-2 text-lg font-bold leading-tight ${item.read ? 'text-[#B4B0A7]' : 'text-[#F2F1EE]'}`}>{item.title}</h3>
+        </div>
 
-        {/* Summary */}
         {item.summary && (
-          <p className="text-xs text-[#8888A0] line-clamp-2 leading-relaxed">
+          <p className="text-sm leading-6 text-[#B4B0A7] line-clamp-3">
             {item.summary}
           </p>
         )}
 
-        {/* Tags */}
         {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-2">
             {item.tags.slice(0, 3).map(tag => (
-              <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#12121A] text-[#55556A] border border-[#1E1E2E]">
+              <span key={tag} className="rounded-full border border-white/8 bg-[#171717] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#7F7A72]">
                 {tag}
               </span>
             ))}
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 pt-1">
-          {!item.read && (
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          {!item.read ? (
             <button
               onClick={() => onMarkRead(item.id)}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] text-[#55556A] hover:bg-[#1F1F2B] hover:text-[#8888A0] transition-colors"
+              className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-white/8 bg-[#171717] px-3 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
             >
-              <Check className="w-3 h-3" /> Read
+              <Check className="h-3.5 w-3.5" />
+              Mark read
+            </button>
+          ) : (
+            <button
+              onClick={() => onSave(item.id)}
+              className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-white/8 bg-[#171717] px-3 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
+            >
+              <Bookmark className="h-3.5 w-3.5" />
+              Save signal
             </button>
           )}
 
           <button
-            onClick={() => onSave(item.id)}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] text-[#55556A] hover:bg-[#1F1F2B] hover:text-[#FBBF24] transition-colors"
-          >
-            <Bookmark className="w-3 h-3" /> Save
-          </button>
-
-          <button
             onClick={() => onConvertToQuest(item)}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] text-[#55556A] hover:bg-[#5DAEFF10] hover:text-[#5DAEFF] transition-colors"
+            className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-[#6C8FB833] bg-[#6C8FB8] px-3 py-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:bg-[#7C9FC7]"
           >
-            <Swords className="w-3 h-3" /> Quest
+            <Swords className="h-3.5 w-3.5" />
+            Convert to quest
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between pt-1">
+          <button
+            onClick={() => onSave(item.id)}
+            className="text-[11px] font-semibold text-[#7F7A72] transition-colors hover:text-[#D8C18E]"
+          >
+            {item.saved ? 'Stored in reserve' : 'Store signal'}
           </button>
 
           {item.url && (
@@ -110,25 +104,26 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvert
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] text-[#55556A] hover:bg-[#1F1F2B] hover:text-[#8888A0] transition-colors ml-auto"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
             >
-              <ExternalLink className="w-3 h-3" /> Open
+              Open source
+              <ArrowRight className="h-3.5 w-3.5" />
             </a>
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
 function getTimeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return `${mins}m`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return `${days}d`;
 }
 
 export default NewsCard;

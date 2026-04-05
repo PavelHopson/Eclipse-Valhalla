@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Note } from '../types';
 import { generateId } from '../utils';
-import { Plus, X, GripHorizontal, Minus, Maximize2, Eraser } from 'lucide-react';
+import { Plus, X, GripHorizontal, Minus, Eraser, ScrollText } from 'lucide-react';
 import { useLanguage } from '../i18n';
 
 interface StickerBoardProps {
@@ -11,96 +10,64 @@ interface StickerBoardProps {
 }
 
 const COLORS = [
-  { id: 'yellow', bg: 'bg-[#fef3c7]', border: 'border-[#fde68a]', header: 'bg-[#fcd34d]/30' },
-  { id: 'blue', bg: 'bg-[#e0f2fe]', border: 'border-[#bae6fd]', header: 'bg-[#7dd3fc]/30' },
-  { id: 'green', bg: 'bg-[#dcfce7]', border: 'border-[#bbf7d0]', header: 'bg-[#86efac]/30' },
-  { id: 'pink', bg: 'bg-[#fce7f3]', border: 'border-[#fbcfe8]', header: 'bg-[#f9a8d4]/30' },
-  { id: 'purple', bg: 'bg-[#f3e8ff]', border: 'border-[#e9d5ff]', header: 'bg-[#d8b4fe]/30' },
+  { id: 'sand', bg: 'bg-[#efe3b1]', border: 'border-[#d8c189]', header: 'bg-[#d8c189]/20' },
+  { id: 'ice', bg: 'bg-[#d8e6f4]', border: 'border-[#aac1d6]', header: 'bg-[#aac1d6]/20' },
+  { id: 'sage', bg: 'bg-[#d8e2ce]', border: 'border-[#b1c09b]', header: 'bg-[#b1c09b]/20' },
+  { id: 'ashrose', bg: 'bg-[#ead7df]', border: 'border-[#d8aebd]', header: 'bg-[#d8aebd]/20' },
+  { id: 'violetdust', bg: 'bg-[#e5ddf2]', border: 'border-[#c7b3e1]', header: 'bg-[#c7b3e1]/20' },
 ];
 
 const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const isRU = language === 'ru';
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const boardRef = useRef<HTMLDivElement>(null);
 
   const addNote = (colorIndex = 0) => {
     const color = COLORS[colorIndex];
-    const newNote: Note = {
+    setNotes(prev => [...prev, {
       id: generateId(),
       content: '',
-      x: 60 + Math.random() * 100,
-      y: 60 + Math.random() * 100,
-      width: 240,
-      height: 240,
+      x: 72 + Math.random() * 120,
+      y: 72 + Math.random() * 100,
+      width: 260,
+      height: 260,
       color: `${color.bg} ${color.border}`,
-      zIndex: Math.max(0, ...notes.map(n => n.zIndex)) + 1,
-      isMinimized: false
-    };
-    setNotes(prev => [...prev, newNote]);
+      zIndex: Math.max(0, ...prev.map(n => n.zIndex)) + 1,
+      isMinimized: false,
+    }]);
   };
 
-  const updateNoteContent = (id: string, content: string) => {
-    setNotes(prev => prev.map(n => n.id === id ? { ...n, content } : n));
-  };
-
-  const removeNote = (id: string) => {
-    setNotes(prev => prev.filter(n => n.id !== id));
-  };
-
-  const clearAll = () => {
-    if(confirm('Clear all sticky notes?')) setNotes([]);
-  }
-
-  const toggleMinimize = (id: string) => {
-    setNotes(prev => prev.map(n => n.id === id ? { ...n, isMinimized: !n.isMinimized } : n));
-  };
-
+  const updateNoteContent = (id: string, content: string) => setNotes(prev => prev.map(n => n.id === id ? { ...n, content } : n));
+  const removeNote = (id: string) => setNotes(prev => prev.filter(n => n.id !== id));
+  const clearAll = () => window.confirm(isRU ? 'Очистить все скрижали?' : 'Clear all scrolls?') && setNotes([]);
+  const toggleMinimize = (id: string) => setNotes(prev => prev.map(n => n.id === id ? { ...n, isMinimized: !n.isMinimized } : n));
   const bringToFront = (id: string) => {
     const maxZ = Math.max(0, ...notes.map(n => n.zIndex));
     setNotes(prev => prev.map(n => n.id === id ? { ...n, zIndex: maxZ + 1 } : n));
   };
 
-  // --- DRAG LOGIC (MOUSE & TOUCH) ---
-
   const startDrag = (clientX: number, clientY: number, note: Note, target: Element) => {
     if (!boardRef.current) return;
     const rect = target.closest('.sticker-note')?.getBoundingClientRect();
     if (!rect) return;
-
     setDraggingId(note.id);
-    setDragOffset({
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    });
+    setDragOffset({ x: clientX - rect.left, y: clientY - rect.top });
     bringToFront(note.id);
   };
 
   const moveDrag = (clientX: number, clientY: number) => {
-     if (!draggingId || !boardRef.current) return;
-
+    if (!draggingId || !boardRef.current) return;
     const boardRect = boardRef.current.getBoundingClientRect();
     const x = clientX - boardRect.left - dragOffset.x;
     const y = clientY - boardRect.top - dragOffset.y;
-
-    setNotes(prev => prev.map(n =>
-      n.id === draggingId ? { ...n, x, y } : n
-    ));
-  };
-
-  const endDrag = () => {
-    setDraggingId(null);
-  };
-
-  // MOUSE EVENTS
-  const handleMouseDown = (e: React.MouseEvent, note: Note) => {
-    startDrag(e.clientX, e.clientY, note, e.target as Element);
+    setNotes(prev => prev.map(n => n.id === draggingId ? { ...n, x, y } : n));
   };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => moveDrag(e.clientX, e.clientY);
-    const handleMouseUp = () => endDrag();
-
+    const handleMouseUp = () => setDraggingId(null);
     if (draggingId) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
@@ -111,74 +78,53 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
     };
   }, [draggingId, dragOffset]);
 
-  // TOUCH EVENTS
-  const handleTouchStart = (e: React.TouchEvent, note: Note) => {
-      if (e.touches.length !== 1) return;
-      // Prevent scrolling body while dragging note
-      document.body.style.overflow = 'hidden';
-      startDrag(e.touches[0].clientX, e.touches[0].clientY, note, e.target as Element);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-      if (draggingId && e.touches.length === 1) {
-          // Prevent scrolling while dragging
-          e.preventDefault();
-          moveDrag(e.touches[0].clientX, e.touches[0].clientY);
-      }
-  };
-
-  const handleTouchEnd = () => {
-      document.body.style.overflow = ''; // Restore scrolling
-      endDrag();
-  };
-
   return (
-    <div
-        className="h-full flex flex-col relative overflow-hidden bg-[#1A1A26] touch-none"
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-    >
-      {/* Dot Pattern Background */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-
-      {/* Toolbar */}
-      <div className="p-4 flex justify-between items-center bg-[#1A1A26]/90 backdrop-blur border-b border-[#2A2A3C] z-10 shadow-sm">
-        <div>
-            <h2 className="text-xl font-bold text-[#E8E8F0]">{t('notes.title')}</h2>
-            <p className="text-xs text-[#55556A]">{t('notes.subtitle')}</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={clearAll}
-            className="p-2 text-[#55556A] hover:text-[#FF4444] hover:bg-[#FF4444]/10 rounded-lg transition-colors"
-            title={t('notes.clear')}
-          >
-            <Eraser className="w-5 h-5" />
-          </button>
-          <div className="h-8 w-px bg-[#2A2A3C] mx-2"></div>
-          <div className="flex gap-2">
-             {COLORS.map((c, i) => (
-               <button
-                 key={c.id}
-                 onClick={() => addNote(i)}
-                 className={`w-8 h-8 rounded-full ${c.bg} border-2 ${c.border} hover:scale-110 transition-transform shadow-sm`}
-                 title="Add Note"
-               />
-             ))}
+    <div className="flex h-full flex-col overflow-hidden bg-[#0A0A0A]">
+      <div className="border-b border-white/8 bg-[#121212]/96 px-6 py-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">Stone scrolls</div>
+            <h1 className="mt-2 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">{isRU ? 'Каменные скрижали' : 'Stone scrolls'}</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#B4B0A7]">
+              {isRU ? 'Это не заметки. Это выгравированные команды, мысли и обеты, которые должны остаться в поле зрения.' : 'These are not sticky notes. They are engraved commands, thoughts, and vows that should remain in view.'}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={clearAll} className="rounded-[14px] border border-[#7A1F2430] bg-[#7A1F240D] p-3 text-[#C05A60]"><Eraser className="h-4 w-4" /></button>
+            <div className="flex gap-2 rounded-[16px] border border-white/8 bg-[#171717] p-2">
+              {COLORS.map((c, i) => (
+                <button key={c.id} onClick={() => addNote(i)} className={`h-8 w-8 rounded-full border ${c.bg} ${c.border}`} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Board Area */}
-      <div ref={boardRef} className="flex-1 relative overflow-hidden">
+      <div
+        ref={boardRef}
+        className="relative flex-1 overflow-hidden"
+        onTouchMove={(e) => {
+          if (draggingId && e.touches.length === 1) {
+            e.preventDefault();
+            moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }}
+        onTouchEnd={() => {
+          document.body.style.overflow = '';
+          setDraggingId(null);
+        }}
+      >
+        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.45) 0.8px, transparent 0.8px)', backgroundSize: '22px 22px' }} />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(184,155,94,0.05),transparent_38%)]" />
+
         {notes.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none">
+          <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="w-32 h-32 border-4 border-dashed border-[#55556A] rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                 <Plus className="w-12 h-12 text-[#55556A]" />
+              <div className="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full border border-[#B89B5E28] bg-[#B89B5E10]">
+                <ScrollText className="h-10 w-10 text-[#D8C18E]" />
               </div>
-              <p className="text-xl font-bold text-[#55556A]">{t('notes.empty_title')}</p>
-              <p className="text-[#55556A] mt-2">{t('notes.empty_desc')}</p>
+              <div className="font-ritual text-3xl text-[#F2F1EE]">{isRU ? 'Высеки первую мысль.' : 'Carve the first thought.'}</div>
+              <div className="mt-3 text-sm text-[#7F7A72]">{isRU ? 'Выбери цвет и создай скрижаль.' : 'Choose a color and create a scroll.'}</div>
             </div>
           </div>
         )}
@@ -186,66 +132,44 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
         {notes.map((note) => (
           <div
             key={note.id}
-            className={`
-              sticker-note absolute rounded-lg shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border transition-transform
-              ${note.color}
-              ${draggingId === note.id ? 'cursor-grabbing scale-[1.02] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.25)] z-50' : 'cursor-grab'}
-            `}
-            style={{
-              left: note.x,
-              top: note.y,
-              width: note.width,
-              height: note.isMinimized ? 42 : note.height,
-              zIndex: note.zIndex,
-            }}
+            className={`sticker-note absolute flex flex-col overflow-hidden rounded-[18px] border shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-transform ${note.color} ${
+              draggingId === note.id ? 'scale-[1.02] cursor-grabbing z-50' : 'cursor-grab'
+            }`}
+            style={{ left: note.x, top: note.y, width: note.width, height: note.isMinimized ? 48 : note.height, zIndex: note.zIndex }}
             onMouseDown={(e) => {
-                if ((e.target as Element).closest('.drag-handle')) {
-                    handleMouseDown(e, note);
-                } else {
-                    bringToFront(note.id);
-                }
+              if ((e.target as Element).closest('.drag-handle')) startDrag(e.clientX, e.clientY, note, e.target as Element);
+              else bringToFront(note.id);
             }}
             onTouchStart={(e) => {
-                if ((e.target as Element).closest('.drag-handle')) {
-                    handleTouchStart(e, note);
-                } else {
-                    bringToFront(note.id);
-                }
+              if ((e.target as Element).closest('.drag-handle') && e.touches.length === 1) {
+                document.body.style.overflow = 'hidden';
+                startDrag(e.touches[0].clientX, e.touches[0].clientY, note, e.target as Element);
+              } else {
+                bringToFront(note.id);
+              }
             }}
           >
-            {/* Header / Drag Handle */}
-            <div className="drag-handle h-10 flex items-center justify-between px-3 shrink-0 select-none group relative touch-none">
-              {/* Subtle darken overlay for header area */}
-              <div className="absolute inset-0 bg-black/5 pointer-events-none"></div>
-
-              <GripHorizontal className="w-4 h-4 text-black/30 relative z-10" />
-
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity relative z-10">
-                <button
-                  onClick={(e) => { e.stopPropagation(); toggleMinimize(note.id); }}
-                  className="p-1 text-[#55556A] hover:text-[#E8E8F0] hover:bg-[#E8E8F0]/10 rounded"
-                >
-                  {note.isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+            <div className="drag-handle relative flex h-11 items-center justify-between px-3">
+              <div className="absolute inset-0 bg-black/5" />
+              <div className="relative flex items-center gap-2 text-[#5f5540]">
+                <GripHorizontal className="h-4 w-4" />
+              </div>
+              <div className="relative flex items-center gap-1">
+                <button onClick={() => toggleMinimize(note.id)} className="rounded p-1 text-[#5f5540] hover:bg-black/10">
+                  <Minus className="h-3.5 w-3.5" />
                 </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); removeNote(note.id); }}
-                  className="p-1 text-[#55556A] hover:text-[#FF4444] hover:bg-[#E8E8F0]/10 rounded"
-                >
-                  <X className="w-3 h-3" />
+                <button onClick={() => removeNote(note.id)} className="rounded p-1 text-[#5f5540] hover:bg-black/10">
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Content */}
             {!note.isMinimized && (
               <textarea
-                className="flex-1 bg-transparent p-4 outline-none resize-none text-[#E8E8F0] font-medium leading-relaxed text-sm placeholder:text-[#3A3A4A] font-handwriting"
                 value={note.content}
                 onChange={(e) => updateNoteContent(note.id, e.target.value)}
-                placeholder={t('notes.placeholder')}
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()} // Allow typing to focus properly
-                spellCheck={false}
+                placeholder={isRU ? 'Высекай мысль...' : 'Carve the thought...'}
+                className="flex-1 resize-none bg-transparent px-4 py-3 text-[15px] leading-6 text-[#3d3728] outline-none placeholder:text-[#7c7258]"
               />
             )}
           </div>
