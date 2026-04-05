@@ -11,6 +11,7 @@
 import { ipcMain, Notification, app, dialog } from 'electron';
 import { minimizeToTray, restoreFromTray, setAlwaysOnTop } from '../windowManager.js';
 import { updateTrayMenu } from '../tray.js';
+import { checkForUpdatesNow, getUpdaterState } from '../autoUpdater.js';
 
 // ═══════════════════════════════════════════
 // REGISTER IPC HANDLERS
@@ -91,6 +92,14 @@ export function registerSystemIPC() {
       platform: process.platform,
       isPackaged: app.isPackaged,
     };
+  });
+
+  ipcMain.handle('system:checkForUpdates', async () => {
+    return checkForUpdatesNow();
+  });
+
+  ipcMain.handle('system:getUpdaterState', () => {
+    return getUpdaterState();
   });
 
   // -- PICK LOCAL VIDEO FILE --

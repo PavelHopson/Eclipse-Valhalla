@@ -33,6 +33,8 @@ interface ValhallaElectronAPI {
   setAutoStart: (enabled: boolean) => Promise<{ success: boolean; enabled?: boolean }>;
   getAutoStart: () => Promise<{ enabled: boolean }>;
   getAppInfo: () => Promise<{ version: string; name: string; platform: string; isPackaged: boolean }>;
+  checkForUpdates: () => Promise<{ success: boolean; status: string; message: string; version?: string }>;
+  getUpdaterState: () => Promise<{ currentVersion: string; latestVersion: string | null; updateAvailable: boolean; isChecking: boolean }>;
   pickVideoFile: () => Promise<{ canceled: boolean; path?: string; fileUrl?: string; error?: string }>;
 }
 
@@ -149,6 +151,23 @@ class DesktopBridge {
       name: 'Eclipse Valhalla',
       platform: 'web',
       isPackaged: false,
+    };
+  }
+
+  async checkForUpdates() {
+    return this.api?.checkForUpdates() ?? {
+      success: false,
+      status: 'unavailable',
+      message: 'Update checks are only available in the desktop app.',
+    };
+  }
+
+  async getUpdaterState() {
+    return this.api?.getUpdaterState() ?? {
+      currentVersion: '2.0.0',
+      latestVersion: null,
+      updateAvailable: false,
+      isChecking: false,
     };
   }
 

@@ -81,6 +81,14 @@ contextBridge.exposeInMainWorld('valhalla', {
   getAppInfo: () =>
     ipcRenderer.invoke('system:getInfo'),
 
+  /** Manually check for app updates */
+  checkForUpdates: () =>
+    ipcRenderer.invoke('system:checkForUpdates'),
+
+  /** Get updater state */
+  getUpdaterState: () =>
+    ipcRenderer.invoke('system:getUpdaterState'),
+
   /** Pick a local workout video file */
   pickVideoFile: () =>
     ipcRenderer.invoke('system:pickVideoFile'),

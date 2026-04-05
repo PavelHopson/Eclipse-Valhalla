@@ -1,4 +1,4 @@
-import React, { useRef, useState, Suspense, lazy } from 'react';
+import React, { useRef, useState, Suspense, lazy, useEffect } from 'react';
 import {
   Download, Crown, HardDrive, LogOut, Upload, Globe, Edit2, Check,
   Cpu, ChevronRight, Flame, Target, MessageSquare, SlidersHorizontal,
@@ -7,6 +7,7 @@ import { useLanguage } from '../i18n';
 import { User, Reminder, Note, PlanTier, Theme } from '../types';
 import { getMode, setMode as setDisciplineMode } from '../services/disciplineMode';
 import { openTelegram } from '../services/telegramCTA';
+import { desktop } from '../services/desktopBridge';
 
 const AIProviderSettings = lazy(() => import('./AIProviderSettings'));
 
@@ -42,6 +43,23 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   const [editName, setEditName] = useState(user?.name || '');
   const [editEmail, setEditEmail] = useState(user?.email || '');
   const [activeSection, setActiveSection] = useState<string | null>('behavior');
+  const [desktopVersion, setDesktopVersion] = useState<string | null>(null);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
+  const isDesktop = desktop.isDesktop;
+
+  useEffect(() => {
+    if (!isDesktop) return;
+
+    desktop.getAppInfo().then((info) => {
+      setDesktopVersion(info.version);
+    }).catch(() => {});
+
+    desktop.getUpdaterState().then((state) => {
+      setLatestVersion(state.latestVersion);
+    }).catch(() => {});
+  }, [isDesktop]);
 
   let streak = 0;
   try {
@@ -79,6 +97,21 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     };
     reader.readAsText(file);
     e.target.value = '';
+  };
+
+  const handleCheckForUpdates = async () => {
+    setIsCheckingUpdates(true);
+    try {
+      const result = await desktop.checkForUpdates();
+      setUpdateMessage(result.message);
+      if ('version' in result && result.version) {
+        setLatestVersion(result.version);
+      }
+    } catch {
+      setUpdateMessage(isRU ? 'Не удалось проверить обновления.' : 'Failed to check for updates.');
+    } finally {
+      setIsCheckingUpdates(false);
+    }
   };
 
   return (
@@ -243,6 +276,45 @@ const SettingsView: React.FC<SettingsViewProps> = ({
               <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={importData} />
             </div>
           </SettingsSection>
+
+          {isDesktop && (
+            <SettingsSection
+              icon={<Download className="h-4 w-4 text-[#6C8FB8]" />}
+              title={isRU ? 'Desktop updates' : 'Desktop updates'}
+              subtitle={desktopVersion ? `${isRU ? 'Текущая версия' : 'Current version'} ${desktopVersion}` : (isRU ? 'Проверка версий приложения' : 'Check for new app versions')}
+              open={activeSection === 'updates'}
+              onToggle={() => setActiveSection(activeSection === 'updates' ? null : 'updates')}
+            >
+              <div className="space-y-3">
+                <div className="rounded-[18px] border border-white/8 bg-[#0F0F0F] p-4">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <div className="text-sm font-bold text-[#F2F1EE]">
+                        {isRU ? 'Проверка новых версий' : 'Check for new versions'}
+                      </div>
+                      <div className="mt-1 text-xs text-[#7F7A72]">
+                        {latestVersion
+                          ? (isRU ? `Последняя найденная версия: ${latestVersion}` : `Latest detected version: ${latestVersion}`)
+                          : (isRU ? 'Приложение может проверить GitHub Releases на наличие новой версии.' : 'The desktop app can check GitHub Releases for a newer version.')}
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleCheckForUpdates}
+                      disabled={isCheckingUpdates}
+                      className="rounded-[14px] border border-[#6C8FB830] bg-[#6C8FB814] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#BFD4E8] disabled:opacity-50"
+                    >
+                      {isCheckingUpdates
+                        ? (isRU ? 'Проверка...' : 'Checking...')
+                        : (isRU ? 'Проверить обновления' : 'Check for updates')}
+                    </button>
+                  </div>
+                  {updateMessage && (
+                    <div className="mt-3 text-xs text-[#B4B0A7]">{updateMessage}</div>
+                  )}
+                </div>
+              </div>
+            </SettingsSection>
+          )}
 
           <SettingsSection
             icon={<SlidersHorizontal className="h-4 w-4 text-[#6C8FB8]" />}
