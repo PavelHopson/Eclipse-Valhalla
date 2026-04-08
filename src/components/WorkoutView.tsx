@@ -607,48 +607,63 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       <div className="max-w-5xl mx-auto w-full px-4 md:px-8 pt-6 pb-28 md:pb-8 flex flex-col flex-1">
 
         {/* ─── Header ─────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-              style={{ background: `linear-gradient(135deg, ${V.accent}20, ${V.accent}08)`, border: `1px solid ${V.accent}30` }}>
-              <Dumbbell className="w-6 h-6" style={{ color: V.accent }} />
-            </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight" style={{ color: V.text }}>
-                {t('workout.title')}
-              </h2>
-              <p className="text-sm" style={{ color: V.textTertiary }}>{t('workout.subtitle')}</p>
-            </div>
-          </div>
+        <div className="relative mb-8 rounded-3xl overflow-hidden"
+          style={{ background: `linear-gradient(145deg, ${V.bg2}, ${V.bg1})`, border: `1px solid ${V.border}` }}>
+          {/* Ambient orbs */}
+          <div className="absolute top-0 right-0 w-80 h-80 -mr-20 -mt-20 rounded-full blur-3xl pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(255,107,53,0.08), transparent 70%)' }} />
+          <div className="absolute bottom-0 left-0 w-60 h-60 -ml-10 -mb-10 rounded-full blur-3xl pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(93,174,255,0.06), transparent 70%)' }} />
 
-          {activeRoutine ? (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-mono text-lg font-bold"
-                style={{ backgroundColor: `${V.accent}12`, color: V.accent, border: `1px solid ${V.accent}30` }}>
-                <Timer className="w-5 h-5" />
-                {formatDuration(sessionDuration)}
+          <div className="relative px-6 py-6 md:px-8 md:py-7">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center relative workout-shimmer"
+                  style={{ background: `linear-gradient(135deg, ${V.orange}30, ${V.orange}10)`, border: `1px solid ${V.orange}30` }}>
+                  <Dumbbell className="w-7 h-7" style={{ color: V.orange }} />
+                  {activeRoutine && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#4ADE80] workout-pulse-ring" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight" style={{ color: V.text, letterSpacing: '-0.02em' }}>
+                    {t('workout.title')}
+                  </h2>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] mt-0.5" style={{ color: V.textTertiary }}>
+                    {t('workout.subtitle')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Tab pills */}
+              <div className="flex gap-1.5 p-1 rounded-2xl" style={{ backgroundColor: `${V.bg0}80` }}>
+                {tabs.map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-300"
+                      style={isActive ? {
+                        background: `linear-gradient(135deg, ${V.orange}, ${V.orange}CC)`,
+                        color: V.bg0,
+                        boxShadow: `0 4px 16px ${V.orange}30`,
+                        transform: 'scale(1.02)',
+                      } : {
+                        color: V.textTertiary,
+                      }}
+                      onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = V.text; }}
+                      onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = V.textTertiary; }}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span className="hidden md:inline">{tab.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          ) : (
-            <div className="flex rounded-xl p-1 gap-0.5 overflow-x-auto max-w-full" style={{ backgroundColor: V.bg2 }}>
-              {tabs.map(tab => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all whitespace-nowrap"
-                    style={{
-                      backgroundColor: isActive ? V.bg3 : 'transparent',
-                      color: isActive ? V.text : V.textTertiary,
-                      boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.3)' : 'none',
-                    }}>
-                    <Icon className="w-3.5 h-3.5" />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          </div>
         </div>
 
         {/* ─── Active Workout ─────────────────────────────────── */}
@@ -667,6 +682,11 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                   </p>
                   <h3 className="font-bold text-xl mt-0.5" style={{ color: V.bg0 }}>{activeRoutine.name}</h3>
                   <div className="flex items-center gap-3 mt-2">
+                    <span className="workout-heartbeat inline-flex items-center gap-1.5 text-xs font-bold font-mono px-2.5 py-0.5 rounded-full"
+                      style={{ backgroundColor: 'rgba(10,10,15,0.2)', color: V.bg0 }}>
+                      <Timer className="w-3 h-3" />
+                      {formatDuration(sessionDuration)}
+                    </span>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: 'rgba(10,10,15,0.15)', color: V.bg0 }}>
                       {sessionProgress}% {isRu ? 'завершено' : 'complete'}
@@ -689,7 +709,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
               </div>
 
               {/* Progress bar */}
-              <div className="mt-4 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(10,10,15,0.15)' }}>
+              <div className="workout-progress-glow mt-4 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(10,10,15,0.15)' }}>
                 <div className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${sessionProgress}%`, backgroundColor: V.bg0 }} />
               </div>
@@ -1029,11 +1049,11 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
 
             {/* Routine cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {routines.map(routine => {
+              {routines.map((routine, i) => {
                 const lastLog = logs.find(l => l.routineName === routine.name);
                 return (
-                  <div key={routine.id} className="rounded-2xl overflow-hidden transition-all hover:translate-y-[-1px]"
-                    style={{ backgroundColor: V.bg3, border: `1px solid ${V.borderLight}` }}>
+                  <div key={routine.id} className="workout-card-enter rounded-2xl overflow-hidden transition-all hover:translate-y-[-1px]"
+                    style={{ backgroundColor: V.bg3, border: `1px solid ${V.borderLight}`, animationDelay: `${i * 0.08}s`, opacity: 0 }}>
                     <div className="p-5">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">

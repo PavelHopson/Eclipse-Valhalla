@@ -179,6 +179,51 @@
       select {
         color-scheme: dark;
       }
+
+      /* Workout animations */
+      @keyframes pulse-ring {
+        0% { transform: scale(1); opacity: 0.6; }
+        50% { transform: scale(1.15); opacity: 0.2; }
+        100% { transform: scale(1); opacity: 0.6; }
+      }
+      @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        14% { transform: scale(1.06); }
+        28% { transform: scale(1); }
+        42% { transform: scale(1.04); }
+        56% { transform: scale(1); }
+      }
+      @keyframes progress-glow {
+        0%, 100% { box-shadow: 0 0 8px rgba(93,174,255,0.3); }
+        50% { box-shadow: 0 0 20px rgba(93,174,255,0.6); }
+      }
+      @keyframes slide-up-fade {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes count-pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+      }
+      @keyframes shimmer-slide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+      .workout-card-enter { animation: slide-up-fade 0.4s cubic-bezier(0.16,1,0.3,1) forwards; }
+      .workout-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
+      .workout-pulse-ring { animation: pulse-ring 2s ease-in-out infinite; }
+      .workout-progress-glow { animation: progress-glow 2s ease-in-out infinite; }
+      .workout-count-pop { animation: count-pop 0.3s ease-out; }
+      .workout-shimmer { position: relative; overflow: hidden; }
+      .workout-shimmer::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+        animation: shimmer-slide 3s ease-in-out infinite;
+      }
     </style>
   </head>
   <body class="noise-overlay">
