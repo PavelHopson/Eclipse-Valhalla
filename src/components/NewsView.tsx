@@ -88,9 +88,9 @@ const NewsView: React.FC<NewsViewProps> = ({ userId, onCreateQuest }) => {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <MetricPill label={isRU ? 'Unread' : 'Unread'} value={unreadCount} accent="#6C8FB8" />
-            <MetricPill label={isRU ? 'Sources' : 'Sources'} value={sources.length} accent="#8E9B79" />
-            <MetricPill label={isRU ? 'Converted' : 'Converted'} value={convertedCount} accent="#B89B5E" />
+            <MetricPill label={isRU ? 'Новые' : 'Unread'} value={unreadCount} accent="#6C8FB8" />
+            <MetricPill label={isRU ? 'Источники' : 'Sources'} value={sources.length} accent="#8E9B79" />
+            <MetricPill label={isRU ? 'В квесты' : 'Converted'} value={convertedCount} accent="#B89B5E" />
           </div>
         </div>
 
@@ -167,7 +167,7 @@ const NewsView: React.FC<NewsViewProps> = ({ userId, onCreateQuest }) => {
         {tab === 'sources' && (
           <div className="mx-auto max-w-4xl space-y-4">
             <div className="rounded-[24px] border border-[#6C8FB822] bg-[#121212]/92 p-5">
-              <div className="text-[10px] uppercase tracking-[0.22em] text-[#7F7A72]">{isRU ? 'Source matrix' : 'Source matrix'}</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#7F7A72]">{isRU ? 'Матрица источников' : 'Source matrix'}</div>
               <p className="mt-3 text-sm leading-6 text-[#B4B0A7]">
                 {isRU
                   ? 'Подключай RSS, сайты и Telegram-каналы. Это сенсоры, которые питают поток сигналов.'
@@ -183,7 +183,7 @@ const NewsView: React.FC<NewsViewProps> = ({ userId, onCreateQuest }) => {
             <div className="rounded-[28px] border border-[#6C8FB822] bg-[#121212]/92 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
               <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.24em] text-[#7F7A72]">
                 <ArrowRightLeft className="h-4 w-4 text-[#6C8FB8]" />
-                {isRU ? 'Сводка потока' : 'Signal digest'}
+                {isRU ? 'Сводка сигналов' : 'Signal digest'}
               </div>
               <h2 className="mt-4 font-ritual text-3xl text-[#F2F1EE]">{digest.title}</h2>
               <p className="mt-4 text-sm leading-7 text-[#B4B0A7]">{digest.summary}</p>

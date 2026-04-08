@@ -130,9 +130,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <InfoChip label={isRU ? 'Mode' : 'Mode'} value={getMode() === 'hardcore' ? 'Hardcore' : 'Balanced'} accent={getMode() === 'hardcore' ? '#A33036' : '#6C8FB8'} />
-              <InfoChip label={isRU ? 'Plan' : 'Plan'} value={isPro ? 'Pro' : 'Free'} accent={isPro ? '#B89B5E' : '#7F7A72'} />
-              <InfoChip label={isRU ? 'Streak' : 'Streak'} value={`${streak}d`} accent="#B89B5E" />
+              <InfoChip label={isRU ? 'Режим' : 'Mode'} value={getMode() === 'hardcore' ? (isRU ? 'Экстремальный' : 'Hardcore') : (isRU ? 'Сбалансированный' : 'Balanced')} accent={getMode() === 'hardcore' ? '#A33036' : '#6C8FB8'} />
+              <InfoChip label={isRU ? 'Тариф' : 'Plan'} value={isPro ? (isRU ? 'Про' : 'Pro') : (isRU ? 'Бесплатно' : 'Free')} accent={isPro ? '#B89B5E' : '#7F7A72'} />
+              <InfoChip label={isRU ? 'Стрик' : 'Streak'} value={`${streak}d`} accent="#B89B5E" />
             </div>
           </div>
         </section>
@@ -186,8 +186,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
 
               <div className="grid grid-cols-3 gap-3 md:min-w-[320px]">
-                <MiniStat label={isRU ? 'Quests' : 'Quests'} value={remindersCount} />
-                <MiniStat label={isRU ? 'Level' : 'Level'} value={user.level} />
+                <MiniStat label={isRU ? 'Квестов' : 'Quests'} value={remindersCount} />
+                <MiniStat label={isRU ? 'Уровень' : 'Level'} value={user.level} />
                 <MiniStat label="XP" value={user.xp} />
               </div>
             </div>
@@ -215,22 +215,22 @@ const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="mt-6 space-y-3">
           <SettingsSection
             icon={<Target className="h-4 w-4 text-[#A33036]" />}
-            title={isRU ? 'System behavior' : 'System behavior'}
+            title={isRU ? 'Поведение системы' : 'System behavior'}
             subtitle={isRU ? 'Режим давления и реакция системы' : 'Pressure mode and system response'}
             open={activeSection === 'behavior'}
             onToggle={() => setActiveSection(activeSection === 'behavior' ? null : 'behavior')}
           >
             <div className="grid gap-3 md:grid-cols-2">
               <ModeCard
-                title="Hardcore"
-                description={isRU ? 'Максимальное давление, меньше мягких сообщений, жёстче возврат.' : 'Maximum pressure, less softness, harsher return states.'}
+                title={isRU ? 'Экстремальный' : 'Hardcore'}
+                description={isRU ? 'Максимальное давление, жёстче возврат.' : 'Maximum pressure, less softness, harsher return states.'}
                 active={getMode() === 'hardcore'}
                 accent="#A33036"
                 onClick={() => { setDisciplineMode('hardcore'); window.location.reload(); }}
               />
               <ModeCard
-                title="Balanced"
-                description={isRU ? 'Система остаётся строгой, но сохраняет больше пространства для восстановления.' : 'The system stays strict while leaving more room for recovery.'}
+                title={isRU ? 'Сбалансированный' : 'Balanced'}
+                description={isRU ? 'Система строга, но с пространством для восстановления.' : 'The system stays strict while leaving more room for recovery.'}
                 active={getMode() === 'balanced'}
                 accent="#6C8FB8"
                 onClick={() => { setDisciplineMode('balanced'); window.location.reload(); }}

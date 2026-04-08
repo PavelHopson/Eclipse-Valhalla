@@ -154,12 +154,12 @@ const AppContent: React.FC = () => {
         || loadedReminders.find((r: any) => !r.isCompleted)?.title;
 
       if (streakData.lastActiveDate === today) {
-        if (streakData.days > 1) setReturnMessage(`Day ${streakData.days}. Discipline maintained.`);
+        if (streakData.days > 1) setReturnMessage(`Day ${streakData.days}. ${isRU ? 'Дисциплина сохранена.' : 'Discipline maintained.'}`);
       } else if (streakData.lastActiveDate === yesterday) {
         streakData.days = (streakData.days || 0) + 1;
         streakData.lastActiveDate = today;
         localStorage.setItem(streakKey, JSON.stringify(streakData));
-        setReturnMessage(`Day ${streakData.days}. You showed up. Continue.`);
+        setReturnMessage(`Day ${streakData.days}. ${isRU ? 'Ты пришёл. Продолжай.' : 'You showed up. Continue.'}`);
 
         // Morning trigger overlay
         if (!alreadyShown) {
@@ -177,7 +177,7 @@ const AppContent: React.FC = () => {
         streakData.days = 1;
         streakData.lastActiveDate = today;
         localStorage.setItem(streakKey, JSON.stringify(streakData));
-        setReturnMessage(`${daysAway} days absent. Streak broken. Day 1 begins now.`);
+        setReturnMessage(`${daysAway} ${isRU ? 'дней отсутствия. Стрик сломан. День 1.' : 'days absent. Streak broken. Day 1 begins now.'}`);
 
         // Comeback overlay
         if (!alreadyShown) {
@@ -218,7 +218,7 @@ const AppContent: React.FC = () => {
         setTimeout(() => {
           if (document.hidden) {
             new Notification('Eclipse Valhalla', {
-              body: `${pendingCount} objective${pendingCount > 1 ? 's' : ''} still pending. Discipline is not built later.`,
+              body: isRU ? `${pendingCount} в ожидании. Дисциплина не строится потом.` : `${pendingCount} objective${pendingCount > 1 ? 's' : ''} still pending. Discipline is not built later.`,
               icon: '/favicon.ico',
               tag: 'ev-pressure-1',
             });
@@ -386,7 +386,7 @@ const AppContent: React.FC = () => {
                 <Suspense fallback={null}>
                   <QuickQuestInput
                     onCreateQuest={(title) => saveReminder({ title, dueDateTime: new Date(Date.now() + 86400000).toISOString() })}
-                    placeholder={isRU ? 'Назови задачу. Enter.' : 'Name the objective. Press Enter.'}
+                    placeholder={isRU ? 'Назови цель. Нажми Enter.' : 'Name the objective. Press Enter.'}
                   />
                 </Suspense>
               </div>

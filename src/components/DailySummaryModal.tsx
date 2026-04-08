@@ -7,6 +7,7 @@
 import React from 'react';
 import { DailySummary } from '../services/dailyLoopService';
 import { Shield, Flame, Swords, AlertTriangle, Trophy, X } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface DailySummaryModalProps {
   summary: DailySummary;
@@ -14,6 +15,8 @@ interface DailySummaryModalProps {
 }
 
 const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ summary, onClose }) => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
   const scoreColor = summary.disciplineScore >= 80 ? '#4ADE80'
     : summary.disciplineScore >= 50 ? '#FBBF24'
     : '#FF4444';
@@ -26,7 +29,7 @@ const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ summary, onClose 
         {/* Header */}
         <div className="px-5 py-4 border-b border-[#1E1E2E] flex justify-between items-center">
           <div>
-            <h3 className="text-sm font-bold text-[#E8E8F0]">Day Complete</h3>
+            <h3 className="text-sm font-bold text-[#E8E8F0]">{isRu ? 'День завершён' : 'Day Complete'}</h3>
             <p className="text-[10px] text-[#55556A]">{new Date(summary.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#1F1F2B] text-[#55556A]">
@@ -37,30 +40,30 @@ const DailySummaryModal: React.FC<DailySummaryModalProps> = ({ summary, onClose 
         <div className="p-5 space-y-4">
           {/* Discipline Score */}
           <div className="text-center py-3">
-            <div className="text-[10px] text-[#55556A] uppercase tracking-wider mb-1">Discipline Score</div>
+            <div className="text-[10px] text-[#55556A] uppercase tracking-wider mb-1">{isRu ? 'Оценка дисциплины' : 'Discipline Score'}</div>
             <div className="text-4xl font-black" style={{ color: scoreColor }}>{summary.disciplineScore}</div>
           </div>
 
           {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3">
-            <StatBox icon={<Trophy className="w-4 h-4 text-[#4ADE80]" />} value={summary.questsCompleted} label="Completed" />
-            <StatBox icon={<Swords className="w-4 h-4 text-[#5DAEFF]" />} value={summary.questsActive} label="Remaining" />
-            <StatBox icon={<AlertTriangle className="w-4 h-4 text-[#FF4444]" />} value={summary.questsOverdue} label="Overdue" />
-            <StatBox icon={<Flame className="w-4 h-4 text-[#FF6B35]" />} value={summary.streakMaintained ? '✓' : '✗'} label="Streak" />
+            <StatBox icon={<Trophy className="w-4 h-4 text-[#4ADE80]" />} value={summary.questsCompleted} label={isRu ? 'Выполнено' : 'Completed'} />
+            <StatBox icon={<Swords className="w-4 h-4 text-[#5DAEFF]" />} value={summary.questsActive} label={isRu ? 'Осталось' : 'Remaining'} />
+            <StatBox icon={<AlertTriangle className="w-4 h-4 text-[#FF4444]" />} value={summary.questsOverdue} label={isRu ? 'Просрочено' : 'Overdue'} />
+            <StatBox icon={<Flame className="w-4 h-4 text-[#FF6B35]" />} value={summary.streakMaintained ? '✓' : '✗'} label={isRu ? 'Стрик' : 'Streak'} />
           </div>
 
           {/* Oracle message */}
           <div className="bg-[#0E0E16] border border-[#1E1E2E] rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Shield className="w-3 h-3" style={{ color: scoreColor }} />
-              <span className="text-[9px] font-bold text-[#55556A] uppercase tracking-wider">Assessment</span>
+              <span className="text-[9px] font-bold text-[#55556A] uppercase tracking-wider">{isRu ? 'Оценка' : 'Assessment'}</span>
             </div>
             <p className="text-xs text-[#8888A0] leading-relaxed">{summary.oracleMessage}</p>
           </div>
 
           {/* Close */}
           <button onClick={onClose} className="w-full py-3 bg-[#1F1F2B] hover:bg-[#262636] text-[#E8E8F0] rounded-xl text-sm font-medium border border-[#2A2A3C] transition-colors">
-            Acknowledged
+            {isRu ? 'Принято' : 'Acknowledged'}
           </button>
         </div>
       </div>

@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { Flame, Zap, Target } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface StreakPanelProps {
   streak: number;
@@ -20,6 +21,8 @@ const StreakPanel: React.FC<StreakPanelProps> = ({
   todayTotal,
   focusSessions,
 }) => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
   const dailyProgress = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
 
   return (
@@ -73,7 +76,7 @@ const StreakPanel: React.FC<StreakPanelProps> = ({
       {/* Focus sessions */}
       <div className="flex items-center gap-2 text-[10px]">
         <Zap className="w-3 h-3 text-[#FBBF24]" />
-        <span className="text-[#55556A] uppercase tracking-wider">Focus Sessions</span>
+        <span className="text-[#55556A] uppercase tracking-wider">{isRu ? 'Сессии фокуса' : 'Focus Sessions'}</span>
         <span className="ml-auto font-bold text-[#8888A0]">{focusSessions}</span>
       </div>
     </div>

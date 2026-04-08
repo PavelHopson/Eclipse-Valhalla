@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import OnboardingStep from './OnboardingStep';
 import { Hammer, Swords, Sparkles, Rss, Target, ChevronRight, Plus, X } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void;
@@ -22,6 +23,8 @@ export interface OnboardingData {
 }
 
 const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip }) => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
   const [step, setStep] = useState(1);
   const [focus, setFocus] = useState('');
   const [quests, setQuests] = useState<{ title: string; priority: 'high' | 'medium' | 'low' }[]>([]);
@@ -62,7 +65,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip }) =
       {/* Skip button */}
       <div className="absolute top-4 right-4 z-10">
         <button onClick={onSkip} className="text-xs text-[#3A3A4A] hover:text-[#55556A] transition-colors px-3 py-1.5">
-          Skip intro
+          {isRu ? 'Пропустить' : 'Skip intro'}
         </button>
       </div>
 
@@ -145,7 +148,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip }) =
               onClick={next}
               className="w-full py-3 mt-4 bg-[#1F1F2B] hover:bg-[#262636] text-[#E8E8F0] rounded-xl text-sm font-medium border border-[#2A2A3C] flex items-center justify-center gap-2 transition-colors"
             >
-              {quests.length > 0 ? 'Continue' : 'Skip for now'}
+              {quests.length > 0 ? (isRu ? 'Продолжить' : 'Continue') : (isRu ? 'Пропустить' : 'Skip for now')}
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -172,7 +175,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip }) =
                 {quests[0]?.title || 'Your quest appears here'}
               </div>
               <div className="text-[10px] text-[#55556A]">
-                Due: Tomorrow · Escalates if ignored
+                {isRu ? 'Срок: Завтра' : 'Due: Tomorrow'} · Escalates if ignored
               </div>
             </div>
 
@@ -189,7 +192,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip }) =
             </button>
 
             <button onClick={next} className="w-full py-3 bg-[#FBBF24] text-[#0A0A0F] rounded-xl text-sm font-bold flex items-center justify-center gap-2">
-              Continue <ChevronRight className="w-4 h-4" />
+              {isRu ? 'Продолжить' : 'Continue'} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </OnboardingStep>
@@ -227,7 +230,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip }) =
             </button>
 
             <button onClick={next} className="w-full py-3 bg-[#7A5CFF] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2">
-              Continue <ChevronRight className="w-4 h-4" />
+              {isRu ? 'Продолжить' : 'Continue'} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </OnboardingStep>
@@ -282,7 +285,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSkip }) =
               onClick={finish}
               className="w-full py-4 bg-gradient-to-r from-[#5DAEFF] to-[#7A5CFF] text-white rounded-xl text-base font-bold shadow-[0_0_30px_rgba(93,174,255,0.2)] hover:shadow-[0_0_40px_rgba(93,174,255,0.3)] transition-shadow flex items-center justify-center gap-2"
             >
-              Enter Eclipse Valhalla
+              {isRu ? 'Войти в Eclipse Valhalla' : 'Enter Eclipse Valhalla'}
             </button>
           </div>
         </OnboardingStep>

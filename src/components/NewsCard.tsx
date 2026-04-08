@@ -1,6 +1,7 @@
 import React from 'react';
 import { NewsItem } from '../news';
 import { Bookmark, Swords, Check, Clock, Signal, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface NewsCardProps {
   item: NewsItem;
@@ -10,9 +11,11 @@ interface NewsCardProps {
 }
 
 const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvertToQuest }) => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
   const age = getTimeAgo(item.publishedAt);
   const signalColor = item.importanceScore >= 70 ? '#A33036' : item.importanceScore >= 40 ? '#B89B5E' : '#6C8FB8';
-  const signalLabel = item.importanceScore >= 70 ? 'Critical signal' : item.importanceScore >= 40 ? 'High signal' : 'Signal';
+  const signalLabel = item.importanceScore >= 70 ? (isRu ? 'Критический сигнал' : 'Critical signal') : item.importanceScore >= 40 ? (isRu ? 'Высокий сигнал' : 'High signal') : (isRu ? 'Сигнал' : 'Signal');
 
   return (
     <article className={`group overflow-hidden rounded-[24px] border bg-[#121212]/94 transition-all hover:-translate-y-1 ${
@@ -43,7 +46,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvert
         </div>
 
         <div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-[#7F7A72]">{item.category || 'Signal source'}</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-[#7F7A72]">{item.category || (isRu ? 'Источник' : 'Signal source')}</div>
           <h3 className={`mt-2 text-lg font-bold leading-tight ${item.read ? 'text-[#B4B0A7]' : 'text-[#F2F1EE]'}`}>{item.title}</h3>
         </div>
 
@@ -70,7 +73,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvert
               className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-white/8 bg-[#171717] px-3 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
             >
               <Check className="h-3.5 w-3.5" />
-              Mark read
+              {isRu ? 'Прочитано' : 'Mark read'}
             </button>
           ) : (
             <button
@@ -78,7 +81,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvert
               className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-white/8 bg-[#171717] px-3 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
             >
               <Bookmark className="h-3.5 w-3.5" />
-              Save signal
+              {isRu ? 'Сохранить' : 'Save signal'}
             </button>
           )}
 
@@ -87,7 +90,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvert
             className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-[#6C8FB833] bg-[#6C8FB8] px-3 py-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:bg-[#7C9FC7]"
           >
             <Swords className="h-3.5 w-3.5" />
-            Convert to quest
+            {isRu ? 'В квест' : 'Convert to quest'}
           </button>
         </div>
 
@@ -96,7 +99,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvert
             onClick={() => onSave(item.id)}
             className="text-[11px] font-semibold text-[#7F7A72] transition-colors hover:text-[#D8C18E]"
           >
-            {item.saved ? 'Stored in reserve' : 'Store signal'}
+            {item.saved ? (isRu ? 'В резерве' : 'Stored in reserve') : (isRu ? 'В резерв' : 'Store signal')}
           </button>
 
           {item.url && (
@@ -106,7 +109,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvert
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
             >
-              Open source
+              {isRu ? 'Источник' : 'Open source'}
               <ArrowRight className="h-3.5 w-3.5" />
             </a>
           )}

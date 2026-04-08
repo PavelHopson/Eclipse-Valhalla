@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, StickyNote, ArrowRight, X } from 'lucide-react';
 import { Reminder, Note, ViewMode } from '../types';
 import { formatDate } from '../utils';
+import { useLanguage } from '../i18n';
 
 interface GlobalSearchProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface GlobalSearchProps {
 }
 
 const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, reminders, notes, onNavigate }) => {
+  const { language } = useLanguage();
+  const isRU = language === 'ru';
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -78,7 +81,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, reminders,
                 <div className="p-2 space-y-4">
                     {filteredReminders.length > 0 && (
                         <div>
-                            <h3 className="px-3 py-2 text-xs font-bold text-[#55556A] uppercase tracking-wider">Tasks</h3>
+                            <h3 className="px-3 py-2 text-xs font-bold text-[#55556A] uppercase tracking-wider">{isRU ? 'Задачи' : 'Tasks'}</h3>
                             <div className="space-y-1">
                                 {filteredReminders.map(r => (
                                     <button
@@ -99,7 +102,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, reminders,
 
                     {filteredNotes.length > 0 && (
                         <div>
-                            <h3 className="px-3 py-2 text-xs font-bold text-[#55556A] uppercase tracking-wider">Notes</h3>
+                            <h3 className="px-3 py-2 text-xs font-bold text-[#55556A] uppercase tracking-wider">{isRU ? 'Заметки' : 'Notes'}</h3>
                             <div className="space-y-1">
                                 {filteredNotes.map(n => (
                                     <button
@@ -122,8 +125,8 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, reminders,
         </div>
 
         <div className="px-4 py-2 border-t border-[#2A2A3C] bg-[#12121A] text-[10px] text-[#55556A] flex justify-between items-center">
-            <span><kbd className="bg-[#1A1A26] border border-[#2A2A3C] rounded px-1 py-0.5 font-sans shadow-sm">Enter</kbd> to select</span>
-            <span><kbd className="bg-[#1A1A26] border border-[#2A2A3C] rounded px-1 py-0.5 font-sans shadow-sm">Esc</kbd> to close</span>
+            <span><kbd className="bg-[#1A1A26] border border-[#2A2A3C] rounded px-1 py-0.5 font-sans shadow-sm">Enter</kbd> {isRU ? 'выбрать' : 'to select'}</span>
+            <span><kbd className="bg-[#1A1A26] border border-[#2A2A3C] rounded px-1 py-0.5 font-sans shadow-sm">Esc</kbd> {isRU ? 'закрыть' : 'to close'}</span>
         </div>
       </div>
     </div>

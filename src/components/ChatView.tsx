@@ -1,13 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '../types/index';
 import { sendChatMessage } from '../services/geminiService';
+import { useLanguage } from '../i18n';
 
 export const ChatView: React.FC = () => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
+  const initialMessage = isRu ? 'Привет! Я Valhalla, твой AI-ассистент. Чем могу помочь?' : "Hello! I'm Valhalla, your AI assistant running on Gemini 3 Pro. How can I help you today?";
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'model',
-      text: "Hello! I'm Valhalla, your AI assistant running on Gemini 3 Pro. How can I help you today?",
+      text: initialMessage,
       timestamp: Date.now()
     }
   ]);
@@ -59,7 +63,7 @@ export const ChatView: React.FC = () => {
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        text: "Sorry, I encountered an error connecting to Valhalla services.",
+        text: isRu ? 'Ошибка подключения к сервисам.' : "Sorry, I encountered an error connecting to Valhalla services.",
         timestamp: Date.now(),
         isError: true
       };
@@ -116,7 +120,7 @@ export const ChatView: React.FC = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Valhalla..."
+            placeholder={isRu ? 'Спроси Valhalla...' : 'Ask Valhalla...'}
             className="flex-1 bg-[#12121A] border border-[#2A2A3C] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#5DAEFF] text-[#E8E8F0] placeholder-[#3A3A4A] transition-all"
             disabled={isLoading}
           />

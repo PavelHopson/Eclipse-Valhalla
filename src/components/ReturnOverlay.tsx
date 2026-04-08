@@ -8,6 +8,7 @@ import React from 'react';
 import { ArrowRight, MessageSquare } from 'lucide-react';
 import { openTelegram } from '../services/telegramCTA';
 import { Seal } from '../brand/Seal';
+import { useLanguage } from '../i18n';
 
 export interface ReturnState {
   type: 'morning' | 'debt' | 'comeback';
@@ -24,30 +25,33 @@ interface ReturnOverlayProps {
 }
 
 const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDismiss }) => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
+
   const title =
-    state.type === 'morning' ? `Day ${state.streak}.` :
-    state.type === 'debt' ? `${state.abandonedCount} abandoned.` :
-    `${state.daysAway} days absent.`;
+    state.type === 'morning' ? (isRu ? `День ${state.streak}.` : `Day ${state.streak}.`) :
+    state.type === 'debt' ? (isRu ? `${state.abandonedCount} брошено.` : `${state.abandonedCount} abandoned.`) :
+    (isRu ? `${state.daysAway} дней отсутствия.` : `${state.daysAway} days absent.`);
 
   const body =
     state.type === 'morning'
       ? state.streak > 1
-        ? `${state.streak} days of continuity are on the line. Show proof.`
-        : 'The system has opened a new day. Establish control immediately.'
+        ? (isRu ? `${state.streak} дней непрерывности на кону. Докажи.` : `${state.streak} days of continuity are on the line. Show proof.`)
+        : (isRu ? 'Система открыла новый день. Установи контроль.' : 'The system has opened a new day. Establish control immediately.')
       : state.type === 'debt'
-      ? 'You left without closure. The record stayed open.'
-      : 'The loop collapsed while you were gone. Discipline does not restart on its own.';
+      ? (isRu ? 'Ты ушёл без завершения. Запись осталась открытой.' : 'You left without closure. The record stayed open.')
+      : (isRu ? 'Цикл рухнул, пока тебя не было.' : 'The loop collapsed while you were gone. Discipline does not restart on its own.');
 
   const detail =
     state.type === 'morning'
       ? state.abandonedCount > 0
-        ? `${state.abandonedCount} unfinished objective${state.abandonedCount > 1 ? 's' : ''} are still waiting.`
-        : 'No excuses have been written yet.'
+        ? (isRu ? `${state.abandonedCount} незавершённых целей ещё ждут.` : `${state.abandonedCount} unfinished objective${state.abandonedCount > 1 ? 's' : ''} are still waiting.`)
+        : (isRu ? 'Оправданий пока нет.' : 'No excuses have been written yet.')
       : state.type === 'debt'
       ? state.topAbandoned
-        ? `Most urgent: ${state.topAbandoned}`
-        : 'Old pressure is still active.'
-      : 'Day 1 begins only when you act.';
+        ? (isRu ? `Срочнее всего: ${state.topAbandoned}` : `Most urgent: ${state.topAbandoned}`)
+        : (isRu ? 'Старое давление ещё активно.' : 'Old pressure is still active.')
+      : (isRu ? 'День 1 начинается когда ты действуешь.' : 'Day 1 begins only when you act.');
 
   const variant = state.type === 'morning' ? 'watching' : 'broken';
   const accent = state.type === 'morning' ? '#B89B5E' : '#A33036';
@@ -65,15 +69,15 @@ const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDi
           <Seal size={40} variant={variant} color={accent} animated />
         </div>
 
-        <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">Return protocol</div>
+        <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">{isRu ? 'Протокол возврата' : 'Return protocol'}</div>
         <h1 className="mt-4 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">{title}</h1>
         <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-[#B4B0A7]">{body}</p>
         <p className="mt-4 text-[11px] uppercase tracking-[0.18em]" style={{ color: accent }}>{detail}</p>
 
         <div className="mt-8 rounded-[20px] border border-white/8 bg-white/[0.02] p-4 text-left">
-          <div className="text-[10px] uppercase tracking-[0.22em] text-[#7F7A72]">System expectation</div>
+          <div className="text-[10px] uppercase tracking-[0.22em] text-[#7F7A72]">{isRu ? 'Ожидание системы' : 'System expectation'}</div>
           <p className="mt-3 text-sm leading-6 text-[#F2F1EE]">
-            Re-entry only matters if it becomes action in the next minute.
+            {isRu ? 'Возврат важен только если станет действием.' : 'Re-entry only matters if it becomes action in the next minute.'}
           </p>
         </div>
 
@@ -82,7 +86,7 @@ const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDi
             onClick={onStartFirst}
             className="inline-flex w-full items-center justify-center gap-2 rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-8 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A]"
           >
-            {state.abandonedCount > 0 ? 'Face the objectives' : 'Start first objective'}
+            {state.abandonedCount > 0 ? (isRu ? 'К целям' : 'Face the objectives') : (isRu ? 'Начать первую цель' : 'Start first objective')}
             <ArrowRight className="h-4 w-4" />
           </button>
 
@@ -92,12 +96,12 @@ const ReturnOverlay: React.FC<ReturnOverlayProps> = ({ state, onStartFirst, onDi
               className="mx-auto inline-flex items-center gap-2 text-[11px] font-semibold text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
             >
               <MessageSquare className="h-3.5 w-3.5" />
-              Need accountability pressure
+              {isRu ? 'Нужна подотчётность' : 'Need accountability pressure'}
             </button>
           )}
 
           <button onClick={onDismiss} className="text-[11px] uppercase tracking-[0.16em] text-[#5F5A54] transition-colors hover:text-[#B4B0A7]">
-            Dismiss
+            {isRu ? 'Закрыть' : 'Dismiss'}
           </button>
         </div>
       </div>

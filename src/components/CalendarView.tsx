@@ -50,7 +50,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ reminders, onSelectDate }) 
               <ScrollText className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-[0.28em] text-[#7F7A72]">{isRU ? 'Chronicle archive' : 'Chronicle archive'}</div>
+              <div className="text-[10px] uppercase tracking-[0.28em] text-[#7F7A72]">{isRU ? 'Архив летописи' : 'Chronicle archive'}</div>
               <h1 className="mt-2 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">
                 {viewMode === 'month'
                   ? currentDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' })

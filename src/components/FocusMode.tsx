@@ -24,7 +24,8 @@ interface FocusModeProps {
 const FOCUS_DURATION = 25 * 60;
 
 const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete, onStartNext, onClose }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isRu = language === 'ru';
   const [secondsLeft, setSecondsLeft] = useState(FOCUS_DURATION);
   const [isRunning, setIsRunning] = useState(true);
   const [phase, setPhase] = useState<'focus' | 'completed' | 'escaped'>('focus');
@@ -274,9 +275,9 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
         </div>
 
         <div className="mt-8 max-w-xl text-[11px] uppercase tracking-[0.18em] text-[#7F7A72]">
-          {secondsLeft === 0 ? 'The window is open. Finish it now or name the failure.' : 'The chamber remains sealed until execution is complete.'}
+          {secondsLeft === 0 ? (isRu ? 'Окно открыто. Заверши это или признай провал.' : 'The window is open. Finish it now or name the failure.') : (isRu ? 'Камера остаётся запечатанной до завершения.' : 'The chamber remains sealed until execution is complete.')}
         </div>
-        {escapeCount > 0 && <div className="mt-3 text-[11px] uppercase tracking-[0.18em] text-[#C05A60]">Escape attempts: {escapeCount}</div>}
+        {escapeCount > 0 && <div className="mt-3 text-[11px] uppercase tracking-[0.18em] text-[#C05A60]">{isRu ? 'Попытки выхода: ' : 'Escape attempts: '}{escapeCount}</div>}
       </div>
     </div>
   );
