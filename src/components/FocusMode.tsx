@@ -8,6 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Reminder } from '../types';
 import { X, Check, Pause, Play, RotateCcw, ArrowRight, Coffee, MessageSquare } from 'lucide-react';
 import { Seal } from '../brand/Seal';
+import { useLanguage } from '../i18n';
 import { getCompletionMessage, getIdentityMessage, getEscapeMessage, recordDailyCompletion, recordDailyEscape, getDailyStats, getProgressMessage } from '../services/disciplineMode';
 import { openTelegram } from '../services/telegramCTA';
 import { getCompletionVoice, shouldBeSilent } from '../services/systemVoice';
@@ -23,6 +24,7 @@ interface FocusModeProps {
 const FOCUS_DURATION = 25 * 60;
 
 const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete, onStartNext, onClose }) => {
+  const { t } = useLanguage();
   const [secondsLeft, setSecondsLeft] = useState(FOCUS_DURATION);
   const [isRunning, setIsRunning] = useState(true);
   const [phase, setPhase] = useState<'focus' | 'completed' | 'escaped'>('focus');
@@ -100,7 +102,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
                 }}
                 className="w-full rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-6 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A]"
               >
-                Return to execution
+                {t('focus.return')}
               </button>
 
               {escapeCount >= 3 && (
@@ -109,7 +111,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
                   className="mx-auto inline-flex items-center gap-2 text-[11px] font-semibold text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
-                  This pattern needs intervention
+                  {t('focus.intervention')}
                 </button>
               )}
             </div>
@@ -133,7 +135,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
               <Seal size={56} variant="complete" color="#B89B5E" animated />
             </div>
 
-            <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">Completion state</div>
+            <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">{t('focus.completion')}</div>
             <h2 className="mt-4 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">{completionMsg.line1}</h2>
             <p className="mt-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#D8C18E]">{completionMsg.line2}</p>
 
@@ -142,14 +144,14 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
             {dailyProgress && <p className="mt-3 text-sm text-[#B4B0A7]">{dailyProgress}</p>}
             {escapeCount > 0 && !identityMsg && (
               <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-[#C05A60]">
-                Escapes during session: {escapeCount}
+                {t('focus.escapes')}: {escapeCount}
               </p>
             )}
 
             <div className="mt-8 rounded-[20px] border border-white/8 bg-white/[0.02] p-4 text-left">
-              <div className="text-[10px] uppercase tracking-[0.24em] text-[#7F7A72]">Identity reinforcement</div>
+              <div className="text-[10px] uppercase tracking-[0.24em] text-[#7F7A72]">{t('focus.identity')}</div>
               <p className="mt-3 text-sm leading-6 text-[#F2F1EE]">
-                Completion is now part of the record. The system only trusts repetition.
+                {t('focus.identity_desc')}
               </p>
             </div>
 
@@ -159,11 +161,11 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
                   onClick={() => onStartNext(nextQuests[0].id)}
                   className="mx-auto inline-flex w-full max-w-lg items-center justify-center gap-2 rounded-[16px] border border-[#6C8FB833] bg-[#6C8FB8] px-6 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#7C9FC7]"
                 >
-                  Next objective: {nextQuests[0].title}
+                  {t('focus.next_objective')}: {nextQuests[0].title}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               ) : (
-                <p className="text-sm text-[#B4B0A7]">All visible objectives are sealed.</p>
+                <p className="text-sm text-[#B4B0A7]">{t('focus.all_sealed')}</p>
               )}
 
               {(() => {
@@ -175,7 +177,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
                       className="mx-auto inline-flex items-center gap-2 text-[11px] font-semibold text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
                     >
                       <MessageSquare className="h-3.5 w-3.5" />
-                      Consistency unlocked. Request advanced guidance.
+                      {t('focus.consistency')}
                     </button>
                   );
                 }
@@ -184,7 +186,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
 
               <button onClick={onClose} className="mx-auto inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[#7F7A72] transition-colors hover:text-[#B4B0A7]">
                 <Coffee className="h-3.5 w-3.5" />
-                Exit chamber
+                {t('focus.exit')}
               </button>
             </div>
           </div>
@@ -208,12 +210,12 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#B89B5E26] bg-[#B89B5E0D] system-idle">
             <Seal size={24} variant="watching" color="#B89B5E" />
           </div>
-          <div className="text-[10px] uppercase tracking-[0.34em] text-[#7F7A72]">Focus mode</div>
+          <div className="text-[10px] uppercase tracking-[0.34em] text-[#7F7A72]">{t('focus.mode')}</div>
           <h1 className="mx-auto mt-5 max-w-3xl font-ritual text-[30px] leading-[1.1] text-[#F2F1EE] md:text-[42px]">
             {quest.title}
           </h1>
           <p className="mt-4 text-[11px] uppercase tracking-[0.22em] text-[#B4B0A7]">
-            No switching. No drift. One objective.
+            {t('focus.no_drift')}
           </p>
         </div>
 
@@ -257,7 +259,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
             className="inline-flex min-w-[200px] items-center justify-center gap-2 rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-8 py-4 text-sm font-extrabold uppercase tracking-[0.14em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A]"
           >
             <Check className="h-4.5 w-4.5" />
-            Seal completion
+            {t('focus.seal')}
           </button>
 
           <button

@@ -66,7 +66,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
     {
       label: 'NEXUS',
       items: [
-        { id: 'nexus', label: 'Nexus Feed', icon: Rss, accent: '#FBBF24' },
+        { id: 'nexus', label: t('nav.nexus'), icon: Rss, accent: '#FBBF24' },
       ],
     },
     {
@@ -200,11 +200,11 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#050508]/95 backdrop-blur-xl border-t border-[#16162240] z-50 pb-safe">
         <div className="flex items-center justify-around px-1 pt-2 pb-1">
           {[
-            { id: 'dashboard', icon: Home, label: 'Home' },
-            { id: 'reminders', icon: Swords, label: 'Quests' },
-            { id: 'calendar', icon: CalendarIcon, label: 'Calendar' },
-            { id: 'oracle', icon: Sparkles, label: 'Oracle' },
-            { id: 'settings', icon: Settings, label: 'Settings' },
+            { id: 'dashboard', icon: Home, label: t('nav.mobile_home') },
+            { id: 'reminders', icon: Swords, label: t('nav.mobile_quests') },
+            { id: 'calendar', icon: CalendarIcon, label: t('nav.mobile_calendar') },
+            { id: 'oracle', icon: Sparkles, label: t('nav.mobile_oracle') },
+            { id: 'settings', icon: Settings, label: t('nav.mobile_settings') },
           ].map((item) => {
             const active = isActive(item.id);
             const Icon = item.icon;

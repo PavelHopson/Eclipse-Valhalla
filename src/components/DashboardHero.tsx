@@ -25,8 +25,7 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
   streak,
   onStartFocus,
 }) => {
-  const { language } = useLanguage();
-  const isRU = language === 'ru';
+  const { t } = useLanguage();
 
   const now = new Date();
   const active = reminders.filter(r => !r.isCompleted);
@@ -57,22 +56,22 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">
-                {isRU ? 'Командный контур' : 'Command loop'}
+                {t('hero.command_loop')}
               </div>
               <div className="mt-2 flex items-center gap-3 text-[#F2F1EE]">
                 <Seal size={24} variant={overdue.length > 0 ? 'broken' : 'watching'} color={overdue.length > 0 ? '#A33036' : '#B89B5E'} />
                 <span className="font-ritual text-lg md:text-xl">
                   {active.length === 0
-                    ? isRU ? 'Система ждёт приказа' : 'The system awaits an order'
+                    ? t('hero.system_awaits')
                     : overdue.length > 0
-                    ? isRU ? 'Долг уже открыт' : 'Debt is already open'
-                    : isRU ? 'Давление держится' : 'Pressure is holding'}
+                    ? t('hero.debt_open')
+                    : t('hero.pressure_holds')}
                 </span>
               </div>
             </div>
             <div className="rounded-full border border-[#6C8FB82A] bg-[#6C8FB810] px-3 py-1.5 text-right">
               <div className="text-[9px] uppercase tracking-[0.24em] text-[#7F7A72]">
-                {isRU ? 'Дисциплина' : 'Discipline'}
+                {t('hero.discipline')}
               </div>
               <div className="text-lg font-extrabold text-[#F2F1EE]">{disciplineScore}</div>
             </div>
@@ -81,37 +80,33 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
           <div className="max-w-3xl">
             <h1 className="font-ritual text-[34px] leading-[1.04] text-[#F2F1EE] md:text-[48px]">
               {active.length === 0
-                ? isRU ? 'Назови следующую цель.' : 'Name the next objective.'
+                ? t('hero.name_objective')
                 : overdue.length > 0
-                ? isRU ? 'Действуй, пока день не записан как провал.' : 'Act before this day is recorded as failure.'
-                : isRU ? 'Система не просит. Система ожидает исполнения.' : 'The system does not ask. It expects execution.'}
+                ? t('hero.act_before_fail')
+                : t('hero.system_expects')}
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-[#B4B0A7] md:text-[15px]">
               {nextQuest
-                ? isRU
-                  ? `Следующий удар: ${nextQuest.title}. Решение уже принято. Осталось исполнение.`
-                  : `Next pressure point: ${nextQuest.title}. The decision already exists. Only execution remains.`
-                : isRU
-                ? `Пустой контур опасен. Добавь квест, чтобы день получил направление и вес.`
-                : `An empty loop is dangerous. Add a quest so the day has direction and weight.`}
+                ? `${t('hero.next_pressure')}: ${nextQuest.title}. ${t('hero.decision_exists')}`
+                : t('hero.empty_dangerous')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
             <Stat
               icon={<Swords className="h-4 w-4 text-[#9AB7D4]" />}
-              label={isRU ? 'Активно' : 'Active'}
+              label={t('hero.active')}
               value={String(active.length)}
             />
             <Stat
               icon={<AlertTriangle className={`h-4 w-4 ${overdue.length > 0 ? 'text-[#C05A60]' : 'text-[#7F7A72]'}`} />}
-              label={isRU ? 'Просрочено' : 'Overdue'}
+              label={t('hero.overdue')}
               value={String(overdue.length)}
               danger={overdue.length > 0}
             />
             <Stat
               icon={<Flame className="h-4 w-4 text-[#D8C18E]" />}
-              label={isRU ? 'Серия' : 'Streak'}
+              label={t('hero.streak')}
               value={`${streak}d`}
             />
           </div>
@@ -124,12 +119,12 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
             </div>
             <div>
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#7F7A72]">
-                {isRU ? 'Следующий режим' : 'Next state'}
+                {t('hero.next_state')}
               </div>
               <div className="mt-1 font-semibold text-[#F2F1EE]">
                 {nextQuest
-                  ? isRU ? 'Фокус-контур' : 'Focus seal'
-                  : isRU ? 'Новый квест' : 'New quest'}
+                  ? t('hero.enter_focus')
+                  : t('hero.new_quest')}
               </div>
             </div>
           </div>
@@ -137,17 +132,17 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
           <div className="mt-6 space-y-4">
             <div className="border-l border-[#6C8FB82E] pl-4">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#7F7A72]">
-                {isRU ? 'Носитель давления' : 'Pressure carrier'}
+                {t('hero.pressure_carrier')}
               </div>
               <div className="mt-2 text-sm leading-6 text-[#F2F1EE]">
-                {nextQuest?.title || (isRU ? `${user.name}, система ждёт первого приказа.` : `${user.name}, the system is waiting for the first command.`)}
+                {nextQuest?.title || t('hero.system_waiting')}
               </div>
             </div>
 
             <div className="flex items-end justify-between border-t border-white/6 pt-4">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.22em] text-[#7F7A72]">
-                  {isRU ? 'Закрыто сегодня' : 'Closed today'}
+                  {t('hero.closed_today')}
                 </div>
                 <div className="mt-1 text-2xl font-extrabold text-[#F2F1EE]">{completedToday}</div>
               </div>
@@ -155,7 +150,7 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
                 onClick={onStartFocus}
                 className="inline-flex items-center gap-2 rounded-[12px] border border-[#B89B5E30] bg-[#B89B5E] px-4 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A]"
               >
-                {isRU ? 'Войти в фокус' : 'Enter focus'}
+                {t('hero.enter_focus')}
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>

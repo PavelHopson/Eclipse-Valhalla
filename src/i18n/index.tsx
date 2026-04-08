@@ -314,6 +314,60 @@ export const translations = {
     'retention.streak_risk': 'Streak at risk.',
     'retention.comeback': 'You were away.',
     'retention.rebuild': 'Rebuild discipline.',
+
+    // Focus Mode
+    'focus.return': 'Return to execution',
+    'focus.intervention': 'This pattern needs intervention',
+    'focus.completion': 'Completion state',
+    'focus.identity': 'Identity reinforcement',
+    'focus.identity_desc': 'Completion is now part of the record. The system only trusts repetition.',
+    'focus.next_objective': 'Next objective',
+    'focus.all_sealed': 'All visible objectives are sealed.',
+    'focus.consistency': 'Consistency unlocked. Request advanced guidance.',
+    'focus.exit': 'Exit chamber',
+    'focus.mode': 'Focus mode',
+    'focus.no_drift': 'No switching. No drift. One objective.',
+    'focus.seal': 'Seal completion',
+    'focus.escapes': 'Escapes during session',
+
+    // DashboardHero
+    'hero.command_loop': 'Command loop',
+    'hero.system_awaits': 'The system awaits an order',
+    'hero.debt_open': 'Debt is already open',
+    'hero.pressure_holds': 'Pressure is holding',
+    'hero.discipline': 'Discipline',
+    'hero.name_objective': 'Name the next objective.',
+    'hero.act_before_fail': 'Act before this day is recorded as failure.',
+    'hero.system_expects': 'The system does not ask. It expects execution.',
+    'hero.next_pressure': 'Next pressure point',
+    'hero.decision_exists': 'The decision already exists. Only execution remains.',
+    'hero.empty_dangerous': 'An empty loop is dangerous. Add a quest so the day has direction and weight.',
+    'hero.active': 'Active',
+    'hero.overdue': 'Overdue',
+    'hero.streak': 'Streak',
+    'hero.next_state': 'Next state',
+    'hero.new_quest': 'New quest',
+    'hero.pressure_carrier': 'Pressure carrier',
+    'hero.system_waiting': 'Warrior, the system is waiting for the first command.',
+    'hero.closed_today': 'Closed today',
+    'hero.enter_focus': 'Enter focus',
+
+    // Mobile nav
+    'nav.mobile_home': 'Home',
+    'nav.mobile_quests': 'Quests',
+    'nav.mobile_calendar': 'Calendar',
+    'nav.mobile_oracle': 'Oracle',
+    'nav.mobile_settings': 'Settings',
+
+    // Settings extras
+    'settings.mode_hardcore': 'Hardcore',
+    'settings.mode_balanced': 'Balanced',
+    'settings.pro_badge': 'Pro access',
+    'settings.free_badge': 'Free access',
+    'settings.streak_label': 'streak',
+
+    // Nexus
+    'nav.nexus': 'Nexus Feed',
   },
   ru: {
     'app.title': 'ECLIPSE VALHALLA',
@@ -625,6 +679,60 @@ export const translations = {
     'retention.streak_risk': 'Стрик под угрозой.',
     'retention.comeback': 'Тебя не было.',
     'retention.rebuild': 'Восстанови дисциплину.',
+
+    // Focus Mode
+    'focus.return': 'Вернуться к исполнению',
+    'focus.intervention': 'Этот паттерн требует вмешательства',
+    'focus.completion': 'Состояние завершения',
+    'focus.identity': 'Усиление идентичности',
+    'focus.identity_desc': 'Завершение теперь часть записи. Система доверяет только повторению.',
+    'focus.next_objective': 'Следующая цель',
+    'focus.all_sealed': 'Все видимые цели закрыты.',
+    'focus.consistency': 'Постоянство разблокировано. Запросить расширенное руководство.',
+    'focus.exit': 'Покинуть камеру',
+    'focus.mode': 'Режим фокуса',
+    'focus.no_drift': 'Без переключений. Без дрейфа. Одна цель.',
+    'focus.seal': 'Завершить',
+    'focus.escapes': 'Побегов за сессию',
+
+    // DashboardHero
+    'hero.command_loop': 'Командный контур',
+    'hero.system_awaits': 'Система ждёт приказа',
+    'hero.debt_open': 'Долг уже открыт',
+    'hero.pressure_holds': 'Давление держится',
+    'hero.discipline': 'Дисциплина',
+    'hero.name_objective': 'Назови следующую цель.',
+    'hero.act_before_fail': 'Действуй, пока день не записан как провал.',
+    'hero.system_expects': 'Система не просит. Система ожидает исполнения.',
+    'hero.next_pressure': 'Следующий удар',
+    'hero.decision_exists': 'Решение уже принято. Осталось исполнение.',
+    'hero.empty_dangerous': 'Пустой контур опасен. Добавь квест, чтобы день получил направление и вес.',
+    'hero.active': 'Активно',
+    'hero.overdue': 'Просрочено',
+    'hero.streak': 'Серия',
+    'hero.next_state': 'Следующий режим',
+    'hero.new_quest': 'Новый квест',
+    'hero.pressure_carrier': 'Носитель давления',
+    'hero.system_waiting': 'Воин, система ждёт первого приказа.',
+    'hero.closed_today': 'Закрыто сегодня',
+    'hero.enter_focus': 'Режим фокуса',
+
+    // Mobile nav
+    'nav.mobile_home': 'Главная',
+    'nav.mobile_quests': 'Квесты',
+    'nav.mobile_calendar': 'Календарь',
+    'nav.mobile_oracle': 'Оракул',
+    'nav.mobile_settings': 'Настройки',
+
+    // Settings extras
+    'settings.mode_hardcore': 'Хардкор',
+    'settings.mode_balanced': 'Баланс',
+    'settings.pro_badge': 'Pro доступ',
+    'settings.free_badge': 'Бесплатно',
+    'settings.streak_label': 'серия',
+
+    // Nexus
+    'nav.nexus': 'Лента Нексус',
   }
 };
 
