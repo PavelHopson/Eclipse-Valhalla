@@ -6,6 +6,7 @@
 
 import React, { useState, useRef } from 'react';
 import { ArrowUpRight, Briefcase, HeartPulse, UserRound } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 type QuestTag = 'work' | 'health' | 'life';
 
@@ -15,17 +16,27 @@ interface QuickQuestInputProps {
   compact?: boolean;
 }
 
-const TAGS: { id: QuestTag; icon: any; label: string; accent: string }[] = [
+const TAGS_EN: { id: QuestTag; icon: any; label: string; accent: string }[] = [
   { id: 'work', icon: Briefcase, label: 'Work', accent: '#6C8FB8' },
   { id: 'health', icon: HeartPulse, label: 'Health', accent: '#8E9B79' },
   { id: 'life', icon: UserRound, label: 'Life', accent: '#B89B5E' },
 ];
 
+const TAGS_RU: { id: QuestTag; icon: any; label: string; accent: string }[] = [
+  { id: 'work', icon: Briefcase, label: 'Работа', accent: '#6C8FB8' },
+  { id: 'health', icon: HeartPulse, label: 'Здоровье', accent: '#8E9B79' },
+  { id: 'life', icon: UserRound, label: 'Жизнь', accent: '#B89B5E' },
+];
+
 const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
   onCreateQuest,
-  placeholder = 'State the objective. Press Enter.',
+  placeholder,
   compact = false,
 }) => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
+  const TAGS = isRu ? TAGS_RU : TAGS_EN;
+  const defaultPlaceholder = isRu ? 'Назови цель. Нажми Enter.' : 'State the objective. Press Enter.';
   const [value, setValue] = useState('');
   const [flash, setFlash] = useState(false);
   const [tag, setTag] = useState<QuestTag | null>(null);
@@ -51,7 +62,7 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
           value={value}
           onChange={e => setValue(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && submit()}
-          placeholder={placeholder}
+          placeholder={placeholder || defaultPlaceholder}
           className={`flex-1 rounded-[12px] border bg-[#121212] px-3 py-2.5 text-sm text-[#F2F1EE] outline-none transition-all ${
             flash ? 'border-[#8E9B793D] shadow-[0_0_16px_rgba(142,155,121,0.12)]' : 'border-white/10 focus:border-[#6C8FB855]'
           }`}
@@ -87,11 +98,11 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
       <div className="relative px-5 py-5 md:px-6 md:py-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.28em] text-[#7F7A72]">Quest input</div>
-            <div className="mt-2 font-ritual text-lg text-[#F2F1EE]">Give the day a command.</div>
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[#7F7A72]">{isRu ? 'Ввод цели' : 'Quest input'}</div>
+            <div className="mt-2 font-ritual text-lg text-[#F2F1EE]">{isRu ? 'Отдай приказ дню.' : 'Give the day a command.'}</div>
           </div>
           <div className="rounded-full border border-[#B89B5E24] bg-[#B89B5E10] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#D8C18E]">
-            Signal → Quest
+            {isRu ? 'Сигнал → Квест' : 'Signal → Quest'}
           </div>
         </div>
 
@@ -106,7 +117,7 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
               value={value}
               onChange={e => setValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submit()}
-              placeholder={placeholder}
+              placeholder={placeholder || defaultPlaceholder}
               className="w-full rounded-[16px] border border-[#6C8FB826] bg-[#0F0F0F] py-5 pl-16 pr-5 text-[16px] font-semibold text-[#F2F1EE] placeholder-[#5F5A54] outline-none transition-all focus:border-[#B89B5E40] focus:shadow-[0_0_0_1px_rgba(184,155,94,0.25)]"
             />
           </div>
@@ -116,7 +127,7 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
             disabled={!value.trim()}
             className="inline-flex h-[60px] items-center justify-center gap-2 rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-6 text-sm font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:-translate-y-0.5 hover:bg-[#C5A76A] disabled:cursor-not-allowed disabled:opacity-25"
           >
-            Seal quest
+            {isRu ? 'Создать квест' : 'Seal quest'}
             <ArrowUpRight className="h-4 w-4" />
           </button>
         </div>
@@ -140,7 +151,7 @@ const QuickQuestInput: React.FC<QuickQuestInputProps> = ({
             );
           })}
           <span className="text-[10px] uppercase tracking-[0.18em] text-[#5F5A54]">
-            Enter confirms immediately
+            {isRu ? 'Enter подтверждает сразу' : 'Enter confirms immediately'}
           </span>
         </div>
       </div>

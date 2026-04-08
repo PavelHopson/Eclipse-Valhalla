@@ -93,7 +93,7 @@ const ReminderView: React.FC<ReminderViewProps> = ({
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">
-                {isRU ? 'Execution arena' : 'Execution arena'}
+                {isRU ? 'Арена исполнения' : 'Execution arena'}
               </div>
               <h1 className="mt-3 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">
                 {isRU ? 'Поле боя задач' : 'Field of objectives'}
@@ -106,9 +106,9 @@ const ReminderView: React.FC<ReminderViewProps> = ({
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <ArenaStat label={isRU ? 'Active objectives' : 'Active objectives'} value={pendingCount} accent="#6C8FB8" />
-              <ArenaStat label={isRU ? 'Abandoned' : 'Abandoned'} value={overdueCount} accent="#A33036" pulse={overdueCount > 0} />
-              <ArenaStat label={isRU ? 'Sealed' : 'Sealed'} value={completedCount} accent="#B89B5E" />
+              <ArenaStat label={isRU ? 'Активные цели' : 'Active objectives'} value={pendingCount} accent="#6C8FB8" />
+              <ArenaStat label={isRU ? 'Брошенные' : 'Abandoned'} value={overdueCount} accent="#A33036" pulse={overdueCount > 0} />
+              <ArenaStat label={isRU ? 'Запечатанные' : 'Sealed'} value={completedCount} accent="#B89B5E" />
             </div>
           </div>
 
@@ -159,10 +159,10 @@ const ReminderView: React.FC<ReminderViewProps> = ({
 
       <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
         {[
-          { id: 'active', label: isRU ? 'Active objectives' : 'Active objectives' },
-          { id: 'all', label: isRU ? 'Unfinished' : 'All signals' },
-          { id: 'abandoned', label: isRU ? 'Abandoned' : 'Abandoned' },
-          { id: 'completed', label: isRU ? 'Sealed' : 'Sealed' },
+          { id: 'active', label: isRU ? 'Активные цели' : 'Active objectives' },
+          { id: 'all', label: isRU ? 'Незавершённые' : 'All signals' },
+          { id: 'abandoned', label: isRU ? 'Брошенные' : 'Abandoned' },
+          { id: 'completed', label: isRU ? 'Запечатанные' : 'Sealed' },
         ].map(item => (
           <button
             key={item.id}

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { GeneratedImage, ImageSize } from '../types/index';
 import { generateImage } from '../services/geminiService';
 import { ImagePlus, Download, Sparkles } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 export const ImageView: React.FC = () => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
   const [prompt, setPrompt] = useState('');
   const [size, setSize] = useState<ImageSize>('1K');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +21,7 @@ export const ImageView: React.FC = () => {
       const imageUrl = await generateImage(prompt, size);
       setGeneratedImages(prev => [{ url: imageUrl, prompt, size, timestamp: Date.now() }, ...prev]);
     } catch {
-      setError('Forge ignition failed. Try again.');
+      setError(isRu ? 'Розжиг кузни не удался. Попробуй снова.' : 'Forge ignition failed. Try again.');
     } finally {
       setIsLoading(false);
     }
@@ -27,10 +30,10 @@ export const ImageView: React.FC = () => {
   return (
     <div className="flex h-full flex-col gap-6">
       <section className="rounded-[28px] border border-white/10 bg-[#121212]/96 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.38)]">
-        <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">Forge chamber</div>
-        <h1 className="mt-2 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">Image forge</h1>
+        <div className="text-[10px] uppercase tracking-[0.32em] text-[#7F7A72]">{isRu ? 'Палата кузни' : 'Forge chamber'}</div>
+        <h1 className="mt-2 font-ritual text-3xl text-[#F2F1EE] md:text-4xl">{isRu ? 'Кузня образов' : 'Image forge'}</h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-[#B4B0A7]">
-          Describe an artifact, a symbol, a mood, or a scene. The forge should feel like a ritual that shapes visual material, not a generic image prompt box.
+          {isRu ? 'Опиши артефакт, символ, настроение или сцену. Кузня формирует визуальный материал.' : 'Describe an artifact, a symbol, a mood, or a scene. The forge should feel like a ritual that shapes visual material, not a generic image prompt box.'}
         </p>
 
         <div className="mt-5 grid gap-4 md:grid-cols-[1fr_120px_160px]">
@@ -38,7 +41,7 @@ export const ImageView: React.FC = () => {
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe the artifact you want the forge to reveal..."
+            placeholder={isRu ? 'Опиши артефакт, который кузня должна проявить...' : 'Describe the artifact you want the forge to reveal...'}
             className="rounded-[16px] border border-[#B89B5E24] bg-[#0F0F0F] px-5 py-4 text-sm text-[#F2F1EE] outline-none placeholder:text-[#5F5A54]"
           />
           <select
@@ -56,7 +59,7 @@ export const ImageView: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-[#B89B5E30] bg-[#B89B5E] px-6 py-4 text-sm font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:bg-[#C5A76A] disabled:opacity-30"
           >
             {isLoading ? <Sparkles className="h-4 w-4 animate-pulse" /> : <ImagePlus className="h-4 w-4" />}
-            Forge
+            {isRu ? 'Создать' : 'Forge'}
           </button>
         </div>
 
@@ -77,7 +80,7 @@ export const ImageView: React.FC = () => {
                     <span className="rounded-full border border-[#B89B5E28] bg-[#B89B5E10] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#D8C18E]">{img.size}</span>
                     <a href={img.url} download={`valhalla-image-${img.timestamp}.png`} className="inline-flex items-center gap-2 text-[11px] font-semibold text-[#B4B0A7] hover:text-[#F2F1EE]">
                       <Download className="h-3.5 w-3.5" />
-                      Download
+                      {isRu ? 'Скачать' : 'Download'}
                     </a>
                   </div>
                 </div>
@@ -90,8 +93,8 @@ export const ImageView: React.FC = () => {
               <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full border border-[#B89B5E28] bg-[#B89B5E10]">
                 <ImagePlus className="h-10 w-10 text-[#D8C18E]" />
               </div>
-              <div className="font-ritual text-3xl text-[#F2F1EE]">The forge is silent.</div>
-              <div className="mt-3 text-sm text-[#7F7A72]">Generated artifacts will manifest here.</div>
+              <div className="font-ritual text-3xl text-[#F2F1EE]">{isRu ? 'Кузня молчит.' : 'The forge is silent.'}</div>
+              <div className="mt-3 text-sm text-[#7F7A72]">{isRu ? 'Созданные артефакты проявятся здесь.' : 'Generated artifacts will manifest here.'}</div>
             </div>
           </div>
         )}
