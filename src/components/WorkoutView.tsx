@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Routine, WorkoutLog, ExerciseTemplate, WorkoutExerciseResult, WorkoutSetResult } from '../types';
 import { useLanguage } from '../i18n';
 import { desktop } from '../services/desktopBridge';
@@ -274,23 +274,30 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   }, [activeRoutine, sessionStartTime]);
 
   // Rest timer (countdown)
+  const restStartRef = useRef(false);
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
-    if (isResting) {
+    if (isResting && !restStartRef.current) {
+      restStartRef.current = true;
       setRestTimer(restPreset);
+    }
+    if (isResting) {
       interval = setInterval(() => {
         setRestTimer(prev => {
           if (prev <= 1) {
             setIsResting(false);
+            restStartRef.current = false;
             playNotificationSound();
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
+    } else {
+      restStartRef.current = false;
     }
     return () => clearInterval(interval);
-  }, [isResting, restPreset]);
+  }, [isResting]);
 
   // Exercise timer (count up for timed exercises)
   useEffect(() => {
@@ -488,11 +495,10 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     checkPersonalRecords(sessionData);
 
     // Track achievement
-    try {
-      const { trackEvent } = require('../services/achievementService');
+    import('../services/achievementService').then(({ trackEvent }) => {
       trackEvent('workout_complete');
-      trackEvent('feature_use', 'workouts');
-    } catch {}
+      trackEvent('feature_use', 'workouts' as unknown as number);
+    }).catch(() => {});
 
     // Save active session state
     try { localStorage.removeItem('eclipse_active_workout'); } catch {}
@@ -572,6 +578,27 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     if (logs.length === 0) return 0;
     return Math.round(logs.reduce((a, l) => a + l.durationSeconds, 0) / logs.length);
   }, [logs]);
+
+  // Calorie estimation (~5 cal/min for strength training, adjusted by volume)
+  const estimateCalories = (log: WorkoutLog): number => {
+    const minutes = log.durationSeconds / 60;
+    const baseCal = minutes * 5;
+    const volumeBonus = log.exercises.reduce((acc, ex) =>
+      acc + ex.sets.reduce((s, set) => s + (set.completed ? set.weight * set.reps * 0.01 : 0), 0), 0);
+    return Math.round(baseCal + volumeBonus);
+  };
+
+  const totalCalories = useMemo(() =>
+    logs.reduce((acc, log) => acc + estimateCalories(log), 0), [logs]);
+
+  const sessionCalories = useMemo(() => {
+    if (!activeRoutine) return 0;
+    const minutes = sessionDuration / 60;
+    const baseCal = minutes * 5;
+    const volumeBonus = sessionData.reduce((acc, ex) =>
+      acc + ex.sets.reduce((s, set) => s + (set.completed ? set.weight * set.reps * 0.01 : 0), 0), 0);
+    return Math.round(baseCal + volumeBonus);
+  }, [sessionDuration, sessionData, activeRoutine]);
 
   // Progress in active session
   const sessionProgress = useMemo(() => {
@@ -697,6 +724,10 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                       style={{ backgroundColor: 'rgba(10,10,15,0.15)', color: V.bg0 }}>
                       {sessionProgress}% {isRu ? 'завершено' : 'complete'}
                     </span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: 'rgba(10,10,15,0.15)', color: V.bg0 }}>
+                      🔥 {sessionCalories} {isRu ? 'ккал' : 'cal'}
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -788,6 +819,35 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                 </div>
               </div>
             )}
+
+            {/* Routine video player */}
+            {activeRoutine?.routineVideoUrl && (() => {
+              const video = resolveExerciseVideo('', activeRoutine.routineVideoUrl);
+              if (!video) return null;
+              return (
+                <div className="mb-4 rounded-2xl overflow-hidden" style={{ border: `1px solid ${V.borderLight}` }}>
+                  <div className="px-4 py-2 flex items-center justify-between" style={{ backgroundColor: V.bg2 }}>
+                    <div className="flex items-center gap-2">
+                      <Video className="w-4 h-4" style={{ color: V.accent }} />
+                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: V.textTertiary }}>
+                        {isRu ? 'Видео тренировки' : 'Workout Video'}
+                      </span>
+                    </div>
+                    <button onClick={() => setVideoPlayback(video)} className="text-xs font-bold px-3 py-1 rounded-lg transition-all"
+                      style={{ backgroundColor: `${V.accent}15`, color: V.accent }}>
+                      {isRu ? 'На весь экран' : 'Fullscreen'}
+                    </button>
+                  </div>
+                  <div className="aspect-video bg-black">
+                    {video.mode === 'youtube' ? (
+                      <iframe src={`https://www.youtube.com/embed/${video.url}?rel=0`} className="w-full h-full" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+                    ) : (
+                      <video src={video.url} controls className="w-full h-full" />
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Exercise timer (for plank etc.) */}
             {isExerciseTimerRunning && (
@@ -1072,8 +1132,10 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                       const isToday = idx === todayIdx;
                       const isDone = logs.some(l => {
                         const logDate = new Date(l.date);
-                        const today = new Date();
-                        return logDate.toDateString() === today.toDateString() && l.routineName === routine?.name;
+                        const now = new Date();
+                        const isToday = logDate.toDateString() === now.toDateString();
+                        const isThisWeek = Math.abs(now.getTime() - logDate.getTime()) < 7 * 86400000;
+                        return isToday && l.routineName === routine?.name;
                       });
 
                       return (
@@ -1279,6 +1341,12 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                   value: formatDuration(avgDuration),
                   icon: Clock,
                   color: V.yellow,
+                },
+                {
+                  label: isRu ? 'СОЖЖЕНО ККАЛ' : 'CALORIES BURNED',
+                  value: totalCalories > 1000 ? `${(totalCalories / 1000).toFixed(1)}k` : totalCalories.toString(),
+                  icon: Flame,
+                  color: V.orange,
                 },
               ].map((stat, i) => {
                 const Icon = stat.icon;

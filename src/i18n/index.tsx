@@ -393,6 +393,26 @@ export const translations = {
     'achievements.polyglot_desc': 'Switch language.',
     'achievements.new_unlock': 'Achievement unlocked!',
 
+    // Rewards
+    'rewards.title_initiate': 'Initiate',
+    'rewards.title_warrior': 'Warrior',
+    'rewards.title_veteran': 'Veteran',
+    'rewards.title_legend': 'Legend of Valhalla',
+    'rewards.title_disciplined': 'The Disciplined',
+    'rewards.title_zen': 'Zen Master',
+    'rewards.title_oracle': 'Oracle Adept',
+    'rewards.theme_blood': 'Blood Theme',
+    'rewards.theme_gold': 'Golden Theme',
+    'rewards.theme_void': 'Void Theme',
+    'rewards.badge_iron': 'Iron Will Badge',
+    'rewards.badge_marathon': 'Marathon Mind Badge',
+    'rewards.badge_architect': 'Mind Architect Badge',
+    'rewards.badge_complete': 'Completionist Badge',
+    'rewards.feature_custom_sounds': 'Custom Sounds',
+    'rewards.feature_stats_export': 'Stats Export',
+    'rewards.new_reward': 'New reward unlocked!',
+    'rewards.section_title': 'Rewards',
+
     // Focus Mode
     'focus.return': 'Return to execution',
     'focus.intervention': 'This pattern needs intervention',
@@ -835,6 +855,26 @@ export const translations = {
     'achievements.polyglot': 'Полиглот',
     'achievements.polyglot_desc': 'Переключи язык.',
     'achievements.new_unlock': 'Достижение открыто!',
+
+    // Rewards
+    'rewards.title_initiate': 'Посвящённый',
+    'rewards.title_warrior': 'Воин',
+    'rewards.title_veteran': 'Ветеран',
+    'rewards.title_legend': 'Легенда Вальхаллы',
+    'rewards.title_disciplined': 'Дисциплинированный',
+    'rewards.title_zen': 'Мастер Дзен',
+    'rewards.title_oracle': 'Адепт Оракула',
+    'rewards.theme_blood': 'Тема Крови',
+    'rewards.theme_gold': 'Золотая Тема',
+    'rewards.theme_void': 'Тема Пустоты',
+    'rewards.badge_iron': 'Знак Железной Воли',
+    'rewards.badge_marathon': 'Знак Марафонца',
+    'rewards.badge_architect': 'Знак Архитектора',
+    'rewards.badge_complete': 'Знак Максималиста',
+    'rewards.feature_custom_sounds': 'Свои Звуки',
+    'rewards.feature_stats_export': 'Экспорт Статистики',
+    'rewards.new_reward': 'Новая награда!',
+    'rewards.section_title': 'Награды',
 
     // Focus Mode
     'focus.return': 'Вернуться к исполнению',
