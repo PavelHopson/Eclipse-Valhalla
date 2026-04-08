@@ -542,7 +542,7 @@ const AppContent: React.FC = () => {
 
       {/* Quest Modal */}
       {isReminderModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center">
+        <div key="reminder-modal" className="fixed inset-0 z-[60] flex items-end md:items-center justify-center">
           <div className="absolute inset-0 bg-[#050508]/80 backdrop-blur-sm" onClick={() => setIsReminderModalOpen(false)} />
           <div className="relative w-full md:max-w-lg bg-[#12121A] border border-[#2A2A3C] rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-[#1E1E2E] flex justify-between items-center">
@@ -550,13 +550,31 @@ const AppContent: React.FC = () => {
               <button onClick={() => setIsReminderModalOpen(false)}><X className="w-5 h-5 text-[#55556A]" /></button>
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
-              <input type="text" value={modalData.title} onChange={e => setModalData(p => ({...p, title: e.target.value}))} placeholder="Quest objective..." autoFocus className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-[#EAEAF2] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40]" />
+              <input type="text" value={modalData.title} onChange={e => setModalData(p => ({...p, title: e.target.value}))} placeholder="Quest objective..." autoFocus onFocus={(e) => { e.target.style.borderColor = '#5DAEFF40'; }} onBlur={(e) => { e.target.style.borderColor = '#2A2A3C'; }} className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-[#EAEAF2] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40]" />
               <textarea value={modalData.desc} onChange={e => setModalData(p => ({...p, desc: e.target.value}))} placeholder="Details..." className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] h-20 text-sm text-[#8888A0] placeholder-[#3A3A4A] outline-none resize-none" />
               <div className="grid grid-cols-2 gap-3">
-                <input type="datetime-local" value={modalData.date} onChange={e => setModalData(p => ({...p, date: e.target.value}))} className="px-3 py-2.5 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-sm text-[#8888A0] outline-none" />
-                <select value={modalData.priority} onChange={e => setModalData(p => ({...p, priority: e.target.value as Priority}))} className="px-3 py-2.5 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-sm text-[#8888A0] outline-none">
-                  {Object.values(Priority).map(v => <option key={v} value={v}>{v}</option>)}
-                </select>
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
+                    {language === 'ru' ? 'Дата и время' : 'Date & Time'}
+                  </label>
+                  <input type="datetime-local" value={modalData.date} onChange={e => setModalData(p => ({...p, date: e.target.value}))} className="w-full px-3 py-2.5 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-sm text-[#8888A0] outline-none focus:border-[#5DAEFF40]" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
+                    {language === 'ru' ? 'Приоритет' : 'Priority'}
+                  </label>
+                  <select value={modalData.priority} onChange={e => setModalData(p => ({...p, priority: e.target.value as Priority}))} className="w-full px-3 py-2.5 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-sm text-[#8888A0] outline-none focus:border-[#5DAEFF40]">
+                    {Object.values(Priority).map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
+                    {language === 'ru' ? 'Категория' : 'Category'}
+                  </label>
+                  <select value={modalData.category} onChange={e => setModalData(p => ({...p, category: e.target.value as Category}))} className="w-full px-3 py-2.5 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-sm text-[#8888A0] outline-none focus:border-[#5DAEFF40]">
+                    {Object.values(Category).map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-[#1E1E2E] flex justify-end gap-3">

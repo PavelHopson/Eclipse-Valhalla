@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Note } from '../types';
 import { generateId } from '../utils';
-import { Plus, X, GripHorizontal, Minus, Eraser, ScrollText } from 'lucide-react';
+import { Plus, X, GripHorizontal, Minus, Eraser, ScrollText, ExternalLink } from 'lucide-react';
 import { useLanguage } from '../i18n';
 
 interface StickerBoardProps {
@@ -132,7 +132,7 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
         {notes.map((note) => (
           <div
             key={note.id}
-            className={`sticker-note absolute flex flex-col overflow-hidden rounded-[18px] border shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-transform ${note.color} ${
+            className={`sticker-note group absolute flex flex-col overflow-hidden rounded-[18px] border shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-transform ${note.color} ${
               draggingId === note.id ? 'scale-[1.02] cursor-grabbing z-50' : 'cursor-grab'
             }`}
             style={{ left: note.x, top: note.y, width: note.width, height: note.isMinimized ? 48 : note.height, zIndex: note.zIndex }}
@@ -155,6 +155,30 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
                 <GripHorizontal className="h-4 w-4" />
               </div>
               <div className="relative flex items-center gap-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const popup = window.open('', `note_${note.id}`, 'width=300,height=200,top=100,left=100,alwaysOnTop=yes');
+                    if (popup) {
+                      popup.document.write(`
+                        <html>
+                        <head><title>${note.content.slice(0, 30)}</title>
+                        <style>
+                          body { font-family: 'Segoe UI', sans-serif; padding: 16px; margin: 0;
+                            background: #1A1A26; color: #E8E8F0; font-size: 14px; line-height: 1.6; }
+                        </style></head>
+                        <body>${note.content.replace(/\n/g, '<br>')}</body>
+                        </html>
+                      `);
+                      popup.document.close();
+                    }
+                  }}
+                  className="p-1 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  style={{ color: '#55556A' }}
+                  title={isRU ? 'Открепить на экран' : 'Pop out'}
+                >
+                  <ExternalLink className="w-3 h-3" />
+                </button>
                 <button onClick={() => toggleMinimize(note.id)} className="rounded p-1 text-[#5f5540] hover:bg-black/10">
                   <Minus className="h-3.5 w-3.5" />
                 </button>

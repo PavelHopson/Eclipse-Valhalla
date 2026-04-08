@@ -128,6 +128,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ reminders, onSelectDate }) 
                     className={`group min-h-[132px] bg-[#171717] p-3 text-left transition-all hover:bg-[#1D1D1D] ${
                       overdueDay ? 'state-overdue' : ''
                     }`}
+                    style={{ boxShadow: isToday ? 'inset 0 0 0 2px #5DAEFF' : 'none' }}
                   >
                     <div className="flex items-start justify-between">
                       <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
@@ -139,13 +140,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({ reminders, onSelectDate }) 
                     </div>
 
                     <div className="mt-3 space-y-2">
-                      {visible.map(rem => (
-                        <div key={rem.id} className={`border-l-2 pl-2 text-[10px] font-semibold leading-4 ${
-                          rem.isCompleted ? 'border-[#B89B5E] text-[#7F7A72] line-through' : getPriorityColor(rem.priority)
-                        }`}>
-                          {rem.title}
-                        </div>
-                      ))}
+                      {visible.map(rem => {
+                        const time = rem.dueDateTime ? new Date(rem.dueDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                        return (
+                          <div key={rem.id} className={`border-l-2 pl-2 text-[10px] font-semibold leading-4 ${
+                            rem.isCompleted ? 'border-[#B89B5E] text-[#7F7A72] line-through' : getPriorityColor(rem.priority)
+                          }`}>
+                            {time && <span className="text-[9px] opacity-60 mr-1">{time}</span>}
+                            {rem.title}
+                          </div>
+                        );
+                      })}
                       {dayReminders.length > 3 && (
                         <div className="text-[10px] uppercase tracking-[0.14em] text-[#7F7A72]">
                           +{dayReminders.length - 3} {isRU ? 'ещё' : 'more'}
@@ -192,12 +197,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({ reminders, onSelectDate }) 
                       <div className="space-y-3">
                         {day.tasks.map(task => {
                           const overdue = !task.isCompleted && new Date(task.dueDateTime) < now;
+                          const taskTime = task.dueDateTime ? new Date(task.dueDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                           return (
                             <div key={task.id} className={`rounded-[18px] border px-4 py-3 ${overdue ? 'border-[#7A1F2435] bg-[#7A1F2410]' : 'border-white/8 bg-[#171717]'}`}>
                               <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <div className={`text-sm font-bold ${task.isCompleted ? 'text-[#7F7A72] line-through' : overdue ? 'text-[#F4D6D8]' : 'text-[#F2F1EE]'}`}>{task.title}</div>
-                                  <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-[#7F7A72]">{formatDate(task.dueDateTime, language)}</div>
+                                <div className="flex items-start gap-3">
+                                  {taskTime && (
+                                    <div className={`shrink-0 rounded-lg border px-2 py-1 text-center ${overdue ? 'border-[#7A1F2438] bg-[#7A1F2416]' : 'border-white/8 bg-[#0A0A0A]'}`}>
+                                      <div className={`text-sm font-bold tabular-nums ${overdue ? 'text-[#C05A60]' : 'text-[#6C8FB8]'}`}>{taskTime}</div>
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div className={`text-sm font-bold ${task.isCompleted ? 'text-[#7F7A72] line-through' : overdue ? 'text-[#F4D6D8]' : 'text-[#F2F1EE]'}`}>{task.title}</div>
+                                    <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-[#7F7A72]">{formatDate(task.dueDateTime, language)}</div>
+                                  </div>
                                 </div>
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-[0.14em] ${getPriorityColor(task.priority)}`}>{task.priority}</span>
                               </div>
