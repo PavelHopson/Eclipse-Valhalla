@@ -87,12 +87,24 @@ export interface ExerciseTemplate {
   targetSets: number;
   targetReps: string;
   videoUrl?: string;
+  videoTimestamp?: string;     // e.g. "2:30" — start time in routine video
+  isTimedExercise?: boolean;   // true = uses timer instead of reps (plank, etc.)
+  timedDuration?: number;      // seconds for timed exercises
 }
 
 export interface Routine {
   id: string;
   name: string;
   exercises: ExerciseTemplate[];
+  routineVideoUrl?: string;    // Single video covering all exercises
+  restSeconds?: number;        // Custom rest time (default 90)
+}
+
+export interface PersonalRecord {
+  exerciseName: string;
+  maxWeight: number;
+  maxReps: number;
+  date: string;
 }
 
 export interface WorkoutSetResult {

@@ -230,6 +230,8 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   // Routine creation
   const [newRoutineName, setNewRoutineName] = useState('');
   const [newExercises, setNewExercises] = useState<ExerciseTemplate[]>([]);
+  const [newRoutineVideo, setNewRoutineVideo] = useState('');
+  const [newRoutineRest, setNewRoutineRest] = useState(90);
 
   // Active workout
   const [activeRoutine, setActiveRoutine] = useState<Routine | null>(null);
@@ -242,7 +244,16 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   // Rest timer
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
-  const [restPreset] = useState(90); // seconds
+  const [restPreset, setRestPreset] = useState(() => activeRoutine?.restSeconds || 90);
+  const REST_OPTIONS = [30, 45, 60, 90, 120, 180];
+
+  // Exercise timer (for plank, etc.)
+  const [exerciseTimer, setExerciseTimer] = useState(0);
+  const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
+  const [exerciseTimerTarget, setExerciseTimerTarget] = useState(0);
+
+  // Personal records
+  const [newPR, setNewPR] = useState<{ exercise: string; weight: number } | null>(null);
 
   // History expanded
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
@@ -260,18 +271,73 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     return () => clearInterval(interval);
   }, [activeRoutine, sessionStartTime]);
 
-  // Rest timer
+  // Rest timer (countdown)
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (isResting) {
+      setRestTimer(restPreset);
       interval = setInterval(() => {
-        setRestTimer(prev => prev + 1);
+        setRestTimer(prev => {
+          if (prev <= 1) {
+            setIsResting(false);
+            playNotificationSound();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else {
-      setRestTimer(0);
     }
     return () => clearInterval(interval);
-  }, [isResting]);
+  }, [isResting, restPreset]);
+
+  // Exercise timer (count up for timed exercises)
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (isExerciseTimerRunning) {
+      interval = setInterval(() => {
+        setExerciseTimer(prev => {
+          if (exerciseTimerTarget > 0 && prev >= exerciseTimerTarget) {
+            setIsExerciseTimerRunning(false);
+            playNotificationSound();
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isExerciseTimerRunning, exerciseTimerTarget]);
+
+  // Session persistence — save to localStorage on change
+  useEffect(() => {
+    if (activeRoutine && sessionData.length > 0) {
+      try {
+        localStorage.setItem('eclipse_active_workout', JSON.stringify({
+          routine: activeRoutine,
+          startTime: sessionStartTime,
+          data: sessionData,
+          restPreset,
+        }));
+      } catch {}
+    }
+  }, [sessionData, activeRoutine, sessionStartTime, restPreset]);
+
+  // Restore session on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('eclipse_active_workout');
+      if (saved && !activeRoutine) {
+        const { routine, startTime, data, restPreset: savedRest } = JSON.parse(saved);
+        if (routine && data) {
+          setActiveRoutine(routine);
+          setSessionStartTime(startTime);
+          setSessionData(data);
+          if (savedRest) setRestPreset(savedRest);
+          setActiveTab('active');
+        }
+      }
+    } catch {}
+  }, []);
 
   /* ── Handlers ─────────────────────────────────────────────── */
 
@@ -281,11 +347,15 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       id: generateId(),
       name: newRoutineName.trim(),
       exercises: newExercises.filter(e => e.name.trim()),
+      routineVideoUrl: newRoutineVideo.trim() || undefined,
+      restSeconds: newRoutineRest,
     };
     setRoutines(prev => [...prev, routine]);
     setIsCreateModalOpen(false);
     setNewRoutineName('');
     setNewExercises([]);
+    setNewRoutineVideo('');
+    setNewRoutineRest(90);
   };
 
   const handleAddExerciseToRoutine = () => {
@@ -363,6 +433,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     setSessionStartTime(Date.now());
     setActiveTab('active');
     setExpandedExercise(0);
+    if (routine.restSeconds) setRestPreset(routine.restSeconds);
     const initialData: WorkoutExerciseResult[] = routine.exercises.map(ex => ({
       exerciseName: ex.name,
       sets: Array(ex.targetSets).fill(null).map(() => ({ weight: 0, reps: 0, completed: false })),
@@ -406,6 +477,20 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       exercises: sessionData,
     };
     setLogs(prev => [log, ...prev]);
+
+    // Check for personal records
+    checkPersonalRecords(sessionData);
+
+    // Track achievement
+    try {
+      const { trackEvent } = require('../services/achievementService');
+      trackEvent('workout_complete');
+      trackEvent('feature_use', 'workouts');
+    } catch {}
+
+    // Save active session state
+    try { localStorage.removeItem('eclipse_active_workout'); } catch {}
+
     setActiveRoutine(null);
     setSessionStartTime(null);
     setSessionDuration(0);
@@ -427,6 +512,38 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     if (confirm(isRu ? 'Удалить эту программу?' : 'Delete this routine?')) {
       setRoutines(prev => prev.filter(r => r.id !== id));
     }
+  };
+
+  // PR check
+  const checkPersonalRecords = (data: WorkoutExerciseResult[]) => {
+    try {
+      const prs: Record<string, { maxWeight: number; maxReps: number; date: string }> =
+        JSON.parse(localStorage.getItem('eclipse_prs') || '{}');
+
+      for (const ex of data) {
+        for (const set of ex.sets) {
+          if (!set.completed || set.weight <= 0) continue;
+          const current = prs[ex.exerciseName];
+          if (!current || set.weight > current.maxWeight) {
+            prs[ex.exerciseName] = { maxWeight: set.weight, maxReps: set.reps, date: new Date().toISOString() };
+            setNewPR({ exercise: ex.exerciseName, weight: set.weight });
+            setTimeout(() => setNewPR(null), 4000);
+          }
+        }
+      }
+      localStorage.setItem('eclipse_prs', JSON.stringify(prs));
+    } catch {}
+  };
+
+  const startExerciseTimer = (durationSec: number) => {
+    setExerciseTimer(0);
+    setExerciseTimerTarget(durationSec);
+    setIsExerciseTimerRunning(true);
+  };
+
+  const stopExerciseTimer = () => {
+    setIsExerciseTimerRunning(false);
+    setExerciseTimer(0);
   };
 
   /* ── Analytics ─────────────────────────────────────────────── */
@@ -578,28 +695,97 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
               </div>
             </div>
 
-            {/* Rest timer */}
+            {/* Rest timer (countdown) */}
             {isResting && (
-              <div className="mb-6 rounded-2xl p-4 flex items-center justify-between animate-in zoom-in-95"
+              <div className="mb-6 rounded-2xl p-4 animate-in zoom-in-95"
                 style={{ backgroundColor: `${V.yellow}08`, border: `1px solid ${V.yellow}20` }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center relative"
+                      style={{ backgroundColor: `${V.yellow}15` }}>
+                      <Clock className="w-7 h-7" style={{ color: V.yellow }} />
+                      {/* Circular progress */}
+                      <svg className="absolute inset-0 -rotate-90" viewBox="0 0 56 56">
+                        <circle cx="28" cy="28" r="24" fill="none" stroke={`${V.yellow}20`} strokeWidth="2" />
+                        <circle cx="28" cy="28" r="24" fill="none" stroke={V.yellow} strokeWidth="2.5"
+                          strokeDasharray={`${2 * Math.PI * 24}`}
+                          strokeDashoffset={`${2 * Math.PI * 24 * (restTimer / restPreset)}`}
+                          strokeLinecap="round" className="transition-all duration-1000" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: V.yellow }}>
+                        {t('workout.rest_timer')}
+                      </p>
+                      <p className="text-3xl font-mono font-bold tracking-tight" style={{ color: V.yellow }}>
+                        {formatDuration(restTimer)}
+                      </p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsResting(false)}
+                    className="px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
+                    style={{ backgroundColor: `${V.yellow}15`, color: V.yellow }}>
+                    {isRu ? 'Пропустить' : 'Skip'}
+                  </button>
+                </div>
+                {/* Rest duration presets */}
+                <div className="flex gap-1.5 mt-3">
+                  {REST_OPTIONS.map(sec => (
+                    <button key={sec} onClick={() => { setRestPreset(sec); setRestTimer(sec); }}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                        restPreset === sec ? 'text-[#0A0A0A]' : 'text-[#7F7A72] hover:text-[#B4B0A7]'
+                      }`}
+                      style={restPreset === sec
+                        ? { backgroundColor: V.yellow }
+                        : { backgroundColor: `${V.yellow}10` }
+                      }
+                    >
+                      {sec}s
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PR notification */}
+            {newPR && (
+              <div className="mb-4 rounded-2xl p-4 flex items-center gap-3 animate-in zoom-in-95"
+                style={{ backgroundColor: '#D8C18E12', border: '1px solid #D8C18E30' }}>
+                <span className="text-2xl">🏆</span>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#D8C18E]">
+                    {isRu ? 'Новый рекорд!' : 'New Personal Record!'}
+                  </p>
+                  <p className="text-sm font-semibold text-[#F2F1EE]">
+                    {newPR.exercise}: {newPR.weight} {isRu ? 'кг' : 'kg'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Exercise timer (for plank etc.) */}
+            {isExerciseTimerRunning && (
+              <div className="mb-4 rounded-2xl p-4 flex items-center justify-between animate-in zoom-in-95"
+                style={{ backgroundColor: `${V.accent}08`, border: `1px solid ${V.accent}20` }}>
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                    style={{ backgroundColor: `${V.yellow}15` }}>
-                    <Clock className="w-7 h-7" style={{ color: V.yellow }} />
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                    style={{ backgroundColor: `${V.accent}15` }}>
+                    <Timer className="w-6 h-6" style={{ color: V.accent }} />
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: V.yellow }}>
-                      {t('workout.rest_timer')}
+                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: V.accent }}>
+                      {isRu ? 'Таймер упражнения' : 'Exercise Timer'}
                     </p>
-                    <p className="text-3xl font-mono font-bold tracking-tight" style={{ color: V.yellow }}>
-                      {formatDuration(restTimer)}
+                    <p className="text-3xl font-mono font-bold tracking-tight" style={{ color: V.accent }}>
+                      {formatDuration(exerciseTimer)}
+                      {exerciseTimerTarget > 0 && <span className="text-lg text-[#5F5A54]"> / {formatDuration(exerciseTimerTarget)}</span>}
                     </p>
                   </div>
                 </div>
-                <button onClick={() => setIsResting(false)}
-                  className="px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
-                  style={{ backgroundColor: `${V.yellow}15`, color: V.yellow }}>
-                  {isRu ? 'Пропустить' : 'Skip Rest'}
+                <button onClick={stopExerciseTimer}
+                  className="px-4 py-2 rounded-xl font-bold text-sm transition-all hover:scale-105"
+                  style={{ backgroundColor: `${V.accent}15`, color: V.accent }}>
+                  {isRu ? 'Стоп' : 'Stop'}
                 </button>
               </div>
             )}
@@ -1246,6 +1432,51 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                   onFocus={(e) => { e.target.style.borderColor = V.accent; e.target.style.boxShadow = `0 0 0 3px ${V.accent}15`; }}
                   onBlur={(e) => { e.target.style.borderColor = V.borderLight; e.target.style.boxShadow = 'none'; }}
                 />
+              </div>
+
+              {/* Routine-level video (covers all exercises) */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider mb-2"
+                  style={{ color: V.textTertiary }}>
+                  {isRu ? 'Видео тренировки (одно на все упражнения)' : 'Routine Video (covers all exercises)'}
+                </label>
+                <input
+                  type="text"
+                  value={newRoutineVideo}
+                  onChange={(e) => setNewRoutineVideo(e.target.value)}
+                  placeholder={isRu ? 'YouTube ссылка на видео всей тренировки' : 'YouTube URL for full routine video'}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all"
+                  style={{ backgroundColor: V.bg2, border: `1px solid ${V.borderLight}`, color: V.text }}
+                  onFocus={(e) => { e.target.style.borderColor = V.accent; }}
+                  onBlur={(e) => { e.target.style.borderColor = V.borderLight; }}
+                />
+                <p className="text-[10px] mt-1.5" style={{ color: V.textDisabled }}>
+                  {isRu ? 'Если видео содержит несколько упражнений — укажите его здесь, а для каждого упражнения можно добавить таймкод.' : 'If a single video contains all exercises, add it here. Then add timestamps per exercise.'}
+                </p>
+              </div>
+
+              {/* Rest timer config */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider mb-2"
+                  style={{ color: V.textTertiary }}>
+                  {isRu ? 'Время отдыха между подходами' : 'Rest time between sets'}
+                </label>
+                <div className="flex gap-2">
+                  {REST_OPTIONS.map(sec => (
+                    <button key={sec} type="button"
+                      onClick={() => setNewRoutineRest(sec)}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex-1 ${
+                        newRoutineRest === sec ? 'text-[#0A0A0A]' : ''
+                      }`}
+                      style={newRoutineRest === sec
+                        ? { backgroundColor: V.accent, boxShadow: `0 2px 8px ${V.accent}30` }
+                        : { backgroundColor: V.bg2, border: `1px solid ${V.border}`, color: V.textTertiary }
+                      }
+                    >
+                      {sec}s
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Exercises */}
