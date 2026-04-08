@@ -36,8 +36,7 @@ export const generateSpeech = async (text: string): Promise<AudioBuffer> => {
     const providers = JSON.parse(localStorage.getItem('eclipse_ai_providers') || '[]');
     const gemini = providers.find((p: any) => p.type === 'gemini' && p.enabled);
     if (gemini) {
-      // Handle encrypted keys
-      apiKey = gemini.apiKey?.startsWith('enc:') ? gemini.apiKey : gemini.apiKey;
+      apiKey = gemini.apiKey || '';
     }
   } catch {}
   if (!apiKey) throw new Error('TTS requires a Gemini API key. Configure in Settings → AI Providers.');

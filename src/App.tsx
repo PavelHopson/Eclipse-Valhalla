@@ -99,6 +99,23 @@ const AppContent: React.FC = () => {
   const [returnOverlay, setReturnOverlay] = useState<any>(null);
   const [weeklySummary, setWeeklySummary] = useState<any>(null);
   const [antiBurnout, setAntiBurnout] = useState<string | null>(null);
+
+  // Track feature usage for achievements
+  useEffect(() => {
+    if (!isDataLoaded) return;
+    const featureMap: Record<string, string> = {
+      dashboard: 'dashboard', reminders: 'quests', workouts: 'workouts',
+      oracle: 'oracle', nexus: 'news', stickers: 'notes', calendar: 'calendar',
+      achievements: 'achievements', image: 'image', tts: 'tts',
+    };
+    const feature = featureMap[currentView];
+    if (feature) {
+      import('./services/achievementService').then(({ trackEvent }) => {
+        trackEvent('feature_use', feature as any);
+      }).catch(() => {});
+    }
+  }, [currentView, isDataLoaded]);
+
   const pendingReminders = reminders.filter(r => !r.isCompleted);
   const overdueReminders = pendingReminders.filter(r => new Date(r.dueDateTime) < new Date());
 
@@ -195,6 +212,11 @@ const AppContent: React.FC = () => {
         streakData.lastActiveDate = today;
         localStorage.setItem(streakKey, JSON.stringify(streakData));
       }
+
+      // Achievement: track streak
+      import('./services/achievementService').then(({ trackEvent }) => {
+        trackEvent('streak_update', streakData.days || 0);
+      }).catch(() => {});
 
       // ═══ NOTIFICATION PRESSURE ═══
       // Request permission + schedule pressure notifications
@@ -307,9 +329,17 @@ const AppContent: React.FC = () => {
         pmfQuestCompleted();
         trackQuestCompleted();
       }
-      return prev.map(r =>
+      const updated = prev.map(r =>
         r.id === id ? { ...r, isCompleted: !r.isCompleted, status: r.isCompleted ? ReminderStatus.TODO : ReminderStatus.DONE } : r
       );
+      // Achievement tracking
+      const updatedQuest = updated.find(r => r.id === id);
+      if (updatedQuest?.isCompleted) {
+        import('./services/achievementService').then(({ trackEvent }) => {
+          trackEvent('quest_complete');
+        }).catch(() => {});
+      }
+      return updated;
     });
   }, []);
 
@@ -492,7 +522,7 @@ const AppContent: React.FC = () => {
       {weeklySummary && !returnOverlay && !focusQuest && (
         <div className="fixed inset-0 z-[73] bg-[#06060B] flex items-center justify-center">
           <div className="max-w-md mx-auto px-6 text-center">
-            <div className="text-[10px] text-[#7A5CFF] uppercase tracking-[0.3em] mb-4">Weekly Review</div>
+            <div className="text-[10px] text-[#7A5CFF] uppercase tracking-[0.3em] mb-4">{isRU ? 'Обзор недели' : 'Weekly Review'}</div>
             <h1 className="text-2xl font-bold text-[#EAEAF2] mb-2">{weeklySummary.activeDays}/7 days active</h1>
             <p className="text-sm text-[#8888A0] mb-2">{weeklySummary.message}</p>
             <p className="text-xs text-[#5DAEFF] italic mb-6">"{weeklySummary.identityMessage}"</p>
@@ -505,7 +535,7 @@ const AppContent: React.FC = () => {
             </div>
             <button onClick={() => setWeeklySummary(null)}
               className="px-8 py-3 bg-[#5DAEFF] text-[#06060B] rounded-xl text-sm font-bold shadow-[0_0_25px_rgba(93,174,255,0.15)] transition-all">
-              Continue
+              {isRU ? 'Продолжить' : 'Continue'}
             </button>
           </div>
         </div>
@@ -546,12 +576,12 @@ const AppContent: React.FC = () => {
           <div className="absolute inset-0 bg-[#050508]/80 backdrop-blur-sm" onClick={() => setIsReminderModalOpen(false)} />
           <div className="relative w-full md:max-w-lg bg-[#12121A] border border-[#2A2A3C] rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-[#1E1E2E] flex justify-between items-center">
-              <h3 className="text-lg font-bold text-[#EAEAF2]">{editingId ? 'Edit Quest' : 'New Quest'}</h3>
+              <h3 className="text-lg font-bold text-[#EAEAF2]">{editingId ? (isRU ? 'Редактировать' : 'Edit Quest') : (isRU ? 'Новый квест' : 'New Quest')}</h3>
               <button onClick={() => setIsReminderModalOpen(false)}><X className="w-5 h-5 text-[#55556A]" /></button>
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
-              <input type="text" value={modalData.title} onChange={e => setModalData(p => ({...p, title: e.target.value}))} placeholder="Quest objective..." autoFocus onFocus={(e) => { e.target.style.borderColor = '#5DAEFF40'; }} onBlur={(e) => { e.target.style.borderColor = '#2A2A3C'; }} className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-[#EAEAF2] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40]" />
-              <textarea value={modalData.desc} onChange={e => setModalData(p => ({...p, desc: e.target.value}))} placeholder="Details..." className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] h-20 text-sm text-[#8888A0] placeholder-[#3A3A4A] outline-none resize-none" />
+              <input type="text" value={modalData.title} onChange={e => setModalData(p => ({...p, title: e.target.value}))} placeholder={isRU ? 'Цель квеста...' : 'Quest objective...'} autoFocus onFocus={(e) => { e.target.style.borderColor = '#5DAEFF40'; }} onBlur={(e) => { e.target.style.borderColor = '#2A2A3C'; }} className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-[#EAEAF2] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40]" />
+              <textarea value={modalData.desc} onChange={e => setModalData(p => ({...p, desc: e.target.value}))} placeholder={isRU ? 'Детали...' : 'Details...'} className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] h-20 text-sm text-[#8888A0] placeholder-[#3A3A4A] outline-none resize-none" />
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
                   <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
@@ -578,8 +608,8 @@ const AppContent: React.FC = () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-[#1E1E2E] flex justify-end gap-3">
-              <button onClick={() => setIsReminderModalOpen(false)} className="px-5 py-2.5 text-[#55556A] text-sm">Cancel</button>
-              <button onClick={() => saveReminder({ id: editingId || undefined, title: modalData.title, description: modalData.desc, dueDateTime: modalData.date, priority: modalData.priority, category: modalData.category })} disabled={!modalData.title} className="px-6 py-2.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-xl font-semibold text-sm disabled:opacity-30">Save</button>
+              <button onClick={() => setIsReminderModalOpen(false)} className="px-5 py-2.5 text-[#55556A] text-sm">{isRU ? 'Отмена' : 'Cancel'}</button>
+              <button onClick={() => saveReminder({ id: editingId || undefined, title: modalData.title, description: modalData.desc, dueDateTime: modalData.date, priority: modalData.priority, category: modalData.category })} disabled={!modalData.title} className="px-6 py-2.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-xl font-semibold text-sm disabled:opacity-30">{isRU ? 'Сохранить' : 'Save'}</button>
             </div>
           </div>
         </div>
@@ -601,9 +631,9 @@ class AppErrorBoundary extends React.Component<{children: React.ReactNode}, {err
       return (
         <div style={{background:'#0A0A0F',color:'#E8E8F0',height:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',fontFamily:'Inter,sans-serif',padding:32}}>
           <h1 style={{fontSize:24,fontWeight:'bold',marginBottom:8}}>Eclipse Valhalla</h1>
-          <p style={{color:'#FF4444',marginBottom:16}}>System error.</p>
+          <p style={{color:'#FF4444',marginBottom:16}}>{navigator.language?.startsWith('ru') ? 'Ошибка системы.' : 'System error.'}</p>
           <p style={{color:'#55556A',fontSize:12,marginBottom:24,maxWidth:400,textAlign:'center'}}>{String(this.state.error?.message || '')}</p>
-          <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} style={{background:'#5DAEFF',color:'#0A0A0F',border:'none',padding:'12px 24px',borderRadius:12,fontWeight:'bold',cursor:'pointer'}}>Reset & Reload</button>
+          <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} style={{background:'#5DAEFF',color:'#0A0A0F',border:'none',padding:'12px 24px',borderRadius:12,fontWeight:'bold',cursor:'pointer'}}>{navigator.language?.startsWith('ru') ? 'Сброс и перезагрузка' : 'Reset & Reload'}</button>
         </div>
       );
     }

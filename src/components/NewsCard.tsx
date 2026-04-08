@@ -69,7 +69,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onMarkRead, onSave, onConvert
         <div className="grid grid-cols-2 gap-2 pt-1">
           {!item.read ? (
             <button
-              onClick={() => onMarkRead(item.id)}
+              onClick={() => { onMarkRead(item.id); import('../services/achievementService').then(({ trackEvent }) => { trackEvent('news_read'); }).catch(() => {}); }}
               className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-white/8 bg-[#171717] px-3 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[#B4B0A7] transition-colors hover:text-[#F2F1EE]"
             >
               <Check className="h-3.5 w-3.5" />

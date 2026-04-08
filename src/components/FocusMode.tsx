@@ -75,7 +75,13 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
     const stats = recordDailyCompletion();
     setIdentityMsg(getIdentityMessage(stats.completed));
     setDailyProgress(getProgressMessage(stats.completed));
-  }, [quest.id, onComplete]);
+
+    // Achievement tracking
+    import('../services/achievementService').then(({ trackEvent }) => {
+      trackEvent('focus_complete', Math.round(FOCUS_DURATION / 60));
+      if (escapeCount === 0) trackEvent('focus_no_escape');
+    }).catch(() => {});
+  }, [quest.id, onComplete, escapeCount]);
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -239,7 +245,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="text-[11px] uppercase tracking-[0.28em] text-[#7F7A72]">
-              {secondsLeft === 0 ? 'Threshold' : isRunning ? 'Locked' : 'Paused'}
+              {secondsLeft === 0 ? (isRu ? 'Предел' : 'Threshold') : isRunning ? (isRu ? 'Заблокирован' : 'Locked') : (isRu ? 'Пауза' : 'Paused')}
             </div>
             <div className="mt-4 font-mono text-6xl font-bold tracking-[0.08em] text-[#F2F1EE]">
               {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}

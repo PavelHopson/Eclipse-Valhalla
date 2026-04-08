@@ -258,8 +258,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             onToggle={() => setActiveSection(activeSection === 'language' ? null : 'language')}
           >
             <div className="grid gap-3 md:grid-cols-2">
-              <OptionButton label="English" active={language === 'en'} onClick={() => setLanguage('en')} />
-              <OptionButton label="Русский" active={language === 'ru'} onClick={() => setLanguage('ru')} />
+              <OptionButton label="English" active={language === 'en'} onClick={() => { setLanguage('en'); import('../services/achievementService').then(({ trackEvent }) => { trackEvent('language_switch'); }).catch(() => {}); }} />
+              <OptionButton label="Русский" active={language === 'ru'} onClick={() => { setLanguage('ru'); import('../services/achievementService').then(({ trackEvent }) => { trackEvent('language_switch'); }).catch(() => {}); }} />
             </div>
           </SettingsSection>
 

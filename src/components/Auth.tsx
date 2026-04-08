@@ -16,7 +16,8 @@ interface StoredUser extends User {
 }
 
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isRu = language === 'ru';
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [existingUsers, setExistingUsers] = useState<StoredUser[]>([]);
@@ -47,7 +48,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
     if (isRegistering) {
       if (usersDb.find(u => u.email === formData.email)) {
-        setError('Soul with this contact already exists.');
+        setError(isRu ? 'Аккаунт с этим контактом уже существует.' : 'Soul with this contact already exists.');
         return;
       }
 
@@ -100,14 +101,14 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         const { password, passwordHash, passwordSalt, ...safeUser } = foundUser as any;
         setTimeout(() => onLogin(safeUser as User), 500);
       } else {
-        setError('Key is incorrect or Soul not found.');
+        setError(isRu ? 'Неверный ключ или душа не найдена.' : 'Key is incorrect or Soul not found.');
       }
     }
   };
 
   const quickLogin = (u: StoredUser) => {
-      const { password, ...safeUser } = u;
-      onLogin(safeUser as User);
+      setFormData(prev => ({ ...prev, email: u.email || '' }));
+      setIsRegistering(false);
   };
 
   return (
@@ -137,7 +138,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         {/* Quick Login for Existing Users */}
         {!isRegistering && existingUsers.length > 0 && (
             <div className="px-8 pt-6 pb-2">
-                <label className="text-[10px] font-bold text-[#55556A] uppercase tracking-widest block mb-3">Detected Warriors</label>
+                <label className="text-[10px] font-bold text-[#55556A] uppercase tracking-widest block mb-3">{isRu ? 'Обнаруженные воины' : 'Detected Warriors'}</label>
                 <div className="grid grid-cols-2 gap-2">
                     {existingUsers.map(u => (
                         <button
@@ -157,7 +158,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 </div>
                 <div className="relative mt-6 mb-2">
                     <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#1E1E2E]"></div></div>
-                    <div className="relative flex justify-center"><span className="bg-[#0A0A0F] px-2 text-xs text-[#55556A] font-bold uppercase">or</span></div>
+                    <div className="relative flex justify-center"><span className="bg-[#0A0A0F] px-2 text-xs text-[#55556A] font-bold uppercase">{isRu ? 'или' : 'or'}</span></div>
                 </div>
             </div>
         )}

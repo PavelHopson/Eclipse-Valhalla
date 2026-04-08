@@ -67,6 +67,9 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
       await new Promise(resolve => setTimeout(resolve, 650));
       const response = await resolver();
       addRevelation(response || (isRu ? 'Оракул вернул тишину.' : 'The Oracle returned silence.'));
+      import('../services/achievementService').then(({ trackEvent }) => {
+        trackEvent('ai_chat');
+      }).catch(() => {});
     } catch (error: any) {
       addRevelation(error?.message || (isRu ? 'Связь с Оракулом потеряна. Проверь настройки провайдера.' : 'Oracle connection lost. Check provider settings.'), true);
     } finally {

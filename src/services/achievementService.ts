@@ -218,6 +218,13 @@ function checkAndUnlock(achievements: Achievement[], stats: AchievementStats): A
         a.unlockedAt = new Date().toISOString();
         changed = true;
         if (_onUnlock) _onUnlock(a);
+        // Check for new rewards
+        try {
+          import('./rewardsService').then(({ checkRewards }) => {
+            const unlockedIds = achievements.filter(x => x.unlockedAt).map(x => x.id);
+            checkRewards(unlockedIds);
+          }).catch(() => {});
+        } catch {}
       }
     }
   }

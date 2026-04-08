@@ -37,6 +37,9 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
       zIndex: Math.max(0, ...prev.map(n => n.zIndex)) + 1,
       isMinimized: false,
     }]);
+    import('../services/achievementService').then(({ trackEvent }) => {
+      trackEvent('note_create');
+    }).catch(() => {});
   };
 
   const updateNoteContent = (id: string, content: string) => setNotes(prev => prev.map(n => n.id === id ? { ...n, content } : n));

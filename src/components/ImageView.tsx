@@ -20,6 +20,9 @@ export const ImageView: React.FC = () => {
     try {
       const imageUrl = await generateImage(prompt, size);
       setGeneratedImages(prev => [{ url: imageUrl, prompt, size, timestamp: Date.now() }, ...prev]);
+      import('../services/achievementService').then(({ trackEvent }) => {
+        trackEvent('image_generate');
+      }).catch(() => {});
     } catch {
       setError(isRu ? 'Розжиг кузни не удался. Попробуй снова.' : 'Forge ignition failed. Try again.');
     } finally {
