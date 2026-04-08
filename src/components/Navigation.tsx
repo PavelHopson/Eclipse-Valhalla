@@ -15,7 +15,7 @@ import { ViewMode, User, PlanTier } from '../types';
 import {
   Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
   Home, Search, Dumbbell, StickyNote, Sparkles, Image, AudioLines,
-  ChevronRight, Rss,
+  ChevronRight, Rss, Trophy,
 } from 'lucide-react';
 import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
@@ -67,6 +67,12 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
       label: 'NEXUS',
       items: [
         { id: 'nexus', label: t('nav.nexus'), icon: Rss, accent: '#FBBF24' },
+      ],
+    },
+    {
+      label: 'GLORY',
+      items: [
+        { id: 'achievements', label: t('achievements.title'), icon: Trophy, accent: '#D8C18E' },
       ],
     },
     {

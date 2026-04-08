@@ -25,6 +25,7 @@ const TTSView = lazy(() => import('./components/TTSView').then(m => ({ default: 
 
 const FocusMode = lazy(() => import('./components/FocusMode'));
 const DashboardHero = lazy(() => import('./components/DashboardHero'));
+const AchievementsPanel = lazy(() => import('./components/AchievementsPanel'));
 
 const LoadingScreen = () => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-[#050508]">
@@ -461,6 +462,7 @@ const AppContent: React.FC = () => {
           {currentView === 'chat' && <div className="h-full p-4 md:p-6 overflow-hidden"><ChatView /></div>}
           {currentView === 'image' && <div className="h-full p-4 md:p-6 overflow-hidden"><ImageView /></div>}
           {currentView === 'tts' && <div className="h-full p-4 md:p-6 overflow-hidden"><TTSView /></div>}
+          {currentView === 'achievements' && <AchievementsPanel isOpen={true} onClose={() => setCurrentView('dashboard')} />}
         </Suspense>
       </main>
 
