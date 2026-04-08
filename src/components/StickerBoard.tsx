@@ -163,14 +163,16 @@ const StickerBoard: React.FC<StickerBoardProps> = ({ notes, setNotes }) => {
                     e.stopPropagation();
                     const popup = window.open('', `note_${note.id}`, 'width=300,height=200,top=100,left=100,alwaysOnTop=yes');
                     if (popup) {
+                      const safeTitle = note.content.slice(0, 30).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                      const safeBody = note.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
                       popup.document.write(`
                         <html>
-                        <head><title>${note.content.slice(0, 30)}</title>
+                        <head><title>${safeTitle}</title>
                         <style>
                           body { font-family: 'Segoe UI', sans-serif; padding: 16px; margin: 0;
                             background: #1A1A26; color: #E8E8F0; font-size: 14px; line-height: 1.6; }
                         </style></head>
-                        <body>${note.content.replace(/\n/g, '<br>')}</body>
+                        <body>${safeBody}</body>
                         </html>
                       `);
                       popup.document.close();

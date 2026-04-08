@@ -92,6 +92,15 @@ const AppContent: React.FC = () => {
   const [modalData, setModalData] = useState({ title: '', desc: '', date: '', repeat: RepeatType.NONE, priority: Priority.MEDIUM, category: Category.PERSONAL, subtasks: [] as any[] });
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
+  // BUG 1 FIX: When a calendar day is clicked, open quest creation modal with that date
+  useEffect(() => {
+    if (selectedDay) {
+      setModalData(prev => ({ ...prev, date: toLocalISOString(selectedDay), title: '' }));
+      setIsReminderModalOpen(true);
+      setSelectedDay(null);
+    }
+  }, [selectedDay]);
+
   const [showFeedback, setShowFeedback] = useState(false);
   const [focusQuestId, setFocusQuestId] = useState<string | null>(null);
   const focusQuest = reminders.find(r => r.id === focusQuestId) || null;
@@ -314,10 +323,7 @@ const AppContent: React.FC = () => {
       pmfQuestCreated();
       trackQuestCreated();
 
-      // Auto-start Focus Mode for quick-created quests (from dashboard input)
-      if (!isReminderModalOpen) {
-        setFocusQuestId(newR.id);
-      }
+      // Quick-created quests no longer auto-start Focus Mode
     }
     setIsReminderModalOpen(false);
   }, []);
@@ -495,7 +501,7 @@ const AppContent: React.FC = () => {
           /></>}
           {currentView === 'admin' && <AdminPanel />}
           {currentView === 'oracle' && <><OnboardingTip section="oracle" /><OracleView quests={reminders} /></>}
-          {currentView === 'nexus' && <><OnboardingTip section="nexus" /><NewsView userId={user.id} onCreateQuest={(q) => saveReminder({ title: q.title, description: q.description, dueDateTime: q.dueAt })} /></>}
+          {currentView === 'nexus' && <><OnboardingTip section="nexus" /><NewsView userId={user.id} onCreateQuest={(q) => saveReminder({ title: q.title, description: q.description, dueDateTime: q.dueAt, priority: q.priority === 'high' ? Priority.HIGH : q.priority === 'low' ? Priority.LOW : Priority.MEDIUM })} /></>}
           {currentView === 'chat' && <div className="h-full p-4 md:p-6 overflow-hidden"><ChatView /></div>}
           {currentView === 'image' && <div className="h-full p-4 md:p-6 overflow-hidden"><ImageView /></div>}
           {currentView === 'tts' && <div className="h-full p-4 md:p-6 overflow-hidden"><TTSView /></div>}
@@ -633,7 +639,18 @@ class AppErrorBoundary extends React.Component<{children: React.ReactNode}, {err
           <h1 style={{fontSize:24,fontWeight:'bold',marginBottom:8}}>Eclipse Valhalla</h1>
           <p style={{color:'#FF4444',marginBottom:16}}>{navigator.language?.startsWith('ru') ? 'Ошибка системы.' : 'System error.'}</p>
           <p style={{color:'#55556A',fontSize:12,marginBottom:24,maxWidth:400,textAlign:'center'}}>{String(this.state.error?.message || '')}</p>
-          <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} style={{background:'#5DAEFF',color:'#0A0A0F',border:'none',padding:'12px 24px',borderRadius:12,fontWeight:'bold',cursor:'pointer'}}>{navigator.language?.startsWith('ru') ? 'Сброс и перезагрузка' : 'Reset & Reload'}</button>
+          <button onClick={() => {
+            // Only clear Valhalla-specific data
+            const keysToRemove: string[] = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && (key.startsWith('eclipse_') || key.startsWith('lumina_') || key.startsWith('reminders_') || key.startsWith('notes_') || key.startsWith('routines_') || key.startsWith('workout_'))) {
+                keysToRemove.push(key);
+              }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+            window.location.href = '/';
+          }} style={{background:'#5DAEFF',color:'#0A0A0F',border:'none',padding:'12px 24px',borderRadius:12,fontWeight:'bold',cursor:'pointer'}}>{navigator.language?.startsWith('ru') ? 'Сброс и перезагрузка' : 'Reset & Reload'}</button>
         </div>
       );
     }

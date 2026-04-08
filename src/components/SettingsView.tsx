@@ -91,9 +91,15 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
+        // Validate structure
+        if (!json || typeof json !== 'object') throw new Error('Invalid file');
+        if (json.reminders && !Array.isArray(json.reminders)) throw new Error('Invalid reminders');
+        if (json.notes && !Array.isArray(json.notes)) throw new Error('Invalid notes');
         if (json.reminders) setReminders(json.reminders);
         if (json.notes) setNotes(json.notes);
-      } catch {}
+      } catch (err) {
+        alert(isRU ? 'Ошибка импорта: файл повреждён или неверного формата.' : 'Import error: file is corrupted or wrong format.');
+      }
     };
     reader.readAsText(file);
     e.target.value = '';

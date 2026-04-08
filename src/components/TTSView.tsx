@@ -9,6 +9,7 @@ export const TTSView: React.FC = () => {
   const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastBuffer, setLastBuffer] = useState<AudioBuffer | null>(null);
 
   const handleSpeak = async () => {
     if (!text.trim() || isLoading) return;
@@ -21,6 +22,7 @@ export const TTSView: React.FC = () => {
       source.buffer = audioBuffer;
       source.connect(audioContext.destination);
       source.start(0);
+      setLastBuffer(audioBuffer);
     } catch {
       setError(isRu ? 'Синтез голоса не удался. Попробуй снова.' : 'Voice synthesis failed. Try again.');
     } finally {
@@ -54,14 +56,31 @@ export const TTSView: React.FC = () => {
           <div className="text-[11px] uppercase tracking-[0.14em] text-[#7F7A72]">
             {text.length} {isRu ? 'символов' : 'characters'} / model: gemini-2.5-flash-preview-tts / voice: Kore
           </div>
-          <button
-            onClick={handleSpeak}
-            disabled={isLoading || !text.trim()}
-            className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-[#8E9B7930] bg-[#8E9B79] px-8 py-4 text-sm font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:bg-[#9AA786] disabled:opacity-30"
-          >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
-            {isLoading ? (isRu ? 'Синтез...' : 'Synthesizing') : (isRu ? 'Произнести' : 'Speak')}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleSpeak}
+              disabled={isLoading || !text.trim()}
+              className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-[#8E9B7930] bg-[#8E9B79] px-8 py-4 text-sm font-extrabold uppercase tracking-[0.12em] text-[#0A0A0A] transition-all hover:bg-[#9AA786] disabled:opacity-30"
+            >
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+              {isLoading ? (isRu ? 'Синтез...' : 'Synthesizing') : (isRu ? 'Произнести' : 'Speak')}
+            </button>
+            {lastBuffer && (
+              <button
+                onClick={() => {
+                  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                  const src = ctx.createBufferSource();
+                  src.buffer = lastBuffer;
+                  src.connect(ctx.destination);
+                  src.start(0);
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-[#6C8FB830] bg-[#6C8FB814] px-6 py-4 text-sm font-extrabold uppercase tracking-[0.12em] text-[#BFD4E8] transition-all hover:bg-[#6C8FB824]"
+              >
+                <Volume2 className="h-4 w-4" />
+                {isRu ? 'Переиграть' : 'Replay'}
+              </button>
+            )}
+          </div>
         </div>
 
         {error && <div className="mt-4 rounded-[14px] border border-[#7A1F2435] bg-[#7A1F240D] px-4 py-3 text-sm text-[#F4D6D8]">{error}</div>}

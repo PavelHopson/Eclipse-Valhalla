@@ -32,7 +32,7 @@ const DashboardHero: React.FC<DashboardHeroProps> = ({
   const overdue = active.filter(r => new Date(r.dueDateTime) < now);
   const nextQuest = overdue[0] || active[0] || null;
   const completedToday = reminders.filter(
-    r => r.isCompleted && new Date(r.createdAt).toDateString() === now.toDateString()
+    r => r.isCompleted && (r.dueDateTime ? new Date(r.dueDateTime).toDateString() === now.toDateString() : new Date(r.createdAt).toDateString() === now.toDateString())
   ).length;
 
   return (
