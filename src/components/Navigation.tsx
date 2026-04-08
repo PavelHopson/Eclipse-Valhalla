@@ -15,7 +15,7 @@ import { ViewMode, User, PlanTier } from '../types';
 import {
   Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
   Home, Search, Dumbbell, StickyNote, Sparkles, Image, AudioLines,
-  ChevronRight, Rss, Trophy,
+  ChevronRight, Rss, Trophy, HelpCircle,
 } from 'lucide-react';
 import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
@@ -26,6 +26,7 @@ interface NavigationProps {
   onSearchClick: () => void;
   user?: User | null;
   onUpgrade: () => void;
+  onHelpOpen?: () => void;
 }
 
 interface NavSection {
@@ -33,8 +34,8 @@ interface NavSection {
   items: { id: string; label: string; icon: any; accent?: string }[];
 }
 
-const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchClick, user, onUpgrade }) => {
-  const { t } = useLanguage();
+const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchClick, user, onUpgrade, onHelpOpen }) => {
+  const { t, language } = useLanguage();
 
   const sections: NavSection[] = [
     {
@@ -170,6 +171,19 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
             </button>
           </div>
         </nav>
+
+        {/* Help Button */}
+        {onHelpOpen && (
+          <div className="px-3 pb-1">
+            <button
+              onClick={onHelpOpen}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-[#55556A] hover:bg-[#12121A] hover:text-[#8888A0]"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span className="text-[13px] font-semibold">{language === 'ru' ? 'Справка' : 'Help'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Bottom — Upgrade + Admin */}
         <div className="p-3 space-y-2 border-t border-[#1E1E2E]">

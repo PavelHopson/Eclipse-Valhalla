@@ -26,6 +26,9 @@ const TTSView = lazy(() => import('./components/TTSView').then(m => ({ default: 
 const FocusMode = lazy(() => import('./components/FocusMode'));
 const DashboardHero = lazy(() => import('./components/DashboardHero'));
 const AchievementsPanel = lazy(() => import('./components/AchievementsPanel'));
+const FeatureGuide = lazy(() => import('./components/OnboardingTips').then(m => ({ default: m.FeatureGuide })));
+
+import { OnboardingTip } from './components/OnboardingTips';
 
 const LoadingScreen = () => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-[#050508]">
@@ -81,6 +84,7 @@ const AppContent: React.FC = () => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   // Modal state
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
@@ -336,6 +340,7 @@ const AppContent: React.FC = () => {
           onSearchClick={() => setIsSearchOpen(true)}
           user={user}
           onUpgrade={() => setIsSubscriptionOpen(true)}
+          onHelpOpen={() => setIsGuideOpen(true)}
         />
       </Suspense>
 
@@ -361,6 +366,8 @@ const AppContent: React.FC = () => {
                   }}>{returnMessage}</p>
                 </div>
               )}
+
+              <OnboardingTip section="dashboard" />
 
               <div className="mx-4 mt-4 space-y-4 md:mx-6 md:mt-6 md:space-y-5">
                 <Suspense fallback={null}>
@@ -430,7 +437,7 @@ const AppContent: React.FC = () => {
               <Dashboard reminders={reminders} setView={setCurrentView} user={user} />
             </div>
           )}
-          {currentView === 'reminders' && <ReminderView
+          {currentView === 'reminders' && <><OnboardingTip section="reminders" /><ReminderView
             reminders={reminders}
             toggleComplete={toggleComplete}
             deleteReminder={deleteReminder}
@@ -441,11 +448,11 @@ const AppContent: React.FC = () => {
             onStartFocus={(id) => setFocusQuestId(id)}
             userPlan={user.plan}
             onUpgrade={() => setIsSubscriptionOpen(true)}
-          />}
+          /></>}
           {currentView === 'stickers' && <StickerBoard notes={notes} setNotes={setNotes} />}
           {currentView === 'calendar' && <CalendarView reminders={reminders} onSelectDate={setSelectedDay} />}
-          {currentView === 'workouts' && <WorkoutView routines={routines} logs={workoutLogs} setRoutines={setRoutines} setLogs={setWorkoutLogs} />}
-          {currentView === 'settings' && <SettingsView
+          {currentView === 'workouts' && <><OnboardingTip section="workouts" /><WorkoutView routines={routines} logs={workoutLogs} setRoutines={setRoutines} setLogs={setWorkoutLogs} /></>}
+          {currentView === 'settings' && <><OnboardingTip section="settings" /><SettingsView
             remindersCount={reminders.length}
             notesCount={notes.length}
             user={user}
@@ -455,20 +462,25 @@ const AppContent: React.FC = () => {
             onUpdateTheme={() => {}}
             onUpgrade={() => setIsSubscriptionOpen(true)}
             onUpdateUser={(updates) => { const u = { ...user, ...updates }; setUser(u); localStorage.setItem('lumina_active_session', JSON.stringify(u)); }}
-          />}
+          /></>}
           {currentView === 'admin' && <AdminPanel />}
-          {currentView === 'oracle' && <OracleView quests={reminders} />}
-          {currentView === 'nexus' && <NewsView userId={user.id} onCreateQuest={(q) => saveReminder({ title: q.title, description: q.description, dueDateTime: q.dueAt })} />}
+          {currentView === 'oracle' && <><OnboardingTip section="oracle" /><OracleView quests={reminders} /></>}
+          {currentView === 'nexus' && <><OnboardingTip section="nexus" /><NewsView userId={user.id} onCreateQuest={(q) => saveReminder({ title: q.title, description: q.description, dueDateTime: q.dueAt })} /></>}
           {currentView === 'chat' && <div className="h-full p-4 md:p-6 overflow-hidden"><ChatView /></div>}
           {currentView === 'image' && <div className="h-full p-4 md:p-6 overflow-hidden"><ImageView /></div>}
           {currentView === 'tts' && <div className="h-full p-4 md:p-6 overflow-hidden"><TTSView /></div>}
-          {currentView === 'achievements' && <AchievementsPanel isOpen={true} onClose={() => setCurrentView('dashboard')} />}
+          {currentView === 'achievements' && <><OnboardingTip section="achievements" /><AchievementsPanel isOpen={true} onClose={() => setCurrentView('dashboard')} /></>}
         </Suspense>
       </main>
 
       {/* Search */}
       <Suspense fallback={null}>
         <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} reminders={reminders} notes={notes} onNavigate={setCurrentView} />
+      </Suspense>
+
+      {/* Feature Guide */}
+      <Suspense fallback={null}>
+        <FeatureGuide isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       </Suspense>
 
       {/* Feedback */}
