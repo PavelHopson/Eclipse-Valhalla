@@ -50,15 +50,31 @@ if (!gotTheLock) {
     const mainWindow = createMainWindow();
 
     // 3. Load content
-    if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+    const isDev = !app.isPackaged && process.env.NODE_ENV === 'development';
+
+    // Log renderer errors
+    mainWindow.webContents.on('did-fail-load', (_e, code, desc) => {
+      console.error(`[Eclipse Valhalla] Page load failed: ${code} ${desc}`);
+    });
+    mainWindow.webContents.on('console-message', (_e, _level, message) => {
+      if (message.includes('Error') || message.includes('error')) {
+        console.error(`[Renderer] ${message}`);
+      }
+    });
+
+    if (isDev) {
       mainWindow.loadURL('http://localhost:5173');
-      mainWindow.webContents.openDevTools({ mode: 'detach' });
       console.log('[Eclipse Valhalla] Development mode — localhost:5173');
     } else {
       const indexPath = path.join(__dirname, '../dist/index.html');
       mainWindow.loadFile(indexPath).catch(err => {
         console.error('[Eclipse Valhalla] Failed to load index.html:', err);
       });
+    }
+
+    // DevTools: only in dev mode
+    if (isDev) {
+      mainWindow.webContents.openDevTools({ mode: 'detach' });
     }
 
     // 4. Open external links in browser
