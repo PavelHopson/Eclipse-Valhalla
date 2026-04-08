@@ -98,6 +98,17 @@ export interface Routine {
   exercises: ExerciseTemplate[];
   routineVideoUrl?: string;    // Single video covering all exercises
   restSeconds?: number;        // Custom rest time (default 90)
+  // Weekly schedule support
+  weekdays?: number[];         // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  dayLabel?: string;           // "Day A", "Push", "Upper Body"
+  programId?: string;          // Groups routines into a program
+}
+
+export interface TrainingProgram {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
 }
 
 export interface PersonalRecord {

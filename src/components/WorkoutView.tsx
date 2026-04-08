@@ -232,6 +232,8 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   const [newExercises, setNewExercises] = useState<ExerciseTemplate[]>([]);
   const [newRoutineVideo, setNewRoutineVideo] = useState('');
   const [newRoutineRest, setNewRoutineRest] = useState(90);
+  const [newWeekdays, setNewWeekdays] = useState<number[]>([]);
+  const [newDayLabel, setNewDayLabel] = useState('');
 
   // Active workout
   const [activeRoutine, setActiveRoutine] = useState<Routine | null>(null);
@@ -349,6 +351,8 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       exercises: newExercises.filter(e => e.name.trim()),
       routineVideoUrl: newRoutineVideo.trim() || undefined,
       restSeconds: newRoutineRest,
+      weekdays: newWeekdays.length > 0 ? newWeekdays : undefined,
+      dayLabel: newDayLabel.trim() || undefined,
     };
     setRoutines(prev => [...prev, routine]);
     setIsCreateModalOpen(false);
@@ -356,6 +360,8 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     setNewExercises([]);
     setNewRoutineVideo('');
     setNewRoutineRest(90);
+    setNewWeekdays([]);
+    setNewDayLabel('');
   };
 
   const handleAddExerciseToRoutine = () => {
@@ -1001,6 +1007,116 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
         /* ─── Routines Tab ──────────────────────────────────── */
         ) : activeTab === 'routines' ? (
           <div className="space-y-6 animate-in fade-in duration-300">
+
+            {/* ── Today's Workout ─────────────────────────────── */}
+            {(() => {
+              const today = new Date().getDay(); // 0=Sun
+              const todayRoutine = routines.find(r => r.weekdays?.includes(today));
+              if (!todayRoutine) return null;
+              const WEEKDAY_SHORT = isRu
+                ? ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+                : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+              return (
+                <div className="rounded-3xl overflow-hidden relative workout-shimmer"
+                  style={{ background: `linear-gradient(135deg, ${V.orange}18, ${V.bg2})`, border: `1px solid ${V.orange}30` }}>
+                  <div className="absolute top-0 right-0 w-60 h-60 -mr-20 -mt-10 rounded-full blur-3xl pointer-events-none"
+                    style={{ background: `radial-gradient(circle, ${V.orange}15, transparent 70%)` }} />
+                  <div className="relative px-6 py-5 md:px-8 md:py-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-[#4ADE80] workout-pulse-ring" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-[0.3em]" style={{ color: V.orange }}>
+                        {isRu ? 'Тренировка сегодня' : "Today's Workout"} · {WEEKDAY_SHORT[today]}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl md:text-2xl font-extrabold tracking-tight" style={{ color: V.text }}>
+                          {todayRoutine.dayLabel || todayRoutine.name}
+                        </h3>
+                        <p className="text-sm mt-1" style={{ color: V.textTertiary }}>
+                          {todayRoutine.exercises.length} {isRu ? 'упражнений' : 'exercises'}
+                          {todayRoutine.routineVideoUrl && <span> · 🎬 {isRu ? 'Видео' : 'Video'}</span>}
+                        </p>
+                      </div>
+                      <button onClick={() => startWorkout(todayRoutine)}
+                        className="flex items-center gap-2 px-6 py-3.5 rounded-2xl font-extrabold text-sm transition-all hover:scale-105 active:scale-95 workout-heartbeat"
+                        style={{ background: `linear-gradient(135deg, ${V.orange}, ${V.orange}CC)`, color: V.bg0, boxShadow: `0 4px 20px ${V.orange}40` }}>
+                        <Play className="w-5 h-5" />
+                        {isRu ? 'Начать' : 'Start'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ── Weekly Schedule Strip ───────────────────────── */}
+            {routines.some(r => r.weekdays && r.weekdays.length > 0) && (() => {
+              const DAYS = isRu
+                ? ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+                : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+              // Map: JS day (0=Sun) → index in DAYS array (0=Mon)
+              const dayIndexMap = [6, 0, 1, 2, 3, 4, 5]; // Sun=6, Mon=0, ...
+              const todayIdx = dayIndexMap[new Date().getDay()];
+
+              return (
+                <div className="rounded-2xl p-4" style={{ backgroundColor: V.bg2, border: `1px solid ${V.border}` }}>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] mb-3" style={{ color: V.textTertiary }}>
+                    {isRu ? 'Расписание недели' : 'Weekly Schedule'}
+                  </p>
+                  <div className="grid grid-cols-7 gap-1.5">
+                    {DAYS.map((day, idx) => {
+                      // Convert display index back to JS day: Mon=1, Tue=2, ... Sun=0
+                      const jsDay = idx === 6 ? 0 : idx + 1;
+                      const routine = routines.find(r => r.weekdays?.includes(jsDay));
+                      const isToday = idx === todayIdx;
+                      const isDone = logs.some(l => {
+                        const logDate = new Date(l.date);
+                        const today = new Date();
+                        return logDate.toDateString() === today.toDateString() && l.routineName === routine?.name;
+                      });
+
+                      return (
+                        <div key={idx}
+                          className="rounded-xl p-2 text-center transition-all"
+                          style={{
+                            backgroundColor: routine ? (isDone ? `${V.success}10` : `${V.orange}08`) : V.bg3,
+                            border: `1px solid ${isToday ? V.orange + '60' : routine ? V.orange + '20' : V.border}`,
+                            boxShadow: isToday ? `0 0 0 2px ${V.orange}40` : 'none',
+                          }}>
+                          <p className={`text-[10px] font-bold uppercase ${isToday ? '' : ''}`}
+                            style={{ color: isToday ? V.orange : V.textTertiary }}>
+                            {day}
+                          </p>
+                          {routine ? (
+                            <>
+                              <div className="mt-1.5 mb-1">
+                                {isDone ? (
+                                  <CheckCircle2 className="w-4 h-4 mx-auto" style={{ color: V.success }} />
+                                ) : routine.routineVideoUrl ? (
+                                  <Video className="w-4 h-4 mx-auto" style={{ color: V.orange }} />
+                                ) : (
+                                  <Dumbbell className="w-4 h-4 mx-auto" style={{ color: V.orange }} />
+                                )}
+                              </div>
+                              <p className="text-[9px] font-semibold leading-tight truncate"
+                                style={{ color: isDone ? V.success : V.textSecondary }}>
+                                {routine.dayLabel || routine.name}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-[9px] mt-2 mb-1" style={{ color: V.textDisabled }}>
+                              {isRu ? 'Отдых' : 'Rest'}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Create button */}
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -1057,10 +1173,25 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                     <div className="p-5">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
-                          <h3 className="font-bold text-lg" style={{ color: V.text }}>{routine.name}</h3>
-                          <p className="text-sm mt-0.5" style={{ color: V.textTertiary }}>
-                            {routine.exercises.length} {isRu ? 'упражнений' : 'exercises'}
-                          </p>
+                          <h3 className="font-bold text-lg" style={{ color: V.text }}>
+                            {routine.dayLabel && <span className="text-[10px] font-extrabold uppercase tracking-wider mr-2 px-2 py-0.5 rounded-md" style={{ backgroundColor: `${V.orange}15`, color: V.orange }}>{routine.dayLabel}</span>}
+                            {routine.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-sm" style={{ color: V.textTertiary }}>
+                              {routine.exercises.length} {isRu ? 'упражнений' : 'exercises'}
+                            </span>
+                            {routine.routineVideoUrl && (
+                              <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md" style={{ backgroundColor: `${V.accent}10`, color: V.accent }}>
+                                <Video className="w-3 h-3" /> Video
+                              </span>
+                            )}
+                            {routine.weekdays && routine.weekdays.length > 0 && (
+                              <span className="text-[10px] font-mono" style={{ color: V.textDisabled }}>
+                                {routine.weekdays.map(d => (isRu ? ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'] : ['Su','Mo','Tu','We','Th','Fr','Sa'])[d]).join(' · ')}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <button onClick={() => deleteRoutine(routine.id)}
                           className="p-2 rounded-lg transition-colors"
@@ -1497,6 +1628,55 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Day label */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider mb-2"
+                  style={{ color: V.textTertiary }}>
+                  {isRu ? 'Метка дня (опционально)' : 'Day label (optional)'}
+                </label>
+                <input
+                  type="text"
+                  value={newDayLabel}
+                  onChange={(e) => setNewDayLabel(e.target.value)}
+                  placeholder={isRu ? 'например: День A, Push, Верх тела' : 'e.g. Day A, Push, Upper Body'}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all"
+                  style={{ backgroundColor: V.bg2, border: `1px solid ${V.borderLight}`, color: V.text }}
+                  onFocus={(e) => { e.target.style.borderColor = V.accent; }}
+                  onBlur={(e) => { e.target.style.borderColor = V.borderLight; }}
+                />
+              </div>
+
+              {/* Weekday picker */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider mb-2"
+                  style={{ color: V.textTertiary }}>
+                  {isRu ? 'Дни недели' : 'Schedule days'}
+                </label>
+                <div className="flex gap-1.5">
+                  {(isRu ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'] : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']).map((day, idx) => {
+                    const jsDay = idx === 6 ? 0 : idx + 1; // Mon=1..Sat=6, Sun=0
+                    const isSelected = newWeekdays.includes(jsDay);
+                    return (
+                      <button key={idx} type="button"
+                        onClick={() => setNewWeekdays(prev =>
+                          isSelected ? prev.filter(d => d !== jsDay) : [...prev, jsDay]
+                        )}
+                        className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all"
+                        style={isSelected
+                          ? { backgroundColor: V.orange, color: V.bg0, boxShadow: `0 2px 8px ${V.orange}30` }
+                          : { backgroundColor: V.bg2, border: `1px solid ${V.border}`, color: V.textTertiary }
+                        }
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] mt-1.5" style={{ color: V.textDisabled }}>
+                  {isRu ? 'Выберите дни, когда выполнять эту тренировку' : 'Select which days to perform this workout'}
+                </p>
               </div>
 
               {/* Exercises */}
