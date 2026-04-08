@@ -82,7 +82,8 @@ jobs:
         run: npm run build
 
       - name: Build Electron (${{ matrix.target }})
-        run: npx electron-builder --${{ matrix.target }} -c.forceCodeSigning=false
+        shell: bash
+        run: npx electron-builder --${{ matrix.target }} --config.forceCodeSigning=false --publish=never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
