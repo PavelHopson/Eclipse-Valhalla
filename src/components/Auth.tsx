@@ -4,6 +4,7 @@ import { Hammer, ArrowRight, AlertCircle, User as UserIcon } from 'lucide-react'
 import { useLanguage } from '../i18n';
 import { User, PlanTier } from '../types';
 import { generateId } from '../utils';
+import { hashPassword, verifyPassword } from '../services/cryptoService';
 
 interface AuthProps {
   onLogin: (user: User) => void;
@@ -37,7 +38,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     setFormData({ name: '', email: '', password: '' });
   }, [isRegistering]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -50,11 +51,14 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         return;
       }
 
-      const newUser: StoredUser = {
+      const { hash, salt } = await hashPassword(formData.password);
+
+      const newUser: any = {
         id: generateId(),
         name: formData.name,
         email: formData.email,
-        password: formData.password,
+        passwordHash: hash,
+        passwordSalt: salt,
         createdAt: Date.now(),
         plan: PlanTier.FREE,
         xp: 0,
@@ -66,14 +70,34 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       usersDb.push(newUser);
       localStorage.setItem('lumina_users_db', JSON.stringify(usersDb));
 
-      const { password, ...safeUser } = newUser;
+      const { passwordHash, passwordSalt, ...safeUser } = newUser;
       setTimeout(() => onLogin(safeUser as User), 500);
 
     } else {
-      const foundUser = usersDb.find(u => u.email === formData.email && u.password === formData.password);
+      let foundUser: StoredUser | null = null;
+
+      for (const u of usersDb) {
+        if (u.email !== formData.email) continue;
+
+        // Hashed password check
+        if ((u as any).passwordHash && (u as any).passwordSalt) {
+          const valid = await verifyPassword(formData.password, (u as any).passwordHash, (u as any).passwordSalt);
+          if (valid) { foundUser = u; break; }
+        }
+        // Legacy plaintext fallback (auto-migrate on success)
+        if (u.password === formData.password) {
+          const { hash, salt } = await hashPassword(formData.password);
+          (u as any).passwordHash = hash;
+          (u as any).passwordSalt = salt;
+          delete u.password;
+          localStorage.setItem('lumina_users_db', JSON.stringify(usersDb));
+          foundUser = u;
+          break;
+        }
+      }
 
       if (foundUser) {
-        const { password, ...safeUser } = foundUser;
+        const { password, passwordHash, passwordSalt, ...safeUser } = foundUser as any;
         setTimeout(() => onLogin(safeUser as User), 500);
       } else {
         setError('Key is incorrect or Soul not found.');

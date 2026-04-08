@@ -17,6 +17,7 @@ import {
 import { geminiAdapter } from './adapters/geminiAdapter';
 import { openaiAdapter } from './adapters/openaiAdapter';
 import { anthropicAdapter } from './adapters/anthropicAdapter';
+import { encryptValue, decryptValue } from '../services/cryptoService';
 
 // ═══════════════════════════════════════════
 // ADAPTER REGISTRY
@@ -36,10 +37,18 @@ const ADAPTERS: Record<AIProviderType, AIAdapter> = {
 const CONFIG_KEY = 'eclipse_ai_providers';
 const USAGE_KEY = 'eclipse_ai_usage';
 
+// In-memory cache for decrypted providers (avoids async everywhere)
+let _cachedProviders: AIProviderConfig[] | null = null;
+
 function getProviders(): AIProviderConfig[] {
+  if (_cachedProviders) return _cachedProviders;
+
   try {
     const raw = localStorage.getItem(CONFIG_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      _cachedProviders = JSON.parse(raw);
+      return _cachedProviders!;
+    }
   } catch {}
 
   // Legacy migration: if gemini_api_key exists, create a Gemini provider
@@ -58,6 +67,8 @@ function getProviders(): AIProviderConfig[] {
       updatedAt: new Date().toISOString(),
     };
     saveProviders([defaultProvider]);
+    // Remove legacy key after migration
+    localStorage.removeItem('gemini_api_key');
     return [defaultProvider];
   }
 
@@ -65,7 +76,31 @@ function getProviders(): AIProviderConfig[] {
 }
 
 function saveProviders(providers: AIProviderConfig[]): void {
+  _cachedProviders = providers;
   localStorage.setItem(CONFIG_KEY, JSON.stringify(providers));
+}
+
+/**
+ * Encrypt all API keys before saving. Call on provider add/update.
+ */
+export async function encryptAndSaveProviders(providers: AIProviderConfig[]): Promise<void> {
+  const encrypted = await Promise.all(
+    providers.map(async (p) => ({
+      ...p,
+      apiKey: p.apiKey && !p.apiKey.startsWith('enc:') ? 'enc:' + await encryptValue(p.apiKey) : p.apiKey,
+    }))
+  );
+  saveProviders(encrypted);
+}
+
+/**
+ * Decrypt a provider's API key for use.
+ */
+export async function decryptProviderKey(provider: AIProviderConfig): Promise<string> {
+  if (provider.apiKey.startsWith('enc:')) {
+    return decryptValue(provider.apiKey.slice(4));
+  }
+  return provider.apiKey;
 }
 
 // ═══════════════════════════════════════════

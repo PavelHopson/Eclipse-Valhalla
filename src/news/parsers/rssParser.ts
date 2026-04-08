@@ -151,9 +151,13 @@ function getTagText(parent: Element, tagName: string): string {
 }
 
 function stripHTML(html: string): string {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  } catch {
+    // Fallback: regex strip (safe, no DOM execution)
+    return html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim();
+  }
 }
 
 function cleanText(text: string): string {

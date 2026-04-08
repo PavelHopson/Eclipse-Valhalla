@@ -41,7 +41,12 @@ export const enrichStage: PipelineStage = async (items, ctx) => {
  * Enrich a single news item with AI.
  */
 async function enrichSingleItem(item: NewsItem): Promise<NewsItem> {
-  const apiKey = localStorage.getItem('gemini_api_key');
+  let apiKey = '';
+  try {
+    const providers = JSON.parse(localStorage.getItem('eclipse_ai_providers') || '[]');
+    const gemini = providers.find((p: any) => p.type === 'gemini' && p.enabled);
+    if (gemini) apiKey = gemini.apiKey;
+  } catch {}
   if (!apiKey) return item;
 
   try {
@@ -94,5 +99,10 @@ importance is 0-100 based on: impact, urgency, novelty, relevance to tech/busine
  * Check if AI enrichment is available.
  */
 export function isAIAvailable(): boolean {
-  return !!localStorage.getItem('gemini_api_key');
+  try {
+    const providers = JSON.parse(localStorage.getItem('eclipse_ai_providers') || '[]');
+    return providers.some((p: any) => p.type === 'gemini' && p.enabled && p.apiKey);
+  } catch {
+    return false;
+  }
 }

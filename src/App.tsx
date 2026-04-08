@@ -51,13 +51,13 @@ function getOrCreateUser(): User {
     xp: 0,
     level: 1,
     theme: 'blue' as any,
-    hasSeenOnboarding: true, // Skip onboarding for now to prevent loops
+    hasSeenOnboarding: true,
   };
   localStorage.setItem('lumina_active_session', JSON.stringify(guest));
   try {
     const usersRaw = localStorage.getItem('lumina_users_db');
     const users = usersRaw ? JSON.parse(usersRaw) : [];
-    users.push({ ...guest, password: '' });
+    users.push(guest);
     localStorage.setItem('lumina_users_db', JSON.stringify(users));
   } catch {}
   return guest;
