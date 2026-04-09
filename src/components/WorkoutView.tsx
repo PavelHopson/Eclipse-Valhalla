@@ -8,10 +8,11 @@ import {
   Plus, Dumbbell, Play, Clock, CheckCircle2, X, Save, History,
   ChevronRight, RotateCcw, Trash2, Compass, Copy, BarChart3,
   Pause, Timer, TrendingUp, Award, Flame, ChevronDown, ChevronUp,
-  Edit3, Target, Zap, Activity, Video, Calendar,
+  Edit3, Target, Zap, Activity, Video, Calendar, Film,
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import TrainingPlanView from './TrainingPlanView';
+import VideoLibrary from './VideoLibrary';
 
 /* ────────────────────────────────────────────────────────────
    Eclipse Valhalla Design Tokens
@@ -331,7 +332,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   const isRu = language === 'ru';
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'routines' | 'active' | 'history' | 'explore' | 'stats' | 'plans'>('routines');
+  const [activeTab, setActiveTab] = useState<'routines' | 'active' | 'history' | 'explore' | 'stats' | 'plans' | 'videos'>('routines');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Routine creation
@@ -724,6 +725,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     ...(activeRoutine ? [{ id: 'active' as const, label: isRu ? 'Бой' : 'Fight', icon: Play }] : []),
     { id: 'routines' as const, label: t('workout.tab_routines'), icon: Dumbbell },
     { id: 'plans' as const, label: isRu ? 'Планы' : 'Plans', icon: Calendar },
+    { id: 'videos' as const, label: isRu ? 'Видео' : 'Videos', icon: Film },
     { id: 'explore' as const, label: t('workout.tab_explore'), icon: Compass },
     { id: 'stats' as const, label: t('workout.tab_stats'), icon: BarChart3 },
     { id: 'history' as const, label: t('workout.tab_history'), icon: History },
@@ -1550,6 +1552,10 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
               )}
             </div>
           </div>
+
+        /* ─── Videos Tab ────────────────────────────────────── */
+        ) : activeTab === 'videos' ? (
+          <VideoLibrary />
 
         /* ─── Plans Tab ─────────────────────────────────────── */
         ) : activeTab === 'plans' ? (
