@@ -22,12 +22,12 @@ const PROVIDER_LABELS: Record<AIProviderType, string> = {
 const PRESETS = [
   {
     id: 'openrouter_qwen',
-    label: 'Qwen 3.6+ (Free)',
-    labelRu: 'Qwen 3.6+ (Бесплатно)',
-    desc: 'OpenRouter · 1M context · Free tier',
-    descRu: 'OpenRouter · 1M контекст · Бесплатно',
+    label: 'Qwen 3 Next 80B (Free)',
+    labelRu: 'Qwen 3 Next 80B (Бесплатно)',
+    desc: 'OpenRouter · 80B params · Free tier',
+    descRu: 'OpenRouter · 80B параметров · Бесплатно',
     type: 'openai' as AIProviderType,
-    model: 'qwen/qwen3.6-plus-preview:free',
+    model: 'qwen/qwen3-next-80b-a3b-instruct:free',
     baseUrl: 'https://openrouter.ai/api/v1',
     keyUrl: 'https://openrouter.ai/workspaces/default/keys',
     color: '#FBBF24',
