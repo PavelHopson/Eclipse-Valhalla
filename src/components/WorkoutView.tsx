@@ -721,6 +721,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   /* ── Tab bar items ─────────────────────────────────────────── */
 
   const tabs = [
+    ...(activeRoutine ? [{ id: 'active' as const, label: isRu ? 'Бой' : 'Fight', icon: Play }] : []),
     { id: 'routines' as const, label: t('workout.tab_routines'), icon: Dumbbell },
     { id: 'plans' as const, label: isRu ? 'Планы' : 'Plans', icon: Calendar },
     { id: 'explore' as const, label: t('workout.tab_explore'), icon: Compass },
