@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { NewsSource, SourceType, NEWS_CATEGORIES, addSource, removeSource, updateSource, getSources } from '../news';
 import { Plus, Trash2, Rss, Globe, Send, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface NewsSourceManagerProps {
   userId: string;
@@ -21,6 +22,8 @@ const SOURCE_ICONS: Record<SourceType, any> = {
 };
 
 const NewsSourceManager: React.FC<NewsSourceManagerProps> = ({ userId, sources, onSourcesChanged }) => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
   const [newUrl, setNewUrl] = useState('');
@@ -54,15 +57,15 @@ const NewsSourceManager: React.FC<NewsSourceManagerProps> = ({ userId, sources, 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-bold text-[#E8E8F0]">Signal Sources</h3>
-          <p className="text-[10px] text-[#55556A]">{sources.length} source{sources.length !== 1 ? 's' : ''} configured</p>
+          <h3 className="text-sm font-bold text-[#E8E8F0]">{isRu ? 'Источники сигналов' : 'Signal Sources'}</h3>
+          <p className="text-[10px] text-[#55556A]">{sources.length} {isRu ? 'источник(ов) настроено' : `source${sources.length !== 1 ? 's' : ''} configured`}</p>
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5DAEFF15] text-[#5DAEFF] border border-[#5DAEFF30] text-xs font-medium hover:bg-[#5DAEFF20] transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
-          Add Source
+          {isRu ? 'Добавить' : 'Add Source'}
         </button>
       </div>
 
@@ -84,7 +87,7 @@ const NewsSourceManager: React.FC<NewsSourceManagerProps> = ({ userId, sources, 
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
-                  {type === 'rss' ? 'RSS' : type === 'telegram' ? 'Telegram' : 'Website'}
+                  {type === 'rss' ? 'RSS' : type === 'telegram' ? 'Telegram' : (isRu ? 'Сайт' : 'Website')}
                 </button>
               );
             })}
@@ -94,7 +97,7 @@ const NewsSourceManager: React.FC<NewsSourceManagerProps> = ({ userId, sources, 
             type="text"
             value={newName}
             onChange={e => setNewName(e.target.value)}
-            placeholder="Source name (e.g., TechCrunch)"
+            placeholder={isRu ? 'Название источника' : 'Source name (e.g., TechCrunch)'}
             className="w-full px-3 py-2 bg-[#0E0E16] border border-[#2A2A3C] rounded-lg text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40]"
           />
 
@@ -112,7 +115,7 @@ const NewsSourceManager: React.FC<NewsSourceManagerProps> = ({ userId, sources, 
 
           {newType === 'telegram' && (
             <p className="text-[10px] text-[#55556A]">
-              Telegram parsing uses RSS bridges. Some channels may require backend integration.
+              {isRu ? 'Парсинг Telegram использует RSS-мосты. Некоторые каналы могут требовать серверную интеграцию.' : 'Telegram parsing uses RSS bridges. Some channels may require backend integration.'}
             </p>
           )}
 
@@ -121,14 +124,14 @@ const NewsSourceManager: React.FC<NewsSourceManagerProps> = ({ userId, sources, 
               onClick={() => setShowAdd(false)}
               className="px-3 py-1.5 text-xs text-[#55556A] hover:text-[#8888A0]"
             >
-              Cancel
+              {isRu ? 'Отмена' : 'Cancel'}
             </button>
             <button
               onClick={handleAdd}
               disabled={!newName.trim() || !newUrl.trim()}
               className="px-4 py-1.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-lg text-xs font-semibold disabled:opacity-30"
             >
-              Add Signal
+              {isRu ? 'Добавить' : 'Add Signal'}
             </button>
           </div>
         </div>
@@ -175,8 +178,8 @@ const NewsSourceManager: React.FC<NewsSourceManagerProps> = ({ userId, sources, 
 
         {sources.length === 0 && (
           <div className="text-center py-8 text-[#3A3A4A]">
-            <p className="text-sm">No signal sources configured.</p>
-            <p className="text-xs mt-1">Add RSS feeds, websites, or Telegram channels.</p>
+            <p className="text-sm">{isRu ? 'Нет настроенных источников.' : 'No signal sources configured.'}</p>
+            <p className="text-xs mt-1">{isRu ? 'Добавьте RSS-ленты, сайты или Telegram-каналы.' : 'Add RSS feeds, websites, or Telegram channels.'}</p>
           </div>
         )}
       </div>

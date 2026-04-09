@@ -17,11 +17,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ reminders, onSelectDate }) 
   const locale = isRU ? 'ru-RU' : 'en-US';
   const now = new Date();
 
-  const days = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(2023, 0, i + 1);
-    return d.toLocaleDateString(locale, { weekday: 'short' });
-  });
+  const days = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth(), isRU);
+  const weekDays = useMemo(() => {
+    const startDay = isRU ? 1 : 0; // Monday for RU, Sunday for EN
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(2023, 0, ((i + startDay) % 7) + 1);
+      return d.toLocaleDateString(locale, { weekday: 'short' });
+    });
+  }, [isRU, locale]);
 
   const overdueCount = reminders.filter(r => !r.isCompleted && new Date(r.dueDateTime) < now).length;
   const activeCount = reminders.filter(r => !r.isCompleted).length;

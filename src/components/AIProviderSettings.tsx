@@ -9,6 +9,7 @@ import { getAllProviders, addProvider, updateProvider, removeProvider, testProvi
 import type { AIProviderConfig, AIProviderType } from '../ai';
 import { DEFAULT_MODELS, PROVIDER_CAPABILITIES, CAPABILITY_LABELS } from '../ai';
 import { Plus, Trash2, Check, X, Loader2, Zap, Settings2, ToggleLeft, ToggleRight, Star } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 const PROVIDER_LABELS: Record<AIProviderType, string> = {
   gemini: 'Google Gemini',
@@ -18,6 +19,8 @@ const PROVIDER_LABELS: Record<AIProviderType, string> = {
 };
 
 const AIProviderSettings: React.FC = () => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
   const [providers, setProviders] = useState<AIProviderConfig[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
@@ -77,12 +80,12 @@ const AIProviderSettings: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-bold text-[#E8E8F0]">AI Providers</h3>
-          <p className="text-[10px] text-[#55556A]">{providers.length} configured · Supports Gemini, OpenAI, Claude, custom endpoints</p>
+          <h3 className="text-sm font-bold text-[#E8E8F0]">{isRu ? 'AI Провайдеры' : 'AI Providers'}</h3>
+          <p className="text-[10px] text-[#55556A]">{providers.length} {isRu ? 'настроено · Gemini, OpenAI, Claude, свои эндпоинты' : 'configured · Supports Gemini, OpenAI, Claude, custom endpoints'}</p>
         </div>
         <button onClick={() => setShowAdd(!showAdd)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5DAEFF10] text-[#5DAEFF] border border-[#5DAEFF25] text-xs font-medium hover:bg-[#5DAEFF15] transition-colors">
-          <Plus className="w-3.5 h-3.5" /> Add Provider
+          <Plus className="w-3.5 h-3.5" /> {isRu ? 'Добавить' : 'Add Provider'}
         </button>
       </div>
 
@@ -101,10 +104,10 @@ const AIProviderSettings: React.FC = () => {
             ))}
           </div>
 
-          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Display name (e.g., My GPT-4o)"
+          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder={isRu ? 'Название (напр., My GPT-4o)' : 'Display name (e.g., My GPT-4o)'}
             className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF30]" />
 
-          <input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="API Key" type="password"
+          <input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder={isRu ? 'API Ключ' : 'API Key'} type="password"
             className="w-full px-3 py-2 bg-[#0A0A0F] border border-[#1E1E2E] rounded-lg text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF30]" />
 
           <div className="grid grid-cols-2 gap-3">
@@ -117,10 +120,10 @@ const AIProviderSettings: React.FC = () => {
           </div>
 
           <div className="flex justify-end gap-2">
-            <button onClick={() => setShowAdd(false)} className="px-3 py-1.5 text-xs text-[#55556A]">Cancel</button>
+            <button onClick={() => setShowAdd(false)} className="px-3 py-1.5 text-xs text-[#55556A]">{isRu ? 'Отмена' : 'Cancel'}</button>
             <button onClick={handleAdd} disabled={!newName.trim() || !newKey.trim()}
               className="px-4 py-1.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-lg text-xs font-bold disabled:opacity-30">
-              Add Provider
+              {isRu ? 'Сохранить' : 'Save'}
             </button>
           </div>
         </div>
@@ -149,7 +152,7 @@ const AIProviderSettings: React.FC = () => {
                 {/* Test */}
                 <button onClick={() => handleTest(p)}
                   className="px-2 py-1 rounded text-[10px] font-medium text-[#55556A] hover:text-[#8888A0] border border-[#1E1E2E] hover:border-[#2A2A3C] transition-colors">
-                  {testing === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Test'}
+                  {testing === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : (isRu ? 'Тест' : 'Test')}
                 </button>
 
                 {result && (
@@ -183,8 +186,8 @@ const AIProviderSettings: React.FC = () => {
         {providers.length === 0 && (
           <div className="text-center py-8 text-[#3A3A4A]">
             <Settings2 className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No AI providers configured.</p>
-            <p className="text-xs mt-1">Add your API key to use Oracle, Forge, and AI enrichment.</p>
+            <p className="text-sm">{isRu ? 'AI провайдеры не настроены.' : 'No AI providers configured.'}</p>
+            <p className="text-xs mt-1">{isRu ? 'Добавьте API ключ для Oracle, Forge и AI-обогащения.' : 'Add your API key to use Oracle, Forge, and AI enrichment.'}</p>
           </div>
         )}
       </div>

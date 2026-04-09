@@ -44,17 +44,17 @@ export class ErrorBoundary extends Component<Props, State> {
             <AlertTriangle className="w-7 h-7 text-[#FF4444]" />
           </div>
           <h2 className="text-lg font-bold text-[#E8E8F0] mb-1">
-            {this.props.fallbackTitle || 'Something broke.'}
+            {this.props.fallbackTitle || (navigator.language.startsWith('ru') ? 'Что-то сломалось.' : 'Something broke.')}
           </h2>
           <p className="text-xs text-[#55556A] max-w-sm mb-4">
-            {this.state.error?.message || 'An unexpected error occurred.'}
+            {this.state.error?.message || (navigator.language.startsWith('ru') ? 'Произошла непредвиденная ошибка.' : 'An unexpected error occurred.')}
           </p>
           <button
             onClick={this.handleReset}
             className="flex items-center gap-2 px-4 py-2 bg-[#1F1F2B] border border-[#2A2A3C] rounded-xl text-sm text-[#8888A0] hover:text-[#E8E8F0] transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
-            Retry
+            {navigator.language.startsWith('ru') ? 'Повторить' : 'Retry'}
           </button>
         </div>
       );

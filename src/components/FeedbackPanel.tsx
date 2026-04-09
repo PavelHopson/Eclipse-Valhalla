@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { MessageSquare, Bug, Lightbulb, Send, X } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface FeedbackPanelProps {
   isOpen: boolean;
@@ -15,13 +16,22 @@ interface FeedbackPanelProps {
 
 type FeedbackType = 'feedback' | 'bug' | 'feature';
 
-const TYPES: { id: FeedbackType; label: string; icon: any; color: string }[] = [
+const TYPES_EN: { id: FeedbackType; label: string; icon: any; color: string }[] = [
   { id: 'feedback', label: 'Feedback', icon: MessageSquare, color: '#5DAEFF' },
   { id: 'bug', label: 'Bug Report', icon: Bug, color: '#FF4444' },
   { id: 'feature', label: 'Feature', icon: Lightbulb, color: '#FBBF24' },
 ];
 
+const TYPES_RU: { id: FeedbackType; label: string; icon: any; color: string }[] = [
+  { id: 'feedback', label: 'Отзыв', icon: MessageSquare, color: '#5DAEFF' },
+  { id: 'bug', label: 'Баг-репорт', icon: Bug, color: '#FF4444' },
+  { id: 'feature', label: 'Функция', icon: Lightbulb, color: '#FBBF24' },
+];
+
 const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ isOpen, onClose, userId }) => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
+  const TYPES = isRu ? TYPES_RU : TYPES_EN;
   const [type, setType] = useState<FeedbackType>('feedback');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -63,7 +73,7 @@ const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ isOpen, onClose, userId }
       <div className="relative w-full md:max-w-md bg-[#12121A] border border-[#2A2A3C] rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="px-5 py-4 border-b border-[#1E1E2E] flex justify-between items-center">
-          <h3 className="text-sm font-bold text-[#E8E8F0]">Send Feedback</h3>
+          <h3 className="text-sm font-bold text-[#E8E8F0]">{isRu ? 'Обратная связь' : 'Send Feedback'}</h3>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#1F1F2B] text-[#55556A]">
             <X className="w-4 h-4" />
           </button>
@@ -72,8 +82,8 @@ const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ isOpen, onClose, userId }
         {submitted ? (
           <div className="p-8 text-center">
             <div className="text-2xl mb-2">◉</div>
-            <p className="text-sm text-[#E8E8F0] font-medium">Feedback received.</p>
-            <p className="text-xs text-[#55556A] mt-1">Your signal strengthens the system.</p>
+            <p className="text-sm text-[#E8E8F0] font-medium">{isRu ? 'Отзыв получен.' : 'Feedback received.'}</p>
+            <p className="text-xs text-[#55556A] mt-1">{isRu ? 'Ваш сигнал усиливает систему.' : 'Your signal strengthens the system.'}</p>
           </div>
         ) : (
           <div className="p-5 space-y-4">
@@ -108,9 +118,9 @@ const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ isOpen, onClose, userId }
               value={message}
               onChange={e => setMessage(e.target.value)}
               placeholder={
-                type === 'bug' ? 'Describe the issue. What happened? What did you expect?' :
-                type === 'feature' ? 'What would make Eclipse Valhalla more powerful?' :
-                'Your thoughts, suggestions, or observations.'
+                type === 'bug' ? (isRu ? 'Опишите проблему. Что произошло? Что ожидали?' : 'Describe the issue. What happened? What did you expect?') :
+                type === 'feature' ? (isRu ? 'Что сделает Eclipse Valhalla мощнее?' : 'What would make Eclipse Valhalla more powerful?') :
+                (isRu ? 'Ваши мысли, предложения или наблюдения.' : 'Your thoughts, suggestions, or observations.')
               }
               className="w-full h-32 px-4 py-3 bg-[#0E0E16] border border-[#2A2A3C] rounded-xl text-sm text-[#E8E8F0] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40] resize-none"
               autoFocus
@@ -123,7 +133,7 @@ const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ isOpen, onClose, userId }
               className="w-full py-3 bg-[#5DAEFF] hover:bg-[#4A9AEE] text-[#0A0A0F] rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-30 transition-all"
             >
               <Send className="w-4 h-4" />
-              Send
+              {isRu ? 'Отправить' : 'Send'}
             </button>
           </div>
         )}

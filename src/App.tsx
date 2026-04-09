@@ -336,7 +336,7 @@ const AppContent: React.FC = () => {
         trackQuestCompleted();
       }
       const updated = prev.map(r =>
-        r.id === id ? { ...r, isCompleted: !r.isCompleted, status: r.isCompleted ? ReminderStatus.TODO : ReminderStatus.DONE } : r
+        r.id === id ? { ...r, isCompleted: !r.isCompleted, completedAt: !r.isCompleted ? Date.now() : undefined, status: r.isCompleted ? ReminderStatus.TODO : ReminderStatus.DONE } : r
       );
       // Achievement tracking
       const updatedQuest = updated.find(r => r.id === id);

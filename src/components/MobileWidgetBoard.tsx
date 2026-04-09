@@ -8,8 +8,11 @@
 import React from 'react';
 import { useWidgetStore } from '../widgets';
 import { Swords, Timer, ShieldAlert, Check, X } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 const MobileWidgetBoard: React.FC = () => {
+  const { language } = useLanguage();
+  const isRu = language === 'ru';
   const widgets = useWidgetStore(s => s.getVisibleWidgets());
   const { removeWidget, updateWidget } = useWidgetStore();
 
@@ -19,7 +22,7 @@ const MobileWidgetBoard: React.FC = () => {
     <div className="space-y-2 px-4 py-3">
       <div className="flex items-center gap-2 mb-1">
         <div className="w-1 h-4 rounded-full bg-[#5DAEFF]" />
-        <span className="text-[10px] font-bold text-[#55556A] uppercase tracking-[0.15em]">Active Widgets</span>
+        <span className="text-[10px] font-bold text-[#55556A] uppercase tracking-[0.15em]">{isRu ? 'Активные виджеты' : 'Active Widgets'}</span>
         <span className="text-[10px] text-[#3A3A4A] ml-auto">{widgets.length}</span>
       </div>
 
@@ -48,7 +51,7 @@ const MobileWidgetBoard: React.FC = () => {
               </div>
               {widget.questDeadline && (
                 <div className={`text-[10px] font-mono ${isOverdue ? 'text-[#FF4444]' : 'text-[#55556A]'}`}>
-                  {isOverdue ? 'OVERDUE' : 'Due'}: {new Date(widget.questDeadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {isOverdue ? (isRu ? 'ПРОСРОЧЕНО' : 'OVERDUE') : (isRu ? 'Срок' : 'Due')}: {new Date(widget.questDeadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               )}
             </div>

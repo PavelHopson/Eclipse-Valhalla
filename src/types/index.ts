@@ -62,6 +62,7 @@ export interface Reminder {
   priority: Priority;
   category: Category;
   isCompleted: boolean;
+  completedAt?: number;
   status: ReminderStatus;
   createdAt: number;
   subtasks?: Subtask[];

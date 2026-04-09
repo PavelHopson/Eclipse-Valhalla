@@ -60,10 +60,11 @@ export const isSameDay = (d1: Date, d2: Date): boolean => {
   );
 };
 
-export const getDaysInMonth = (year: number, month: number): (Date | null)[] => {
+export const getDaysInMonth = (year: number, month: number, mondayStart = false): (Date | null)[] => {
   const date = new Date(year, month, 1);
   const days: (Date | null)[] = [];
-  const firstDayIndex = date.getDay();
+  const rawDay = date.getDay();
+  const firstDayIndex = mondayStart ? (rawDay + 6) % 7 : rawDay;
   for (let i = 0; i < firstDayIndex; i++) {
     days.push(null);
   }
