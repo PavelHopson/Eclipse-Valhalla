@@ -50,17 +50,39 @@ export function applyTheme(id?: ThemeId): void {
   root.style.setProperty('--ev-border', theme.border);
   root.style.setProperty('--ev-gold', theme.gold);
 
-  // Also apply to scrollbar and selection
+  // Apply accent color throughout the app via dynamic stylesheet
   const style = document.getElementById('ev-theme-style') || document.createElement('style');
   style.id = 'ev-theme-style';
   style.textContent = `
     ::selection { background: ${theme.accent}40; color: white; }
     ::-webkit-scrollbar-thumb:hover { background: ${theme.accent}; }
-    .ev-accent { color: ${theme.accent} !important; }
-    .ev-accent-bg { background-color: ${theme.accent} !important; }
-    .ev-gold { color: ${theme.gold} !important; }
-    .ev-surface { background-color: ${theme.surface} !important; }
-    .ev-border { border-color: ${theme.border} !important; }
+
+    /* Override all hardcoded #5DAEFF with theme accent */
+    [style*="color: rgb(93, 174, 255)"],
+    [style*="color:#5DAEFF"],
+    [style*="color: #5DAEFF"] { color: ${theme.accent} !important; }
+
+    /* Active nav item */
+    .text-\\[\\#5DAEFF\\] { color: ${theme.accent} !important; }
+
+    /* Buttons with accent bg */
+    [style*="background-color: rgb(93, 174, 255)"],
+    [style*="backgroundColor:#5DAEFF"],
+    [style*="background: rgb(93, 174, 255)"] { background-color: ${theme.accent} !important; }
+    .bg-\\[\\#5DAEFF\\] { background-color: ${theme.accent} !important; }
+
+    /* Focus ring */
+    .focus\\:border-\\[\\#5DAEFF40\\]:focus { border-color: ${theme.accent}40 !important; }
+
+    /* Gold elements */
+    [style*="color: rgb(216, 193, 142)"] { color: ${theme.gold} !important; }
+    [style*="color:#D8C18E"] { color: ${theme.gold} !important; }
+
+    /* Surface backgrounds */
+    .bg-\\[\\#12121A\\] { background-color: ${theme.surface} !important; }
+
+    /* Borders */
+    .border-\\[\\#1E1E2E\\] { border-color: ${theme.border} !important; }
   `;
   if (!style.parentNode) document.head.appendChild(style);
 }

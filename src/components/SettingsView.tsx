@@ -268,7 +268,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
           >
             <div className="grid gap-3 md:grid-cols-3">
               {THEMES_LIST.map(t => (
-                <button key={t.id} onClick={() => { setAppTheme(t.id); setThemeId(t.id); }}
+                <button key={t.id} onClick={() => { setAppTheme(t.id); setThemeId(t.id); window.location.reload(); }}
                   className={`p-4 rounded-xl text-left transition-all ${themeId === t.id ? 'ring-2' : ''}`}
                   style={{
                     backgroundColor: t.surface,
