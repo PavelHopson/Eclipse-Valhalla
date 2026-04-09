@@ -49,6 +49,20 @@ export function applyTheme(id?: ThemeId): void {
   root.style.setProperty('--ev-surface', theme.surface);
   root.style.setProperty('--ev-border', theme.border);
   root.style.setProperty('--ev-gold', theme.gold);
+
+  // Also apply to scrollbar and selection
+  const style = document.getElementById('ev-theme-style') || document.createElement('style');
+  style.id = 'ev-theme-style';
+  style.textContent = `
+    ::selection { background: ${theme.accent}40; color: white; }
+    ::-webkit-scrollbar-thumb:hover { background: ${theme.accent}; }
+    .ev-accent { color: ${theme.accent} !important; }
+    .ev-accent-bg { background-color: ${theme.accent} !important; }
+    .ev-gold { color: ${theme.gold} !important; }
+    .ev-surface { background-color: ${theme.surface} !important; }
+    .ev-border { border-color: ${theme.border} !important; }
+  `;
+  if (!style.parentNode) document.head.appendChild(style);
 }
 
 // Apply on load

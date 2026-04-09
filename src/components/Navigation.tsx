@@ -152,7 +152,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
               {section.items.map((item) => {
                 const active = isActive(item.id);
                 const Icon = item.icon;
-                const accentColor = item.accent || '#5DAEFF';
+                const accentColor = item.accent || 'var(--ev-accent, #5DAEFF)';
 
                 return (
                   <button

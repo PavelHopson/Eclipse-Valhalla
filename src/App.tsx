@@ -9,6 +9,7 @@ import { api } from './services/storageService';
 import TitleBar from './components/TitleBar';
 import UpdateNotification from './components/UpdateNotification';
 import './services/backupService'; // Auto-backup on load
+import './services/themeService';  // Apply saved theme on load
 
 // Lazy-load ALL views
 const Navigation = lazy(() => import('./components/Navigation'));

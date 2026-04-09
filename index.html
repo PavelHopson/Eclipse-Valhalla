@@ -28,10 +28,10 @@
       body {
         font-family: 'Manrope', 'Segoe UI', sans-serif;
         background:
-          radial-gradient(circle at top, rgba(108, 143, 184, 0.08), transparent 28%),
+          radial-gradient(circle at top, var(--ev-accent-glow, rgba(108, 143, 184, 0.08)), transparent 28%),
           radial-gradient(circle at bottom right, rgba(184, 155, 94, 0.04), transparent 26%),
-          #0A0A0A;
-        color: #F2F1EE;
+          var(--ev-bg, #0A0A0A);
+        color: var(--ev-text, #F2F1EE);
         overscroll-behavior-y: none;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;

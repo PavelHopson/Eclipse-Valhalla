@@ -19,7 +19,7 @@ const TitleBar: React.FC = () => {
       className="flex items-center justify-between h-9 px-3 shrink-0 select-none"
       style={{
         backgroundColor: '#050508',
-        borderBottom: '1px solid #12121A',
+        borderBottom: '1px solid var(--ev-border, #12121A)',
         WebkitAppRegion: 'drag',
       } as any}
     >
