@@ -18,6 +18,45 @@ const PROVIDER_LABELS: Record<AIProviderType, string> = {
   custom: 'Custom Endpoint',
 };
 
+// Quick-add presets
+const PRESETS = [
+  {
+    id: 'openrouter_qwen',
+    label: 'Qwen 3.6+ (Free)',
+    labelRu: 'Qwen 3.6+ (Бесплатно)',
+    desc: 'OpenRouter · 1M context · Free tier',
+    descRu: 'OpenRouter · 1M контекст · Бесплатно',
+    type: 'openai' as AIProviderType,
+    model: 'qwen/qwen3.6-plus-preview:free',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    keyUrl: 'https://openrouter.ai/workspaces/default/keys',
+    color: '#FBBF24',
+  },
+  {
+    id: 'openrouter_huihui',
+    label: 'Huihui-Qwen 3.5 (No Limits)',
+    labelRu: 'Huihui-Qwen 3.5 (Без цензуры)',
+    desc: 'Via Ollama locally · Uncensored · Private',
+    descRu: 'Через Ollama локально · Без ограничений · Приватно',
+    type: 'openai' as AIProviderType,
+    model: 'huihui-ai/Huihui-Qwen3.5-35B-A3B-abliterated',
+    baseUrl: 'http://localhost:11434/v1',
+    noKey: true,
+    color: '#FF4444',
+  },
+  {
+    id: 'gemini_free',
+    label: 'Gemini 2.5 Flash',
+    labelRu: 'Gemini 2.5 Flash',
+    desc: 'Google · Free · Images + TTS',
+    descRu: 'Google · Бесплатно · Картинки + Голос',
+    type: 'gemini' as AIProviderType,
+    model: 'gemini-2.5-flash-preview-05-20',
+    keyUrl: 'https://aistudio.google.com/apikey',
+    color: '#5DAEFF',
+  },
+];
+
 const AIProviderSettings: React.FC = () => {
   const { language } = useLanguage();
   const isRu = language === 'ru';
@@ -38,7 +77,7 @@ const AIProviderSettings: React.FC = () => {
   const refresh = () => setProviders(getAllProviders());
 
   const handleAdd = () => {
-    if (!newName.trim() || !newKey.trim()) return;
+    if (!newName.trim() || (!newKey.trim() && newUrl.trim() !== 'http://localhost:11434/v1')) return;
     addProvider({
       type: newType,
       name: newName.trim(),
@@ -88,6 +127,46 @@ const AIProviderSettings: React.FC = () => {
           <Plus className="w-3.5 h-3.5" /> {isRu ? 'Добавить' : 'Add Provider'}
         </button>
       </div>
+
+      {/* Quick presets */}
+      {providers.length === 0 && !showAdd && (
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#55556A]">
+            {isRu ? 'Быстрая настройка' : 'Quick Setup'}
+          </p>
+          {PRESETS.map(preset => (
+            <div key={preset.id} className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-[#12121A]"
+              style={{ backgroundColor: '#0C0C14', border: '1px solid #1E1E2E' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ backgroundColor: `${preset.color}15`, border: `1px solid ${preset.color}25` }}>
+                <Zap className="w-4 h-4" style={{ color: preset.color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-[#E8E8F0]">{isRu ? preset.labelRu : preset.label}</div>
+                <div className="text-[10px] text-[#55556A]">{isRu ? preset.descRu : preset.desc}</div>
+              </div>
+              <button onClick={() => {
+                setNewType(preset.type);
+                setNewName(isRu ? preset.labelRu : preset.label);
+                setNewModel(preset.model);
+                if (preset.baseUrl) setNewUrl(preset.baseUrl);
+                if (preset.noKey) setNewKey('ollama');
+                setShowAdd(true);
+              }}
+                className="px-3 py-1.5 rounded-lg text-[10px] font-bold shrink-0"
+                style={{ backgroundColor: `${preset.color}15`, color: preset.color, border: `1px solid ${preset.color}25` }}>
+                {isRu ? 'Настроить' : 'Setup'}
+              </button>
+              {preset.keyUrl && (
+                <a href={preset.keyUrl} target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] font-medium text-[#5DAEFF] hover:underline shrink-0">
+                  {isRu ? 'Ключ' : 'Key'} →
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Add form */}
       {showAdd && (
