@@ -6,6 +6,7 @@ import { X, Loader2 } from 'lucide-react';
 import { Seal } from './brand/Seal';
 import { LanguageProvider, useLanguage } from './i18n';
 import { api } from './services/storageService';
+import TitleBar from './components/TitleBar';
 
 // Lazy-load ALL views
 const Navigation = lazy(() => import('./components/Navigation'));
@@ -361,7 +362,11 @@ const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-[#050508] font-sans text-[#EAEAF2] fixed inset-0">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#050508] font-sans text-[#EAEAF2] fixed inset-0">
+      {/* Custom Title Bar (frameless window) */}
+      <TitleBar />
+
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
       {/* Mobile Header */}
       <div className="md:hidden bg-[#050508] border-b border-[#16162240] p-3 flex justify-between items-center shrink-0 z-20">
         <div className="flex items-center gap-2.5">
@@ -686,6 +691,7 @@ const AppContent: React.FC = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

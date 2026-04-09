@@ -152,9 +152,29 @@ const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo }) => {
   const pickFile = async () => {
     if (desktop.isDesktop) {
       try {
-        const result = await (window as any).valhalla?.pickFile?.(['mp4', 'webm', 'mov', 'avi', 'mkv']);
-        if (result) setNewUrl(result);
+        const result: any = await desktop.pickVideoFile();
+        if (!result.canceled && result.fileUrl) {
+          setNewUrl(result.fileUrl);
+          if (!newTitle && result.fileUrl) {
+            const name = result.fileUrl.split('/').pop()?.split('\\').pop()?.replace(/\.[^.]+$/, '') || '';
+            setNewTitle(name);
+          }
+        }
       } catch {}
+    } else {
+      // Web fallback: file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'video/*';
+      input.onchange = () => {
+        const file = input.files?.[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          setNewUrl(url);
+          if (!newTitle) setNewTitle(file.name.replace(/\.[^.]+$/, ''));
+        }
+      };
+      input.click();
     }
   };
 
@@ -241,13 +261,11 @@ const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo }) => {
               placeholder={isRu ? 'YouTube URL или путь к файлу' : 'YouTube URL or file path'}
               className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none font-mono"
               style={{ backgroundColor: V.bg3, border: `1px solid ${V.border}`, color: V.text }} />
-            {desktop.isDesktop && (
-              <button onClick={pickFile}
-                className="px-4 py-2.5 rounded-xl text-xs font-bold shrink-0"
-                style={{ backgroundColor: `${V.accent}15`, color: V.accent, border: `1px solid ${V.accent}20` }}>
-                {isRu ? 'Файл' : 'Browse'}
-              </button>
-            )}
+            <button onClick={pickFile}
+              className="px-4 py-2.5 rounded-xl text-xs font-bold shrink-0"
+              style={{ backgroundColor: `${V.accent}15`, color: V.accent, border: `1px solid ${V.accent}20` }}>
+              {isRu ? 'Файл' : 'Browse'}
+            </button>
           </div>
 
           {/* Category selector */}

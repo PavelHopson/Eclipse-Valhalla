@@ -8,7 +8,7 @@
  * - App info
  */
 
-import { ipcMain, Notification, app, dialog } from 'electron';
+import { ipcMain, Notification, app, dialog, BrowserWindow } from 'electron';
 import { minimizeToTray, restoreFromTray, setAlwaysOnTop } from '../windowManager.js';
 import { updateTrayMenu } from '../tray.js';
 import { checkForUpdatesNow, getUpdaterState } from '../autoUpdater.js';
@@ -100,6 +100,18 @@ export function registerSystemIPC() {
 
   ipcMain.handle('system:getUpdaterState', () => {
     return getUpdaterState();
+  });
+
+  // -- WINDOW CONTROLS (frameless) --
+  ipcMain.handle('system:windowMinimize', () => {
+    BrowserWindow.getFocusedWindow()?.minimize();
+  });
+  ipcMain.handle('system:windowMaximize', () => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (win?.isMaximized()) win.unmaximize(); else win?.maximize();
+  });
+  ipcMain.handle('system:windowClose', () => {
+    BrowserWindow.getFocusedWindow()?.close();
   });
 
   // -- PICK LOCAL VIDEO FILE --

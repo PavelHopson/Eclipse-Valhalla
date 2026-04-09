@@ -48,9 +48,8 @@ export function createMainWindow() {
     },
     autoHideMenuBar: true,
     show: false,
-    // These enable overlay mode support
-    transparent: false,    // Will be toggled dynamically
-    frame: true,           // Will be toggled for overlay
+    frame: false,          // Frameless — custom titlebar in renderer
+    titleBarStyle: 'hidden',
     skipTaskbar: false,
   });
 

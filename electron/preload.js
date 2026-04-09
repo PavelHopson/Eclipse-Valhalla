@@ -92,4 +92,9 @@ contextBridge.exposeInMainWorld('valhalla', {
   /** Pick a local workout video file */
   pickVideoFile: () =>
     ipcRenderer.invoke('system:pickVideoFile'),
+
+  // ── WINDOW CONTROLS (frameless) ──
+  windowMinimize: () => ipcRenderer.invoke('system:windowMinimize'),
+  windowMaximize: () => ipcRenderer.invoke('system:windowMaximize'),
+  windowClose: () => ipcRenderer.invoke('system:windowClose'),
 });
