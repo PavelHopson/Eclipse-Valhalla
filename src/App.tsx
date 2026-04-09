@@ -187,10 +187,10 @@ const AppContent: React.FC = () => {
         localStorage.setItem(streakKey, JSON.stringify(streakData));
         setReturnMessage(`Day ${streakData.days}. ${isRU ? 'Ты пришёл. Продолжай.' : 'You showed up. Continue.'}`);
 
-        // Morning trigger overlay
-        if (!alreadyShown) {
+        // Morning trigger overlay — only show if there's actual debt
+        if (!alreadyShown && abandonedCount > 0) {
           setReturnOverlay({
-            type: abandonedCount > 0 ? 'debt' : 'morning',
+            type: 'debt',
             streak: streakData.days,
             abandonedCount,
             daysAway: 0,
@@ -558,8 +558,20 @@ const AppContent: React.FC = () => {
               // Find first pending quest and start Focus
               const first = reminders.find(r => !r.isCompleted);
               if (first) setFocusQuestId(first.id);
+              // Re-focus the main content after overlay dismissal
+              setTimeout(() => {
+                const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                if (input) input.focus();
+              }, 100);
             }}
-            onDismiss={() => setReturnOverlay(null)}
+            onDismiss={() => {
+              setReturnOverlay(null);
+              // Re-focus the main content after overlay dismissal
+              setTimeout(() => {
+                const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                if (input) input.focus();
+              }, 100);
+            }}
           />
         </Suspense>
       )}

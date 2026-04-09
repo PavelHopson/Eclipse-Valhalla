@@ -1405,6 +1405,19 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                       )}
                     </div>
 
+                    {/* Watch Video button */}
+                    {routine.routineVideoUrl && (
+                      <button onClick={() => {
+                        const video = resolveExerciseVideo('', routine.routineVideoUrl!);
+                        if (video) setVideoPlayback(video);
+                      }}
+                        className="w-full py-3 font-bold flex items-center justify-center gap-2 text-sm transition-all"
+                        style={{ backgroundColor: `${V.accent}10`, color: V.accent, borderBottom: `1px solid ${V.border}` }}>
+                        <Video className="w-4 h-4" />
+                        {isRu ? 'Смотреть видео' : 'Watch Video'}
+                      </button>
+                    )}
+
                     {/* Start button */}
                     <button onClick={() => startWorkout(routine)}
                       className="w-full py-3.5 font-bold flex items-center justify-center gap-2 text-sm transition-all hover:brightness-110 active:scale-[0.98]"
