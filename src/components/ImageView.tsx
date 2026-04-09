@@ -13,13 +13,38 @@ export const ImageView: React.FC = () => {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  interface SavedImage {
+    id: string;
+    prompt: string;
+    url: string;
+    createdAt: string;
+  }
+
+  const [gallery, setGallery] = useState<SavedImage[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('eclipse_image_gallery') || '[]');
+    } catch { return []; }
+  });
+
   const handleGenerate = async () => {
     if (!prompt.trim() || isLoading) return;
     setIsLoading(true);
     setError(null);
     try {
       const imageUrl = await generateImage(prompt, size);
-      setGeneratedImages(prev => [{ url: imageUrl, prompt, size, timestamp: Date.now() }, ...prev]);
+      const imageTimestamp = Date.now();
+      setGeneratedImages(prev => [{ url: imageUrl, prompt, size, timestamp: imageTimestamp }, ...prev]);
+      const newImage: SavedImage = {
+        id: `img_${imageTimestamp}`,
+        prompt: prompt,
+        url: imageUrl,
+        createdAt: new Date().toISOString(),
+      };
+      setGallery(prev => {
+        const updated = [newImage, ...prev].slice(0, 20);
+        localStorage.setItem('eclipse_image_gallery', JSON.stringify(updated));
+        return updated;
+      });
       import('../services/achievementService').then(({ trackEvent }) => {
         trackEvent('image_generate');
       }).catch(() => {});
@@ -102,6 +127,32 @@ export const ImageView: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Gallery */}
+      {gallery.length > 0 && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-[0.2em]" style={{ color: '#7F7A72' }}>
+              {isRu ? 'Галерея' : 'Gallery'}
+            </h3>
+            <button onClick={() => { setGallery([]); localStorage.removeItem('eclipse_image_gallery'); }}
+              className="text-[10px] font-bold text-[#5F5A54] hover:text-[#FF4444] transition-colors">
+              {isRu ? 'Очистить' : 'Clear'}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {gallery.map(img => (
+              <div key={img.id} className="rounded-xl overflow-hidden group relative" style={{ border: '1px solid #1E1E2E' }}>
+                <img src={img.url} alt={img.prompt} className="w-full aspect-square object-cover" />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex flex-col justify-end p-3">
+                  <p className="text-[10px] text-[#B4B0A7] line-clamp-2">{img.prompt}</p>
+                  <p className="text-[8px] text-[#5F5A54] mt-1">{new Date(img.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

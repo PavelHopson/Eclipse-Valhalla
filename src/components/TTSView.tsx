@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { generateSpeech } from '../services/geminiService';
-import { Volume2, Mic2, Waves, Loader2 } from 'lucide-react';
+import { Volume2, Mic2, Waves, Loader2, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../i18n';
 
 export const TTSView: React.FC = () => {
@@ -10,6 +10,18 @@ export const TTSView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastBuffer, setLastBuffer] = useState<AudioBuffer | null>(null);
+
+  interface SavedVoice {
+    id: string;
+    text: string;
+    createdAt: string;
+  }
+
+  const [voiceHistory, setVoiceHistory] = useState<SavedVoice[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('eclipse_voice_history') || '[]');
+    } catch { return []; }
+  });
 
   const handleSpeak = async () => {
     if (!text.trim() || isLoading) return;
@@ -23,6 +35,16 @@ export const TTSView: React.FC = () => {
       source.connect(audioContext.destination);
       source.start(0);
       setLastBuffer(audioBuffer);
+      const newVoice: SavedVoice = {
+        id: `voice_${Date.now()}`,
+        text: text.slice(0, 200),
+        createdAt: new Date().toISOString(),
+      };
+      setVoiceHistory(prev => {
+        const updated = [newVoice, ...prev].slice(0, 20);
+        localStorage.setItem('eclipse_voice_history', JSON.stringify(updated));
+        return updated;
+      });
     } catch {
       setError(isRu ? 'Синтез голоса не удался. Попробуй снова.' : 'Voice synthesis failed. Try again.');
     } finally {
@@ -106,6 +128,37 @@ export const TTSView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Voice History */}
+      {voiceHistory.length > 0 && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-[0.2em]" style={{ color: '#7F7A72' }}>
+              {isRu ? 'История' : 'History'}
+            </h3>
+            <button onClick={() => { setVoiceHistory([]); localStorage.removeItem('eclipse_voice_history'); }}
+              className="text-[10px] font-bold text-[#5F5A54] hover:text-[#FF4444] transition-colors">
+              {isRu ? 'Очистить' : 'Clear'}
+            </button>
+          </div>
+          <div className="space-y-2">
+            {voiceHistory.map(v => (
+              <div key={v.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#12121A', border: '1px solid #1E1E2E' }}>
+                <button onClick={() => {
+                  setText(v.text);
+                }}
+                  className="p-2 rounded-lg" style={{ backgroundColor: '#5DAEFF15', color: '#5DAEFF' }}>
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-[#B4B0A7] truncate">{v.text}</p>
+                  <p className="text-[10px] text-[#5F5A54]">{new Date(v.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

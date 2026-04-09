@@ -244,6 +244,18 @@ const ReminderView: React.FC<ReminderViewProps> = ({
                             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#B4B0A7]">{reminder.description}</p>
                           )}
 
+                          {reminder.subtasks && reminder.subtasks.length > 0 && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="flex-1 h-1 bg-[#1A1A26] rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-[#5DAEFF] transition-all"
+                                  style={{ width: `${(reminder.subtasks.filter(s => s.isCompleted).length / reminder.subtasks.length) * 100}%` }} />
+                              </div>
+                              <span className="text-[10px] text-[#55556A]">
+                                {reminder.subtasks.filter(s => s.isCompleted).length}/{reminder.subtasks.length}
+                              </span>
+                            </div>
+                          )}
+
                           <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
                             <span className="inline-flex items-center gap-1.5 rounded-[10px] border border-white/8 bg-black/20 px-3 py-1.5 text-[#B4B0A7]">
                               <Calendar className="h-3.5 w-3.5" />
@@ -253,6 +265,12 @@ const ReminderView: React.FC<ReminderViewProps> = ({
                               <span className="inline-flex items-center gap-1.5 rounded-[10px] border border-[#6C8FB826] bg-[#6C8FB80F] px-3 py-1.5 text-[#9AB7D4]">
                                 <Clock className="h-3.5 w-3.5" />
                                 {reminder.repeatType}
+                              </span>
+                            )}
+                            {reminder.estimatedMinutes && (
+                              <span className="inline-flex items-center gap-1.5 rounded-[10px] border border-white/8 bg-black/20 px-3 py-1.5 text-[#B4B0A7]">
+                                <Clock className="h-3.5 w-3.5" />
+                                {reminder.estimatedMinutes}{isRU ? ' мин' : ' min'}
                               </span>
                             )}
                             {isOverdue && (

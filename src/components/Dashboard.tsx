@@ -27,6 +27,10 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
   const pending = reminders.filter(r => !r.isCompleted);
   const totalToday = pending.length + stats.completed;
 
+  const now = new Date();
+  const dueToday = reminders.filter(r => !r.isCompleted && r.dueDateTime && new Date(r.dueDateTime).toDateString() === now.toDateString()).length;
+  const doneToday = reminders.filter(r => r.isCompleted && r.completedAt && new Date(r.completedAt).toDateString() === now.toDateString()).length;
+
   let streak = 0;
   try {
     const s = JSON.parse(localStorage.getItem(`eclipse_streak_${user?.id}`) || '{}');
@@ -56,7 +60,27 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        {/* Today's Summary */}
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div className="rounded-2xl p-4" style={{ backgroundColor: '#12121A', border: '1px solid #1E1E2E' }}>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7F7A72] mb-1">{isRU ? 'На сегодня' : 'Due Today'}</div>
+            <div className="text-2xl font-extrabold text-[#F2F1EE]">{dueToday}</div>
+          </div>
+          <div className="rounded-2xl p-4" style={{ backgroundColor: '#12121A', border: '1px solid #1E1E2E' }}>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7F7A72] mb-1">{isRU ? 'Выполнено' : 'Done'}</div>
+            <div className="text-2xl font-extrabold text-[#4ADE80]">{doneToday}</div>
+          </div>
+          <div className="rounded-2xl p-4" style={{ backgroundColor: '#12121A', border: '1px solid #1E1E2E' }}>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7F7A72] mb-1">{isRU ? 'Серия' : 'Streak'}</div>
+            <div className="text-2xl font-extrabold text-[#D8C18E]">{streak}{isRU ? 'д' : 'd'}</div>
+          </div>
+          <div className="rounded-2xl p-4" style={{ backgroundColor: '#12121A', border: '1px solid #1E1E2E' }}>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7F7A72] mb-1">{isRU ? 'Уровень' : 'Level'}</div>
+            <div className="text-2xl font-extrabold text-[#5DAEFF]">{user?.level || 1}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
           {[
             { view: 'reminders' as ViewMode, icon: Swords, label: isRU ? 'Квесты' : 'Quests', color: '#6C8FB8' },
             { view: 'calendar' as ViewMode, icon: Calendar, label: isRU ? 'Календарь' : 'Calendar', color: '#B89B5E' },

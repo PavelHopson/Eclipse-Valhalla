@@ -66,6 +66,7 @@ export interface Reminder {
   status: ReminderStatus;
   createdAt: number;
   subtasks?: Subtask[];
+  estimatedMinutes?: number;
 }
 
 export interface Note {

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Message, Reminder } from '../types';
 import { sendOracleMessage, oraclePlanDay, oracleAnalyze, oracleMotivate } from '../services/oracleService';
-import { Brain, Flame, Calendar, Send, Loader2, Sparkles, TriangleAlert } from 'lucide-react';
+import { Brain, Flame, Calendar, Send, Loader2, Sparkles, TriangleAlert, Trash2 } from 'lucide-react';
 import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
 
@@ -25,16 +25,22 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
   const { language } = useLanguage();
   const isRu = language === 'ru';
   const QUICK_ACTIONS = isRu ? QUICK_ACTIONS_RU : QUICK_ACTIONS_EN;
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'model',
-      text: isRu
-        ? 'Оракул не болтает. Он интерпретирует давление, последовательность и слабость. Спрашивай с намерением.'
-        : 'The Oracle does not chat. It interprets pressure, sequence, and weakness. Ask with intent.',
-      timestamp: Date.now(),
-    },
-  ]);
+  const initialMessage: Message = {
+    id: '1',
+    role: 'model',
+    text: isRu
+      ? 'Оракул не болтает. Он интерпретирует давление, последовательность и слабость. Спрашивай с намерением.'
+      : 'The Oracle does not chat. It interprets pressure, sequence, and weakness. Ask with intent.',
+    timestamp: Date.now(),
+  };
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem('eclipse_oracle_history');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [initialMessage];
+  });
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [manifesting, setManifesting] = useState(false);
@@ -42,6 +48,12 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
 
   const pendingCount = quests.filter(q => !q.isCompleted).length;
   const overdueCount = quests.filter(q => !q.isCompleted && new Date(q.dueDateTime) < new Date()).length;
+
+  useEffect(() => {
+    if (messages.length > 1) {
+      localStorage.setItem('eclipse_oracle_history', JSON.stringify(messages.slice(-50)));
+    }
+  }, [messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -141,7 +153,7 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-[#6C8FB82A] bg-[#6C8FB810] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-[#9AB7D4]">
                 {pendingCount} {isRu ? 'активных' : 'active'}
               </span>
@@ -150,6 +162,19 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
                   <TriangleAlert className="h-3 w-3" />
                   {overdueCount} {isRu ? 'просрочено' : 'overdue'}
                 </span>
+              )}
+              {messages.length > 1 && (
+                <button
+                  onClick={() => {
+                    setMessages([initialMessage]);
+                    localStorage.removeItem('eclipse_oracle_history');
+                  }}
+                  className="rounded-lg p-2 transition-colors hover:bg-white/5"
+                  style={{ color: '#5F5A54' }}
+                  title={isRu ? 'Очистить' : 'Clear'}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               )}
             </div>
           </div>

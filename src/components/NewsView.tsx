@@ -21,6 +21,7 @@ const NewsView: React.FC<NewsViewProps> = ({ userId, onCreateQuest }) => {
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread' | 'saved'>('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   useEffect(() => {
     setSources(getSources(userId));
@@ -60,8 +61,9 @@ const NewsView: React.FC<NewsViewProps> = ({ userId, onCreateQuest }) => {
     if (i.archived) return false;
     if (filter === 'unread' && i.read) return false;
     if (filter === 'saved' && !i.saved) return false;
+    if (categoryFilter !== 'all' && i.category !== categoryFilter) return false;
     return true;
-  }), [items, filter]);
+  }), [items, filter, categoryFilter]);
 
   const unreadCount = items.filter(i => !i.read && !i.archived).length;
   const convertedCount = items.filter(i => i.convertedToQuest).length;
@@ -141,6 +143,28 @@ const NewsView: React.FC<NewsViewProps> = ({ userId, onCreateQuest }) => {
                   }`}
                 >
                   {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Category filter */}
+            <div className="flex gap-1.5 flex-wrap">
+              {['all', 'tech', 'business', 'science', 'education', 'general'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    categoryFilter === cat ? 'text-[#0A0A0A]' : 'text-[#5F5A54]'
+                  }`}
+                  style={categoryFilter === cat ? { backgroundColor: '#5DAEFF' } : { backgroundColor: '#12121A', border: '1px solid #1E1E2E' }}
+                >
+                  {cat === 'all'
+                    ? (isRU ? 'Все' : 'All')
+                    : cat === 'tech' ? (isRU ? 'Технологии' : 'Tech')
+                    : cat === 'business' ? (isRU ? 'Бизнес' : 'Business')
+                    : cat === 'science' ? (isRU ? 'Наука' : 'Science')
+                    : cat === 'education' ? (isRU ? 'Обучение' : 'Education')
+                    : (isRU ? 'Общее' : 'General')}
                 </button>
               ))}
             </div>

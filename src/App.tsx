@@ -89,7 +89,7 @@ const AppContent: React.FC = () => {
   // Modal state
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [modalData, setModalData] = useState({ title: '', desc: '', date: '', repeat: RepeatType.NONE, priority: Priority.MEDIUM, category: Category.PERSONAL, subtasks: [] as any[] });
+  const [modalData, setModalData] = useState({ title: '', desc: '', date: '', repeat: RepeatType.NONE, priority: Priority.MEDIUM, category: Category.PERSONAL, subtasks: [] as {id: string; title: string; isCompleted: boolean}[], estimatedMinutes: 0 });
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   // BUG 1 FIX: When a calendar day is clicked, open quest creation modal with that date
@@ -315,6 +315,7 @@ const AppContent: React.FC = () => {
       status: ReminderStatus.TODO,
       createdAt: Date.now(),
       subtasks: r.subtasks || [],
+      estimatedMinutes: r.estimatedMinutes,
     };
     if (r.id) {
       setReminders(prev => prev.map(x => x.id === r.id ? { ...x, ...r } as Reminder : x));
@@ -355,7 +356,7 @@ const AppContent: React.FC = () => {
 
   const handleOpenCreateModal = useCallback(() => {
     setEditingId(null);
-    setModalData({ title: '', desc: '', date: toLocalISOString(new Date()), repeat: RepeatType.NONE, priority: Priority.MEDIUM, category: Category.PERSONAL, subtasks: [] });
+    setModalData({ title: '', desc: '', date: toLocalISOString(new Date()), repeat: RepeatType.NONE, priority: Priority.MEDIUM, category: Category.PERSONAL, subtasks: [], estimatedMinutes: 0 });
     setIsReminderModalOpen(true);
   }, []);
 
@@ -478,7 +479,7 @@ const AppContent: React.FC = () => {
             toggleComplete={toggleComplete}
             deleteReminder={deleteReminder}
             onOpenCreateModal={handleOpenCreateModal}
-            onEditReminder={(r) => { setEditingId(r.id); setModalData({title: r.title, desc: r.description, date: r.dueDateTime, repeat: r.repeatType, priority: r.priority, category: r.category, subtasks: r.subtasks || []}); setIsReminderModalOpen(true); }}
+            onEditReminder={(r) => { setEditingId(r.id); setModalData({title: r.title, desc: r.description, date: r.dueDateTime, repeat: r.repeatType, priority: r.priority, category: r.category, subtasks: r.subtasks || [], estimatedMinutes: r.estimatedMinutes || 0}); setIsReminderModalOpen(true); }}
             onAddSmartTask={(r) => saveReminder(r)}
             onStatusChange={(id, status) => setReminders(prev => prev.map(r => r.id === id ? { ...r, status, isCompleted: status === ReminderStatus.DONE } : r))}
             onStartFocus={(id) => setFocusQuestId(id)}
@@ -611,11 +612,64 @@ const AppContent: React.FC = () => {
                     {Object.values(Category).map(v => <option key={v} value={v}>{v}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
+                    {isRU ? 'Повтор' : 'Repeat'}
+                  </label>
+                  <select value={modalData.repeat || 'none'} onChange={e => setModalData(p => ({...p, repeat: e.target.value as RepeatType}))}
+                    className="w-full px-3 py-2.5 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-sm text-[#8888A0] outline-none focus:border-[#5DAEFF40]">
+                    <option value="None">{isRU ? 'Без повтора' : 'No repeat'}</option>
+                    <option value="Daily">{isRU ? 'Ежедневно' : 'Daily'}</option>
+                    <option value="Weekly">{isRU ? 'Еженедельно' : 'Weekly'}</option>
+                    <option value="Monthly">{isRU ? 'Ежемесячно' : 'Monthly'}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
+                    {isRU ? 'Оценка времени (мин)' : 'Time estimate (min)'}
+                  </label>
+                  <input type="number" min="0" step="5" value={modalData.estimatedMinutes || ''}
+                    onChange={e => setModalData(p => ({...p, estimatedMinutes: parseInt(e.target.value) || 0}))}
+                    placeholder="30"
+                    className="w-full px-3 py-2.5 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-sm text-[#8888A0] outline-none focus:border-[#5DAEFF40]" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
+                  {isRU ? 'Подзадачи' : 'Subtasks'}
+                </label>
+                <div className="space-y-2 mb-2">
+                  {(modalData.subtasks || []).map((sub, i) => (
+                    <div key={sub.id} className="flex items-center gap-2">
+                      <input type="text" value={sub.title}
+                        onChange={e => {
+                          const updated = [...(modalData.subtasks || [])];
+                          updated[i] = { ...updated[i], title: e.target.value };
+                          setModalData(p => ({...p, subtasks: updated}));
+                        }}
+                        className="flex-1 px-3 py-2 bg-[#0E0E16] rounded-lg border border-[#2A2A3C] text-sm text-[#8888A0] outline-none"
+                        placeholder={isRU ? 'Подзадача...' : 'Subtask...'}
+                      />
+                      <button type="button" onClick={() => {
+                        const updated = (modalData.subtasks || []).filter((_, j) => j !== i);
+                        setModalData(p => ({...p, subtasks: updated}));
+                      }} className="p-1.5 rounded text-[#55556A] hover:text-[#FF4444]">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button type="button" onClick={() => {
+                  const newSub = { id: `sub_${Date.now()}`, title: '', isCompleted: false };
+                  setModalData(p => ({...p, subtasks: [...(p.subtasks || []), newSub]}));
+                }} className="text-xs font-bold text-[#5DAEFF] hover:text-[#7DBEFF] transition-colors">
+                  + {isRU ? 'Добавить подзадачу' : 'Add subtask'}
+                </button>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-[#1E1E2E] flex justify-end gap-3">
               <button onClick={() => setIsReminderModalOpen(false)} className="px-5 py-2.5 text-[#55556A] text-sm">{isRU ? 'Отмена' : 'Cancel'}</button>
-              <button onClick={() => saveReminder({ id: editingId || undefined, title: modalData.title, description: modalData.desc, dueDateTime: modalData.date, priority: modalData.priority, category: modalData.category })} disabled={!modalData.title} className="px-6 py-2.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-xl font-semibold text-sm disabled:opacity-30">{isRU ? 'Сохранить' : 'Save'}</button>
+              <button onClick={() => saveReminder({ id: editingId || undefined, title: modalData.title, description: modalData.desc, dueDateTime: modalData.date, priority: modalData.priority, category: modalData.category, repeatType: modalData.repeat || RepeatType.NONE, subtasks: modalData.subtasks?.filter(s => s.title.trim()), estimatedMinutes: modalData.estimatedMinutes || undefined })} disabled={!modalData.title} className="px-6 py-2.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-xl font-semibold text-sm disabled:opacity-30">{isRU ? 'Сохранить' : 'Save'}</button>
             </div>
           </div>
         </div>
