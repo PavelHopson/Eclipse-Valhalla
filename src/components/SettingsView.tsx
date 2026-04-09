@@ -8,6 +8,7 @@ import { User, Reminder, Note, PlanTier, Theme } from '../types';
 import { getMode, setMode as setDisciplineMode } from '../services/disciplineMode';
 import { openTelegram } from '../services/telegramCTA';
 import { desktop } from '../services/desktopBridge';
+import { THEMES as THEMES_LIST, getCurrentTheme, setTheme as setAppTheme, getThemeConfig } from '../services/themeService';
 
 const AIProviderSettings = lazy(() => import('./AIProviderSettings'));
 
@@ -43,6 +44,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   const [editName, setEditName] = useState(user?.name || '');
   const [editEmail, setEditEmail] = useState(user?.email || '');
   const [activeSection, setActiveSection] = useState<string | null>('behavior');
+  const [themeId, setThemeId] = useState(getCurrentTheme());
+  const themeConfig = getThemeConfig(themeId);
   const [desktopVersion, setDesktopVersion] = useState<string | null>(null);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
@@ -254,6 +257,36 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             <Suspense fallback={<div className="py-6 text-center text-sm text-[#7F7A72]">Loading...</div>}>
               <AIProviderSettings />
             </Suspense>
+          </SettingsSection>
+
+          <SettingsSection
+            icon={<SlidersHorizontal className="h-4 w-4 text-[#8878C8]" />}
+            title={isRU ? 'Тема оформления' : 'Color Theme'}
+            subtitle={themeConfig.icon + ' ' + (isRU ? themeConfig.nameRu : themeConfig.name)}
+            open={activeSection === 'theme'}
+            onToggle={() => setActiveSection(activeSection === 'theme' ? null : 'theme')}
+          >
+            <div className="grid gap-3 md:grid-cols-3">
+              {THEMES_LIST.map(t => (
+                <button key={t.id} onClick={() => { setAppTheme(t.id); setThemeId(t.id); }}
+                  className={`p-4 rounded-xl text-left transition-all ${themeId === t.id ? 'ring-2' : ''}`}
+                  style={{
+                    backgroundColor: t.surface,
+                    border: `1px solid ${t.border}`,
+                    boxShadow: themeId === t.id ? `0 0 0 2px ${t.accent}60` : 'none',
+                  }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">{t.icon}</span>
+                    <span className="text-sm font-bold" style={{ color: t.accent }}>{isRU ? t.nameRu : t.name}</span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: t.accent }} />
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: t.gold }} />
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: t.surface, border: `1px solid ${t.border}` }} />
+                  </div>
+                </button>
+              ))}
+            </div>
           </SettingsSection>
 
           <SettingsSection

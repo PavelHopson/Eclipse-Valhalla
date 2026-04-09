@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Message, Reminder } from '../types';
 import { sendOracleMessage, oraclePlanDay, oracleAnalyze, oracleMotivate, buildOracleMessages } from '../services/oracleService';
-import { Brain, Flame, Calendar, Send, Loader2, Sparkles, TriangleAlert, Trash2 } from 'lucide-react';
+import { Brain, Flame, Calendar, Send, Loader2, Sparkles, TriangleAlert, Trash2, Dumbbell } from 'lucide-react';
 import { streamChat } from '../ai/adapters/openaiAdapter';
 import { ai } from '../ai';
 import { Seal } from '../brand/Seal';
@@ -39,12 +39,14 @@ const QUICK_ACTIONS_EN = [
   { id: 'plan', label: 'Plan the next campaign', icon: Calendar, color: '#6C8FB8' },
   { id: 'analyze', label: 'Read my pattern', icon: Brain, color: '#B89B5E' },
   { id: 'motivate', label: 'Break my resistance', icon: Flame, color: '#A33036' },
+  { id: 'training', label: 'Generate training plan', icon: Dumbbell, color: '#FF6B35' },
 ];
 
 const QUICK_ACTIONS_RU = [
   { id: 'plan', label: 'Планировать кампанию', icon: Calendar, color: '#6C8FB8' },
   { id: 'analyze', label: 'Прочитать паттерн', icon: Brain, color: '#B89B5E' },
   { id: 'motivate', label: 'Сломать сопротивление', icon: Flame, color: '#A33036' },
+  { id: 'training', label: 'Сгенерировать план тренировок', icon: Dumbbell, color: '#FF6B35' },
 ];
 
 export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
@@ -193,8 +195,8 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
     if (isLoading) return;
 
     const labelMap: Record<string, string> = isRu
-      ? { plan: 'Планировать кампанию', analyze: 'Прочитать паттерн', motivate: 'Сломать сопротивление' }
-      : { plan: 'Plan the next campaign', analyze: 'Read my pattern', motivate: 'Break my resistance' };
+      ? { plan: 'Планировать кампанию', analyze: 'Прочитать паттерн', motivate: 'Сломать сопротивление', training: 'Сгенерировать план тренировок на 4 недели для домашних условий без оборудования. Включи: разминку, основные упражнения (подходы x повторы), заминку. Разбей по дням недели (Пн/Вт/Ср/Чт/Пт). Формат: детальный, с описанием каждого упражнения.' }
+      : { plan: 'Plan the next campaign', analyze: 'Read my pattern', motivate: 'Break my resistance', training: 'Generate a 4-week home training plan with no equipment. Include: warm-up, main exercises (sets x reps), cool-down. Split by weekdays (Mon-Fri). Format: detailed, with exercise descriptions.' };
 
     setMessages(prev => [...prev, {
       id: Date.now().toString(),
