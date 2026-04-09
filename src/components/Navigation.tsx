@@ -15,7 +15,7 @@ import { ViewMode, User, PlanTier } from '../types';
 import {
   Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
   Home, Search, Dumbbell, StickyNote, Sparkles, Image, AudioLines,
-  ChevronRight, Rss, Trophy, HelpCircle, Heart,
+  ChevronRight, Rss, Trophy, HelpCircle, Heart, BarChart3,
 } from 'lucide-react';
 import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
@@ -75,6 +75,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
       label: 'GLORY',
       items: [
         { id: 'achievements', label: t('achievements.title'), icon: Trophy, accent: '#D8C18E' },
+        { id: 'analytics', label: language === 'ru' ? 'Аналитика' : 'Analytics', icon: BarChart3, accent: '#5DAEFF' },
       ],
     },
     {

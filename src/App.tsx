@@ -29,6 +29,7 @@ const DashboardHero = lazy(() => import('./components/DashboardHero'));
 const AchievementsPanel = lazy(() => import('./components/AchievementsPanel'));
 const HabitsView = lazy(() => import('./components/HabitsView'));
 const FeatureGuide = lazy(() => import('./components/OnboardingTips').then(m => ({ default: m.FeatureGuide })));
+const AnalyticsView = lazy(() => import('./components/AnalyticsView'));
 
 import { OnboardingTip } from './components/OnboardingTips';
 
@@ -89,8 +90,23 @@ const AppContent: React.FC = () => {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   // Quest templates
+  const DEFAULT_TEMPLATES = [
+    { id: 'tmpl_morning', title: isRU ? 'Утренняя рутина' : 'Morning Routine', desc: isRU ? 'Зарядка, душ, завтрак' : 'Exercise, shower, breakfast', priority: 'Medium', category: 'Health', repeat: 'daily' },
+    { id: 'tmpl_workout', title: isRU ? 'Тренировка' : 'Workout', desc: '', priority: 'High', category: 'Health', repeat: 'none' },
+    { id: 'tmpl_read', title: isRU ? 'Чтение 30 минут' : 'Read 30 minutes', desc: isRU ? 'Книга или статьи по специальности' : 'Book or professional articles', priority: 'Low', category: 'Education', repeat: 'daily' },
+    { id: 'tmpl_water', title: isRU ? 'Выпить 2л воды' : 'Drink 2L water', desc: '', priority: 'Medium', category: 'Health', repeat: 'daily' },
+    { id: 'tmpl_report', title: isRU ? 'Отчёт по работе' : 'Work report', desc: '', priority: 'High', category: 'Work', repeat: 'weekly' },
+    { id: 'tmpl_clean', title: isRU ? 'Уборка' : 'Cleaning', desc: '', priority: 'Low', category: 'Personal', repeat: 'weekly' },
+    { id: 'tmpl_plan', title: isRU ? 'Планирование недели' : 'Weekly planning', desc: isRU ? 'Цели, приоритеты, дедлайны' : 'Goals, priorities, deadlines', priority: 'High', category: 'Work', repeat: 'weekly' },
+    { id: 'tmpl_budget', title: isRU ? 'Проверить бюджет' : 'Check budget', desc: '', priority: 'Medium', category: 'Finance', repeat: 'monthly' },
+  ];
+
   const [questTemplates, setQuestTemplates] = useState<any[]>(() => {
-    try { return JSON.parse(localStorage.getItem('eclipse_quest_templates') || '[]'); } catch { return []; }
+    try {
+      const saved = JSON.parse(localStorage.getItem('eclipse_quest_templates') || '[]');
+      if (saved.length > 0) return saved;
+      return DEFAULT_TEMPLATES;
+    } catch { return DEFAULT_TEMPLATES; }
   });
 
   // Modal state
@@ -612,6 +628,7 @@ const AppContent: React.FC = () => {
           {currentView === 'image' && <div className="h-full p-4 md:p-6 overflow-hidden"><ImageView /></div>}
           {currentView === 'tts' && <div className="h-full p-4 md:p-6 overflow-hidden"><TTSView /></div>}
           {currentView === 'achievements' && <><OnboardingTip section="achievements" /><AchievementsPanel isOpen={true} onClose={() => setCurrentView('dashboard')} /></>}
+          {currentView === 'analytics' && <AnalyticsView reminders={reminders} workoutLogs={workoutLogs} streak={currentStreak} level={user.level || 1} xp={user.xp || 0} />}
           {currentView === 'habits' && <HabitsView />}
         </Suspense>
       </main>
@@ -707,9 +724,15 @@ const AppContent: React.FC = () => {
             <div className="p-6 space-y-4 overflow-y-auto">
               {questTemplates.length > 0 && (
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
-                    {isRU ? 'Шаблоны' : 'Templates'}
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#55556A]">
+                      {isRU ? 'Шаблоны' : 'Templates'}
+                    </label>
+                    <button type="button" onClick={() => setQuestTemplates(DEFAULT_TEMPLATES)}
+                      className="text-[9px] font-bold text-[#3A3A4A] hover:text-[#55556A] transition-colors uppercase tracking-wider">
+                      {isRU ? 'Сбросить' : 'Reset'}
+                    </button>
+                  </div>
                   <div className="flex gap-2 flex-wrap">
                     {questTemplates.map((tmpl: any) => (
                       <button key={tmpl.id} type="button" onClick={() => {
