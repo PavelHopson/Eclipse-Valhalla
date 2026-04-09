@@ -7,6 +7,7 @@ import { Seal } from './brand/Seal';
 import { LanguageProvider, useLanguage } from './i18n';
 import { api } from './services/storageService';
 import TitleBar from './components/TitleBar';
+import './services/backupService'; // Auto-backup on load
 
 // Lazy-load ALL views
 const Navigation = lazy(() => import('./components/Navigation'));
@@ -29,6 +30,7 @@ const DashboardHero = lazy(() => import('./components/DashboardHero'));
 const AchievementsPanel = lazy(() => import('./components/AchievementsPanel'));
 const HabitsView = lazy(() => import('./components/HabitsView'));
 const JournalView = lazy(() => import('./components/JournalView'));
+const BodyTracker = lazy(() => import('./components/BodyTracker'));
 const FeatureGuide = lazy(() => import('./components/OnboardingTips').then(m => ({ default: m.FeatureGuide })));
 const AnalyticsView = lazy(() => import('./components/AnalyticsView'));
 
@@ -634,6 +636,7 @@ const AppContent: React.FC = () => {
           {currentView === 'analytics' && <AnalyticsView reminders={reminders} workoutLogs={workoutLogs} streak={currentStreak} level={user.level || 1} xp={user.xp || 0} />}
           {currentView === 'habits' && <HabitsView />}
           {currentView === 'journal' && <JournalView />}
+          {currentView === 'body' && <BodyTracker />}
         </Suspense>
       </main>
 

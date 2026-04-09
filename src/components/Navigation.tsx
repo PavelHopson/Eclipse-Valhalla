@@ -15,7 +15,7 @@ import { ViewMode, User, PlanTier } from '../types';
 import {
   Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
   Home, Search, Dumbbell, StickyNote, Sparkles, Image, AudioLines,
-  ChevronRight, ChevronLeft, Rss, Trophy, HelpCircle, Heart, BarChart3, BookOpen,
+  ChevronRight, ChevronLeft, Rss, Trophy, HelpCircle, Heart, BarChart3, BookOpen, Scale,
 } from 'lucide-react';
 import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
@@ -68,6 +68,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
         { id: 'stickers', label: t('nav.notes'), icon: StickyNote },
         { id: 'habits', label: language === 'ru' ? 'Привычки' : 'Habits', icon: Heart, accent: '#FF6B9D' },
         { id: 'journal', label: language === 'ru' ? 'Дневник' : 'Journal', icon: BookOpen, accent: '#D8C18E' },
+        { id: 'body', label: language === 'ru' ? 'Тело' : 'Body', icon: Scale, accent: '#40D8D0' },
       ],
     },
     {
