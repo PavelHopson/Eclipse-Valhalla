@@ -25,6 +25,12 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
   const { t, language } = useLanguage();
   const isRu = language === 'ru';
   const [focusDuration, setFocusDuration] = useState(25 * 60);
+  const [ambientOn, setAmbientOn] = useState(false);
+
+  // Stop ambient on unmount
+  React.useEffect(() => {
+    return () => { import('../services/focusMusic').then(({ stopAmbient }) => stopAmbient()).catch(() => {}); };
+  }, []);
   const [secondsLeft, setSecondsLeft] = useState(focusDuration);
   const [isRunning, setIsRunning] = useState(true);
   const [phase, setPhase] = useState<'focus' | 'completed' | 'escaped'>('focus');
@@ -246,6 +252,20 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
             ))}
           </div>
         )}
+
+        {/* Ambient music toggle */}
+        <button onClick={() => {
+          import('../services/focusMusic').then(({ toggleAmbient }) => {
+            setAmbientOn(toggleAmbient());
+          }).catch(() => {});
+        }}
+          className="mb-4 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all"
+          style={ambientOn
+            ? { backgroundColor: '#B89B5E20', color: '#D8C18E', border: '1px solid #B89B5E30' }
+            : { backgroundColor: '#1A1A26', color: '#3A3A4A', border: '1px solid #2A2A3C' }
+          }>
+          {ambientOn ? (isRu ? '🎵 Музыка вкл' : '🎵 Ambient On') : (isRu ? '🔇 Включить музыку' : '🔇 Enable Ambient')}
+        </button>
 
         <div className="relative mb-10 ring-pulse">
           <svg className="h-72 w-72 -rotate-90 md:h-80 md:w-80" viewBox="0 0 200 200">

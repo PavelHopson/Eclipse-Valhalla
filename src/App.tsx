@@ -32,6 +32,7 @@ const AchievementsPanel = lazy(() => import('./components/AchievementsPanel'));
 const HabitsView = lazy(() => import('./components/HabitsView'));
 const JournalView = lazy(() => import('./components/JournalView'));
 const BodyTracker = lazy(() => import('./components/BodyTracker'));
+const ChallengesView = lazy(() => import('./components/ChallengesView'));
 const FeatureGuide = lazy(() => import('./components/OnboardingTips').then(m => ({ default: m.FeatureGuide })));
 const AnalyticsView = lazy(() => import('./components/AnalyticsView'));
 
@@ -639,6 +640,7 @@ const AppContent: React.FC = () => {
           {currentView === 'habits' && <HabitsView />}
           {currentView === 'journal' && <JournalView />}
           {currentView === 'body' && <BodyTracker />}
+          {currentView === 'challenges' && <ChallengesView />}
         </Suspense>
       </main>
 
