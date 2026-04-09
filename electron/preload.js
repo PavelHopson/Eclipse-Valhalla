@@ -97,4 +97,10 @@ contextBridge.exposeInMainWorld('valhalla', {
   windowMinimize: () => ipcRenderer.invoke('system:windowMinimize'),
   windowMaximize: () => ipcRenderer.invoke('system:windowMaximize'),
   windowClose: () => ipcRenderer.invoke('system:windowClose'),
+
+  // ── UPDATE EVENTS ──
+  onUpdateAvailable: (callback) => ipcRenderer.on('update:available', (_e, data) => callback(data)),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update:downloaded', (_e, data) => callback(data)),
+  onUpdateProgress: (callback) => ipcRenderer.on('update:progress', (_e, data) => callback(data)),
+  installUpdate: () => ipcRenderer.invoke('system:installUpdate'),
 });

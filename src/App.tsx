@@ -7,6 +7,7 @@ import { Seal } from './brand/Seal';
 import { LanguageProvider, useLanguage } from './i18n';
 import { api } from './services/storageService';
 import TitleBar from './components/TitleBar';
+import UpdateNotification from './components/UpdateNotification';
 import './services/backupService'; // Auto-backup on load
 
 // Lazy-load ALL views
@@ -486,6 +487,7 @@ const AppContent: React.FC = () => {
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#050508] font-sans text-[#EAEAF2] fixed inset-0">
       {/* Custom Title Bar (frameless window) */}
       <TitleBar />
+      <UpdateNotification />
 
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
       {/* Mobile Header */}

@@ -11,7 +11,7 @@
 import { ipcMain, Notification, app, dialog, BrowserWindow } from 'electron';
 import { minimizeToTray, restoreFromTray, setAlwaysOnTop } from '../windowManager.js';
 import { updateTrayMenu } from '../tray.js';
-import { checkForUpdatesNow, getUpdaterState } from '../autoUpdater.js';
+import { checkForUpdatesNow, getUpdaterState, installUpdate } from '../autoUpdater.js';
 
 // ═══════════════════════════════════════════
 // REGISTER IPC HANDLERS
@@ -100,6 +100,11 @@ export function registerSystemIPC() {
 
   ipcMain.handle('system:getUpdaterState', () => {
     return getUpdaterState();
+  });
+
+  // -- INSTALL UPDATE --
+  ipcMain.handle('system:installUpdate', () => {
+    installUpdate();
   });
 
   // -- WINDOW CONTROLS (frameless) --
