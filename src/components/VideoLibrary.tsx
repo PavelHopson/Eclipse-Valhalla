@@ -24,6 +24,7 @@ interface VideoItem {
   addedAt: string;
   duration?: string;          // e.g. "15:30"
   notes?: string;
+  thumbnail?: string;         // base64 data URL for local video preview
 }
 
 type VideoCategory = 'all_body' | 'abs' | 'back' | 'legs' | 'arms' | 'stretch' | 'running' | 'other';
@@ -82,7 +83,51 @@ function getThumbnail(url: string): string | null {
 }
 
 function isDirectVideo(url: string): boolean {
-  return /\.(mp4|webm|mov|m4v|avi|mkv)$/i.test(url) || url.startsWith('file:');
+  return /\.(mp4|webm|mov|m4v|avi|mkv)$/i.test(url) || url.startsWith('file:') || url.startsWith('blob:');
+}
+
+/** Generate thumbnail from a video URL by capturing a frame at 2s */
+function generateThumbnail(videoUrl: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    try {
+      const video = document.createElement('video');
+      video.crossOrigin = 'anonymous';
+      video.muted = true;
+      video.preload = 'metadata';
+
+      video.onloadeddata = () => {
+        video.currentTime = Math.min(2, video.duration * 0.1);
+      };
+
+      video.onseeked = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 320;
+          canvas.height = 180;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, 320, 180);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            resolve(dataUrl);
+          } else {
+            resolve(null);
+          }
+        } catch {
+          resolve(null);
+        }
+        video.remove();
+      };
+
+      video.onerror = () => { resolve(null); video.remove(); };
+
+      // Timeout after 5s
+      setTimeout(() => { resolve(null); video.remove(); }, 5000);
+
+      video.src = videoUrl;
+    } catch {
+      resolve(null);
+    }
+  });
 }
 
 // ═══════════════════════════════════════════
@@ -92,6 +137,20 @@ function isDirectVideo(url: string): boolean {
 interface VideoLibraryProps {
   onSelectVideo?: (url: string) => void;  // callback to attach video to a routine
 }
+
+/** Inline video thumbnail — renders a paused video as preview */
+const VideoThumb: React.FC<{ url: string }> = ({ url }) => (
+  <video
+    src={url}
+    muted
+    preload="metadata"
+    className="w-full h-full object-cover"
+    onLoadedData={(e) => {
+      const vid = e.currentTarget;
+      vid.currentTime = Math.min(2, vid.duration * 0.1);
+    }}
+  />
+);
 
 const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo }) => {
   const { language } = useLanguage();
@@ -124,16 +183,29 @@ const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo }) => {
     saveLibrary(updated);
   };
 
-  const addVideo = () => {
+  const addVideo = async () => {
     if (!newTitle.trim() || !newUrl.trim()) return;
+    const url = newUrl.trim();
+
+    // Generate thumbnail
+    let thumbnail: string | undefined;
+    const ytThumb = getThumbnail(url);
+    if (ytThumb) {
+      thumbnail = ytThumb; // YouTube thumbnail URL
+    } else if (isDirectVideo(url)) {
+      const generated = await generateThumbnail(url);
+      if (generated) thumbnail = generated;
+    }
+
     const item: VideoItem = {
       id: generateId(),
       title: newTitle.trim(),
-      url: newUrl.trim(),
+      url,
       category: newCategory,
       addedAt: new Date().toISOString(),
       duration: newDuration.trim() || undefined,
       notes: newNotes.trim() || undefined,
+      thumbnail,
     };
     update([item, ...videos]);
     setNewTitle('');
@@ -336,8 +408,10 @@ const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo }) => {
 
                 {/* Thumbnail */}
                 <div className="aspect-video relative overflow-hidden" style={{ backgroundColor: V.bg1 }}>
-                  {thumbnail ? (
-                    <img src={thumbnail} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  {(video.thumbnail || thumbnail) ? (
+                    <img src={video.thumbnail || thumbnail!} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : isDirect ? (
+                    <VideoThumb url={video.url} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Film className="w-10 h-10" style={{ color: V.textDis }} />
