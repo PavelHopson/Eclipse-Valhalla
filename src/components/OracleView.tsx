@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Message, Reminder } from '../types';
-import { sendOracleMessage, oraclePlanDay, oracleAnalyze, oracleMotivate } from '../services/oracleService';
+import { sendOracleMessage, oraclePlanDay, oracleAnalyze, oracleMotivate, buildOracleMessages } from '../services/oracleService';
 import { Brain, Flame, Calendar, Send, Loader2, Sparkles, TriangleAlert, Trash2 } from 'lucide-react';
+import { streamChat } from '../ai/adapters/openaiAdapter';
+import { ai } from '../ai';
 import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
 
@@ -128,13 +130,63 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
     setMessages(prev => [...prev, userMsg]);
     setInputValue('');
 
-    await revealWithDelay(async () => {
+    // Check if the default provider supports streaming (openai or custom)
+    const provider = ai.getDefaultProvider();
+    const canStream = provider && (provider.type === 'openai' || provider.type === 'custom');
+
+    if (canStream) {
+      // Streaming mode: show text word-by-word
+      setIsLoading(true);
+      setManifesting(true);
+
       const history = messages.filter(m => !m.isError).map(m => ({
         role: m.role,
         parts: [{ text: m.text }],
       }));
-      return sendOracleMessage(history, msg, quests);
-    });
+      const apiMessages = buildOracleMessages(history, msg, quests);
+      const streamMsgId = `stream_${Date.now()}`;
+
+      // Add empty assistant message that will be filled progressively
+      setMessages(prev => [...prev, {
+        id: streamMsgId,
+        role: 'model',
+        text: '',
+        timestamp: Date.now(),
+      }]);
+
+      await streamChat(
+        { messages: apiMessages },
+        provider,
+        (chunk) => {
+          setMessages(prev => prev.map(m =>
+            m.id === streamMsgId ? { ...m, text: m.text + chunk } : m
+          ));
+        },
+        () => {
+          setManifesting(false);
+          setIsLoading(false);
+          import('../services/achievementService').then(({ trackEvent }) => {
+            trackEvent('ai_chat');
+          }).catch(() => {});
+        },
+        (error) => {
+          setMessages(prev => prev.map(m =>
+            m.id === streamMsgId ? { ...m, text: error, isError: true } : m
+          ));
+          setManifesting(false);
+          setIsLoading(false);
+        }
+      );
+    } else {
+      // Non-streaming fallback (Gemini, Anthropic, etc.)
+      await revealWithDelay(async () => {
+        const history = messages.filter(m => !m.isError).map(m => ({
+          role: m.role,
+          parts: [{ text: m.text }],
+        }));
+        return sendOracleMessage(history, msg, quests);
+      });
+    }
   };
 
   const handleQuickAction = async (actionId: string) => {

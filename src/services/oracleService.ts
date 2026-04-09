@@ -34,12 +34,15 @@ Context: You have access to the user's quest list (tasks). Use it to give releva
 // ORACLE CHAT
 // ═══════════════════════════════════════════
 
-export const sendOracleMessage = async (
+/**
+ * Build the messages array for the Oracle (system + history + user message).
+ * Exported so OracleView can use it for streaming.
+ */
+export function buildOracleMessages(
   history: { role: string; parts: { text: string }[] }[],
   newMessage: string,
   quests?: Reminder[]
-) => {
-  // Build context from quests
+): { role: string; content: string }[] {
   let contextBlock = '';
   if (quests && quests.length > 0) {
     const pending = quests.filter(q => !q.isCompleted);
@@ -54,16 +57,22 @@ ${pending.length > 0 ? `\nACTIVE QUESTS:\n${pending.slice(0, 10).map(q => `- "${
 
   const systemContent = ORACLE_SYSTEM + contextBlock;
 
-  // Convert old history format to universal format
-  const messages = [
-    { role: 'system' as const, content: systemContent },
+  return [
+    { role: 'system', content: systemContent },
     ...history.map(h => ({
-      role: (h.role === 'model' ? 'assistant' : 'user') as 'user' | 'assistant',
+      role: h.role === 'model' ? 'assistant' : 'user',
       content: h.parts.map(p => p.text).join(''),
     })),
-    { role: 'user' as const, content: newMessage },
+    { role: 'user', content: newMessage },
   ];
+}
 
+export const sendOracleMessage = async (
+  history: { role: string; parts: { text: string }[] }[],
+  newMessage: string,
+  quests?: Reminder[]
+) => {
+  const messages = buildOracleMessages(history, newMessage, quests) as { role: 'system' | 'user' | 'assistant'; content: string }[];
   const response = await ai.chat(messages, 'planning');
   return response.content;
 };

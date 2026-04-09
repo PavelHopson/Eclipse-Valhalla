@@ -110,6 +110,30 @@ const AppContent: React.FC = () => {
   const [weeklySummary, setWeeklySummary] = useState<any>(null);
   const [antiBurnout, setAntiBurnout] = useState<string | null>(null);
 
+  // Achievement toast
+  const [achievementToast, setAchievementToast] = useState<{ text: string; xp: number } | null>(null);
+
+  useEffect(() => {
+    import('./services/achievementService').then(({ onAchievementUnlock }) => {
+      onAchievementUnlock((achievement) => {
+        const name = t(`achievements.${achievement.id}`);
+        setAchievementToast({ text: name, xp: achievement.xpReward });
+
+        // Auto-add XP from achievement
+        setUser(prev => {
+          const newXp = (prev.xp || 0) + achievement.xpReward;
+          const newLevel = Math.floor(newXp / 100) + 1;
+          const updatedUser = { ...prev, xp: newXp, level: newLevel };
+          api.updateUser(prev.id, { xp: newXp, level: newLevel });
+          localStorage.setItem('lumina_active_session', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
+
+        setTimeout(() => setAchievementToast(null), 4000);
+      });
+    }).catch(() => {});
+  }, []);
+
   // Track feature usage for achievements
   useEffect(() => {
     if (!isDataLoaded) return;
@@ -149,6 +173,8 @@ const AppContent: React.FC = () => {
 
   // Load data ONCE + track session
   useEffect(() => {
+    let notifInterval: ReturnType<typeof setInterval> | undefined;
+
     setReminders(api.getData('reminders', user.id));
     setNotes(api.getData('notes', user.id));
     setRoutines(api.getData('routines', user.id));
@@ -268,7 +294,34 @@ const AppContent: React.FC = () => {
           }
         }, 5 * 60 * 60 * 1000);
       }
+
+      // Check for overdue quests every 5 minutes
+      notifInterval = setInterval(() => {
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+        const now = new Date();
+        const loaded: any[] = api.getData('reminders', user.id);
+        const justOverdue = loaded.filter((r: any) =>
+          !r.isCompleted && r.dueDateTime &&
+          new Date(r.dueDateTime) < now &&
+          new Date(r.dueDateTime) > new Date(now.getTime() - 10 * 60000) // overdue in last 10 min
+        );
+        if (justOverdue.length > 0) {
+          new Notification('Eclipse Valhalla', {
+            body: justOverdue.length === 1
+              ? `⚠️ ${justOverdue[0].title} — просрочено`
+              : `⚠️ ${justOverdue.length} квестов просрочено`,
+            icon: undefined,
+            silent: false,
+          });
+        }
+      }, 5 * 60 * 1000); // every 5 minutes
+
     } catch {}
+
+    // Cleanup overdue notification interval
+    return () => {
+      if (notifInterval) clearInterval(notifInterval);
+    };
   }, []);
 
   // Save reminders when they change
@@ -347,6 +400,41 @@ const AppContent: React.FC = () => {
           trackEvent('quest_complete');
         }).catch(() => {});
       }
+
+      // Update XP
+      if (updatedQuest && updatedQuest.isCompleted) {
+        const xpGain = updatedQuest.priority === 'High' ? 30 : updatedQuest.priority === 'Medium' ? 20 : 10;
+        setUser(prev => {
+          const newXp = (prev.xp || 0) + xpGain;
+          const newLevel = Math.floor(newXp / 100) + 1;
+          const updatedUser = { ...prev, xp: newXp, level: newLevel };
+          api.updateUser(prev.id, { xp: newXp, level: newLevel });
+          localStorage.setItem('lumina_active_session', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
+      }
+
+      // Auto-repeat
+      if (updatedQuest && updatedQuest.isCompleted && updatedQuest.repeatType && updatedQuest.repeatType !== RepeatType.NONE) {
+        const nextDate = new Date(updatedQuest.dueDateTime);
+        if (updatedQuest.repeatType === RepeatType.DAILY) nextDate.setDate(nextDate.getDate() + 1);
+        else if (updatedQuest.repeatType === RepeatType.WEEKLY) nextDate.setDate(nextDate.getDate() + 7);
+        else if (updatedQuest.repeatType === RepeatType.MONTHLY) nextDate.setMonth(nextDate.getMonth() + 1);
+
+        const repeatedQuest = {
+          ...updatedQuest,
+          id: generateId(),
+          isCompleted: false,
+          completedAt: undefined,
+          status: ReminderStatus.TODO,
+          dueDateTime: nextDate.toISOString(),
+          createdAt: Date.now(),
+        };
+        setTimeout(() => {
+          setReminders(prev => [...prev, repeatedQuest]);
+        }, 500);
+      }
+
       return updated;
     });
   }, []);
@@ -688,6 +776,21 @@ const AppContent: React.FC = () => {
               <button onClick={() => setIsReminderModalOpen(false)} className="px-5 py-2.5 text-[#55556A] text-sm">{isRU ? 'Отмена' : 'Cancel'}</button>
               <button onClick={() => saveReminder({ id: editingId || undefined, title: modalData.title, description: modalData.desc, dueDateTime: modalData.date, priority: modalData.priority, category: modalData.category, repeatType: modalData.repeat || RepeatType.NONE, subtasks: modalData.subtasks?.filter(s => s.title.trim()), estimatedMinutes: modalData.estimatedMinutes || undefined })} disabled={!modalData.title} className="px-6 py-2.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-xl font-semibold text-sm disabled:opacity-30">{isRU ? 'Сохранить' : 'Save'}</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Achievement Toast */}
+      {achievementToast && (
+        <div className="fixed bottom-6 right-6 z-[200] animate-in slide-in-from-bottom-4 duration-500">
+          <div className="flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl"
+            style={{ backgroundColor: '#1A1A26', border: '1px solid #D8C18E40', boxShadow: '0 8px 32px rgba(184,155,94,0.2)' }}>
+            <span className="text-2xl">🏆</span>
+            <div>
+              <p className="text-xs font-bold text-[#D8C18E] uppercase tracking-wider">{isRU ? 'Достижение открыто!' : 'Achievement Unlocked!'}</p>
+              <p className="text-sm font-semibold text-[#F2F1EE]">{achievementToast.text}</p>
+            </div>
+            <span className="text-xs font-bold text-[#D8C18E] bg-[#D8C18E15] px-2 py-1 rounded-lg">+{achievementToast.xp} XP</span>
           </div>
         </div>
       )}

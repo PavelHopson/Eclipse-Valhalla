@@ -14,7 +14,7 @@ export const openaiAdapter: AIAdapter = {
     const start = Date.now();
     const baseUrl = (config.baseUrl || 'https://api.openai.com/v1').replace(/\/+$/, '');
 
-    const body = {
+    const body: Record<string, unknown> = {
       model: config.model,
       messages: request.messages.map(m => ({
         role: m.role,
@@ -89,3 +89,71 @@ export const openaiAdapter: AIAdapter = {
     }
   },
 };
+
+/**
+ * Streaming chat — yields chunks as they arrive from an OpenAI-compatible endpoint.
+ */
+export async function streamChat(
+  request: { messages: { role: string; content: string }[] },
+  config: { apiKey: string; model: string; baseUrl?: string; maxTokens?: number; temperature?: number },
+  onChunk: (text: string) => void,
+  onDone: () => void,
+  onError: (error: string) => void,
+): Promise<void> {
+  const baseUrl = (config.baseUrl || 'https://api.openai.com/v1').replace(/\/+$/, '');
+
+  try {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.model,
+        messages: request.messages,
+        max_tokens: config.maxTokens || 2048,
+        temperature: config.temperature ?? 0.7,
+        stream: true,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text().catch(() => 'Unknown error');
+      onError(`API ${res.status}: ${err}`);
+      return;
+    }
+
+    const reader = res.body?.getReader();
+    if (!reader) { onError('No response body'); return; }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith('data: ')) continue;
+        const data = trimmed.slice(6);
+        if (data === '[DONE]') { onDone(); return; }
+
+        try {
+          const parsed = JSON.parse(data);
+          const delta = parsed.choices?.[0]?.delta?.content;
+          if (delta) onChunk(delta);
+        } catch { /* skip malformed chunks */ }
+      }
+    }
+
+    onDone();
+  } catch (err: unknown) {
+    onError(err instanceof Error ? err.message : 'Stream failed');
+  }
+}
