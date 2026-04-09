@@ -256,7 +256,7 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
               <div className="space-y-3">
                 {recentInvocations.map(msg => (
                   <div key={msg.id} className="rounded-[18px] border border-white/8 bg-[#171717] px-4 py-3 text-sm text-[#B4B0A7]">
-                    {msg.role === 'assistant' ? (
+                    {msg.role === 'model' ? (
                       <MarkdownText text={msg.text} className="text-left leading-6" />
                     ) : (
                       <div className="text-center">{msg.text}</div>
