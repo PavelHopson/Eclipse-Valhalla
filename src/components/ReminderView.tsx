@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { Reminder, RepeatType, Priority, PlanTier, ReminderStatus } from '../types';
 import { formatDate, getPriorityColor, parseSmartTask } from '../utils';
 import {
@@ -38,6 +38,7 @@ const ReminderView: React.FC<ReminderViewProps> = ({
   const [filter, setFilter] = useState<'active' | 'all' | 'completed' | 'abandoned'>('active');
   const [viewType, setViewType] = useState<'list' | 'board'>('list');
   const [aiInput, setAiInput] = useState('');
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
 
   const now = new Date();
 
@@ -202,6 +203,7 @@ const ReminderView: React.FC<ReminderViewProps> = ({
                   return (
                     <article
                       key={reminder.id}
+                      onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, id: reminder.id }); }}
                       className={`group relative overflow-hidden rounded-[22px] border p-4 transition-all ${
                         reminder.isCompleted
                           ? 'border-[#B89B5E24] bg-[#B89B5E0A] opacity-75'
@@ -391,6 +393,28 @@ const ReminderView: React.FC<ReminderViewProps> = ({
             ))}
           </div>
         </div>
+      )}
+      {/* Context Menu */}
+      {contextMenu && (
+        <>
+          <div className="fixed inset-0 z-50" onClick={() => setContextMenu(null)} />
+          <div className="fixed z-50 rounded-xl shadow-2xl py-1 min-w-[180px]"
+            style={{ top: Math.min(contextMenu.y, window.innerHeight - 200), left: Math.min(contextMenu.x, window.innerWidth - 200), backgroundColor: '#1A1A26', border: '1px solid #2A2A3C' }}>
+            {[
+              { label: isRU ? '✏️ Редактировать' : '✏️ Edit', action: () => { const r = reminders.find(r => r.id === contextMenu.id); if (r) onEditReminder(r); setContextMenu(null); } },
+              { label: isRU ? '🎯 В фокус' : '🎯 Focus', action: () => { onStartFocus(contextMenu.id); setContextMenu(null); } },
+              { label: isRU ? '✅ Выполнить' : '✅ Complete', action: () => { toggleComplete(contextMenu.id); setContextMenu(null); } },
+              { label: isRU ? '🗑️ Удалить' : '🗑️ Delete', action: () => { deleteReminder(contextMenu.id); setContextMenu(null); }, danger: true },
+            ].map((item, i) => (
+              <button key={i} onClick={item.action}
+                className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                  (item as any).danger ? 'text-[#FF4444] hover:bg-[#FF444410]' : 'text-[#B4B0A7] hover:bg-[#5DAEFF10]'
+                }`}>
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

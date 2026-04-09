@@ -1501,6 +1501,27 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
               })}
             </div>
 
+            {/* Export CSV */}
+            {logs.length > 0 && (
+              <button onClick={() => {
+                const rows = ['Date,Routine,Duration(min),Exercises,Volume(kg),Calories'];
+                logs.forEach(log => {
+                  const dur = Math.round(log.durationSeconds / 60);
+                  const vol = log.exercises.reduce((a, ex) => a + ex.sets.reduce((s, set) => s + set.weight * set.reps, 0), 0);
+                  const cal = estimateCalories(log);
+                  rows.push(`${new Date(log.date).toLocaleDateString()},${log.routineName},${dur},${log.exercises.length},${vol},${cal}`);
+                });
+                const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `valhalla-workouts-${new Date().toISOString().split('T')[0]}.csv`; a.click();
+                URL.revokeObjectURL(url);
+              }}
+                className="w-full py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110"
+                style={{ backgroundColor: `${V.accent}10`, color: V.accent, border: `1px solid ${V.accent}20` }}>
+                📊 {isRu ? 'Экспорт CSV' : 'Export CSV'}
+              </button>
+            )}
+
             {/* Volume chart */}
             <div className="rounded-2xl p-6" style={{ backgroundColor: V.bg3, border: `1px solid ${V.border}` }}>
               <div className="flex items-center justify-between mb-6">

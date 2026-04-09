@@ -876,19 +876,34 @@ const AppContent: React.FC = () => {
         </div>
       )}
 
-      {/* Achievement Toast */}
+      {/* Achievement Toast + Confetti */}
       {achievementToast && (
-        <div className="fixed bottom-6 right-6 z-[200] animate-in slide-in-from-bottom-4 duration-500">
-          <div className="flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl"
-            style={{ backgroundColor: '#1A1A26', border: '1px solid #D8C18E40', boxShadow: '0 8px 32px rgba(184,155,94,0.2)' }}>
-            <span className="text-2xl">🏆</span>
-            <div>
-              <p className="text-xs font-bold text-[#D8C18E] uppercase tracking-wider">{isRU ? 'Достижение открыто!' : 'Achievement Unlocked!'}</p>
-              <p className="text-sm font-semibold text-[#F2F1EE]">{achievementToast.text}</p>
-            </div>
-            <span className="text-xs font-bold text-[#D8C18E] bg-[#D8C18E15] px-2 py-1 rounded-lg">+{achievementToast.xp} XP</span>
+        <>
+          {/* Confetti particles */}
+          <div className="fixed inset-0 z-[199] pointer-events-none overflow-hidden">
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div key={i} className="absolute w-2 h-2 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: '-10px',
+                  backgroundColor: ['#D8C18E', '#5DAEFF', '#FF6B35', '#4ADE80', '#FF4444', '#9B8FD8'][i % 6],
+                  animation: `confetti-fall ${1.5 + Math.random() * 2}s ease-out forwards`,
+                  animationDelay: `${Math.random() * 0.5}s`,
+                }} />
+            ))}
           </div>
-        </div>
+          <div className="fixed bottom-6 right-6 z-[200] animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl"
+              style={{ backgroundColor: '#1A1A26', border: '1px solid #D8C18E40', boxShadow: '0 8px 32px rgba(184,155,94,0.2)' }}>
+              <span className="text-2xl">🏆</span>
+              <div>
+                <p className="text-xs font-bold text-[#D8C18E] uppercase tracking-wider">{isRU ? 'Достижение открыто!' : 'Achievement Unlocked!'}</p>
+                <p className="text-sm font-semibold text-[#F2F1EE]">{achievementToast.text}</p>
+              </div>
+              <span className="text-xs font-bold text-[#D8C18E] bg-[#D8C18E15] px-2 py-1 rounded-lg">+{achievementToast.xp} XP</span>
+            </div>
+          </div>
+        </>
       )}
     </div>
     </div>
