@@ -4,12 +4,13 @@
  * Minimal operational context under the main pressure surfaces.
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Reminder, ViewMode, User } from '../types';
 import { useLanguage } from '../i18n';
 import { Swords, Calendar, Target, Flame } from 'lucide-react';
 import { getDailyStats } from '../services/disciplineMode';
 import { getTimeAdjustment } from '../services/systemVoice';
+import { playNotificationSound } from '../utils';
 import ProgressRing from './ProgressRing';
 
 interface DashboardProps {
@@ -23,6 +24,27 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
   const isRU = language === 'ru';
   const stats = getDailyStats();
   const timeAdj = getTimeAdjustment();
+
+  const [miniTimer, setMiniTimer] = useState(0);
+  const [miniTimerRunning, setMiniTimerRunning] = useState(false);
+  const [miniTimerPreset, setMiniTimerPreset] = useState(25 * 60);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (miniTimerRunning && miniTimer > 0) {
+      interval = setInterval(() => {
+        setMiniTimer(prev => {
+          if (prev <= 1) {
+            setMiniTimerRunning(false);
+            try { playNotificationSound(); } catch {}
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [miniTimerRunning, miniTimer]);
 
   const pending = reminders.filter(r => !r.isCompleted);
   const totalToday = pending.length + stats.completed;
@@ -78,6 +100,40 @@ const Dashboard: React.FC<DashboardProps> = ({ reminders, setView, user }) => {
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7F7A72] mb-1">{isRU ? 'Уровень' : 'Level'}</div>
             <div className="text-2xl font-extrabold text-[#5DAEFF]">{user?.level || 1}</div>
           </div>
+        </div>
+
+        {/* Mini Timer */}
+        <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: '#12121A', border: '1px solid #1E1E2E' }}>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7F7A72]">{isRU ? 'Быстрый таймер' : 'Quick Timer'}</span>
+            {miniTimerRunning && (
+              <button onClick={() => { setMiniTimerRunning(false); setMiniTimer(0); }}
+                className="text-[10px] font-bold text-[#FF4444]">
+                {isRU ? 'Стоп' : 'Stop'}
+              </button>
+            )}
+          </div>
+
+          {miniTimerRunning || miniTimer > 0 ? (
+            <div className="text-center">
+              <div className="text-3xl font-mono font-extrabold text-[#F2F1EE] mb-2">
+                {Math.floor(miniTimer / 60).toString().padStart(2, '0')}:{(miniTimer % 60).toString().padStart(2, '0')}
+              </div>
+              {!miniTimerRunning && miniTimer === 0 && (
+                <p className="text-xs text-[#4ADE80] font-bold">{isRU ? 'Готово!' : 'Done!'}</p>
+              )}
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              {[5, 10, 15, 25].map(min => (
+                <button key={min} onClick={() => { setMiniTimer(min * 60); setMiniTimerPreset(min * 60); setMiniTimerRunning(true); }}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all text-[#55556A] hover:text-[#F2F1EE]"
+                  style={{ backgroundColor: '#0A0A0F', border: '1px solid #1E1E2E' }}>
+                  {min}{isRU ? 'м' : 'm'}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-2">

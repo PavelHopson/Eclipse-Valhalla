@@ -10,12 +10,12 @@
  *   SYSTEM   — Settings, Admin
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ViewMode, User, PlanTier } from '../types';
 import {
   Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
   Home, Search, Dumbbell, StickyNote, Sparkles, Image, AudioLines,
-  ChevronRight, Rss, Trophy, HelpCircle, Heart, BarChart3,
+  ChevronRight, ChevronLeft, Rss, Trophy, HelpCircle, Heart, BarChart3, BookOpen,
 } from 'lucide-react';
 import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
@@ -37,6 +37,16 @@ interface NavSection {
 const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchClick, user, onUpgrade, onHelpOpen }) => {
   const { t, language } = useLanguage();
 
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem('eclipse_sidebar_collapsed') === 'true';
+  });
+
+  const toggleCollapse = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem('eclipse_sidebar_collapsed', next.toString());
+  };
+
   const sections: NavSection[] = [
     {
       label: 'CORE',
@@ -57,6 +67,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
         { id: 'workouts', label: t('nav.workouts'), icon: Dumbbell, accent: '#FF6B35' },
         { id: 'stickers', label: t('nav.notes'), icon: StickyNote },
         { id: 'habits', label: language === 'ru' ? 'Привычки' : 'Habits', icon: Heart, accent: '#FF6B9D' },
+        { id: 'journal', label: language === 'ru' ? 'Дневник' : 'Journal', icon: BookOpen, accent: '#D8C18E' },
       ],
     },
     {
@@ -92,26 +103,35 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
   return (
     <>
       {/* ═══ DESKTOP SIDEBAR ═══ */}
-      <div className="hidden md:flex w-60 bg-[#08080D] text-[#EAEAF2] flex-col h-full shrink-0 z-30 border-r border-[#16162240]">
+      <div className={`hidden md:flex ${collapsed ? 'w-16' : 'w-60'} transition-all duration-300 bg-[#08080D] text-[#EAEAF2] flex-col h-full shrink-0 z-30 border-r border-[#16162240]`}>
 
         {/* Brand */}
-        <div className="px-5 py-4 flex items-center gap-3 border-b border-[#16162240]">
+        <div className={`${collapsed ? 'px-2 justify-center' : 'px-5'} py-4 flex items-center gap-3 border-b border-[#16162240]`}>
           <Seal size={28} variant="watching" />
-          <div>
-            <h1 className="font-black text-[15px] tracking-[0.08em] uppercase text-[#EAEAF2] leading-none">Eclipse</h1>
-            <span className="text-[8px] font-bold text-[#3D3D52] uppercase tracking-[0.3em]">Valhalla</span>
-          </div>
+          {!collapsed && (
+            <div>
+              <h1 className="font-black text-[15px] tracking-[0.08em] uppercase text-[#EAEAF2] leading-none">Eclipse</h1>
+              <span className="text-[8px] font-bold text-[#3D3D52] uppercase tracking-[0.3em]">Valhalla</span>
+            </div>
+          )}
         </div>
+
+        {/* Collapse Toggle */}
+        <button onClick={toggleCollapse}
+          className="w-full flex items-center justify-center py-2 text-[#3A3A4A] hover:text-[#8888A0] transition-colors"
+          title={collapsed ? 'Expand' : 'Collapse'}>
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
 
         {/* Search */}
         <div className="px-3 pt-3 pb-1">
           <button
             onClick={onSearchClick}
-            className="w-full bg-[#0B0B12] hover:bg-[#0F0F18] border border-[#1E1E3050] hover:border-[#2A2A3C70] text-[#5E5E78] rounded-md px-3 py-2 flex items-center gap-2 text-xs transition-all group"
+            className={`w-full bg-[#0B0B12] hover:bg-[#0F0F18] border border-[#1E1E3050] hover:border-[#2A2A3C70] text-[#5E5E78] rounded-md ${collapsed ? 'px-0 justify-center' : 'px-3'} py-2 flex items-center gap-2 text-xs transition-all group`}
           >
-            <Search className="w-3.5 h-3.5 group-hover:text-[#9494AD] transition-colors" />
-            <span className="group-hover:text-[#9494AD]">{t('nav.search')}</span>
-            <span className="ml-auto text-[9px] bg-[#0A0A0F] px-1.5 py-0.5 rounded border border-[#1E1E2E] text-[#3A3A4A] font-mono">^K</span>
+            <Search className="w-3.5 h-3.5 group-hover:text-[#9494AD] transition-colors shrink-0" />
+            {!collapsed && <span className="group-hover:text-[#9494AD]">{t('nav.search')}</span>}
+            {!collapsed && <span className="ml-auto text-[9px] bg-[#0A0A0F] px-1.5 py-0.5 rounded border border-[#1E1E2E] text-[#3A3A4A] font-mono">^K</span>}
           </button>
         </div>
 
@@ -120,9 +140,11 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
           {sections.map((section) => (
             <div key={section.label} className="mb-1">
               {/* Section Label */}
-              <div className="px-3 pt-4 pb-1.5">
-                <span className="text-[10px] font-bold text-[#3D3D52] uppercase tracking-[0.25em]">{section.label}</span>
-              </div>
+              {!collapsed && (
+                <div className="px-3 pt-4 pb-1.5">
+                  <span className="text-[10px] font-bold text-[#3D3D52] uppercase tracking-[0.25em]">{section.label}</span>
+                </div>
+              )}
 
               {/* Section Items */}
               {section.items.map((item) => {
@@ -134,7 +156,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
                   <button
                     key={item.id}
                     onClick={() => setView(item.id as ViewMode)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative ${
+                    className={`w-full flex items-center ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg transition-all duration-200 group relative ${
                       active
                         ? 'bg-[#1A1A26] text-[#E8E8F0]'
                         : 'text-[#8888A0] hover:bg-[#12121A] hover:text-[#E8E8F0]'
@@ -142,13 +164,14 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
                     style={active ? {
                       boxShadow: `inset 3px 0 0 ${accentColor}, 0 0 15px ${accentColor}08`,
                     } : undefined}
+                    title={collapsed ? item.label.split('(')[0].trim() : undefined}
                   >
                     <Icon
                       className="w-4 h-4 transition-colors shrink-0"
                       style={active ? { color: accentColor } : undefined}
                     />
-                    <span className="text-[13px] font-semibold truncate">{item.label.split('(')[0].trim()}</span>
-                    {active && (
+                    {!collapsed && <span className="text-[13px] font-semibold truncate">{item.label.split('(')[0].trim()}</span>}
+                    {!collapsed && active && (
                       <div className="ml-auto w-1 h-1 rounded-full" style={{ backgroundColor: accentColor }} />
                     )}
                   </button>
@@ -159,17 +182,20 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
 
           {/* Settings */}
           <div className="pt-2">
-            <div className="px-3 pt-4 pb-1.5">
-              <span className="text-[9px] font-bold text-[#3A3A4A] uppercase tracking-[0.2em]">SYSTEM</span>
-            </div>
+            {!collapsed && (
+              <div className="px-3 pt-4 pb-1.5">
+                <span className="text-[9px] font-bold text-[#3A3A4A] uppercase tracking-[0.2em]">SYSTEM</span>
+              </div>
+            )}
             <button
               onClick={() => setView('settings')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+              className={`w-full flex items-center ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg transition-all duration-200 ${
                 isActive('settings') ? 'bg-[#1A1A26] text-[#E8E8F0]' : 'text-[#55556A] hover:bg-[#12121A] hover:text-[#8888A0]'
               }`}
+              title={collapsed ? t('nav.settings').split('(')[0].trim() : undefined}
             >
               <Settings className="w-4 h-4" />
-              <span className="text-sm font-medium">{t('nav.settings').split('(')[0].trim()}</span>
+              {!collapsed && <span className="text-sm font-medium">{t('nav.settings').split('(')[0].trim()}</span>}
             </button>
           </div>
         </nav>
@@ -179,17 +205,18 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
           <div className="px-3 pb-1">
             <button
               onClick={onHelpOpen}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-[#55556A] hover:bg-[#12121A] hover:text-[#8888A0]"
+              className={`w-full flex items-center ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg transition-all duration-200 text-[#55556A] hover:bg-[#12121A] hover:text-[#8888A0]`}
+              title={collapsed ? (language === 'ru' ? 'Справка' : 'Help') : undefined}
             >
               <HelpCircle className="w-4 h-4" />
-              <span className="text-[13px] font-semibold">{language === 'ru' ? 'Справка' : 'Help'}</span>
+              {!collapsed && <span className="text-[13px] font-semibold">{language === 'ru' ? 'Справка' : 'Help'}</span>}
             </button>
           </div>
         )}
 
         {/* Bottom — Upgrade + Admin */}
         <div className="p-3 space-y-2 border-t border-[#1E1E2E]">
-          {user?.plan !== PlanTier.PRO && (
+          {user?.plan !== PlanTier.PRO && !collapsed && (
             <button
               onClick={onUpgrade}
               className="w-full bg-gradient-to-r from-[#5DAEFF10] to-[#7A5CFF10] border border-[#5DAEFF20] rounded-lg p-3 text-left group hover:border-[#5DAEFF40] transition-all"
@@ -202,18 +229,24 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
               <p className="text-[9px] text-[#55556A] leading-relaxed">{t('nav.pro_desc')}</p>
             </button>
           )}
+          {user?.plan !== PlanTier.PRO && collapsed && (
+            <button onClick={onUpgrade} className="w-full flex items-center justify-center py-2" title={t('nav.pro_access')}>
+              <Crown className="w-4 h-4 text-[#FFD700]" />
+            </button>
+          )}
 
           {/* Admin: only visible to dev account */}
           {user?.id === 'user_pavel_hopson_admin' && <button
             onClick={() => setView('admin')}
-            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-xs ${
+            className={`w-full flex items-center ${collapsed ? 'justify-center px-0' : 'gap-2 px-3'} py-2 rounded-lg transition-all text-xs ${
               isActive('admin')
                 ? 'bg-[#8B000015] text-[#FF4444] border border-[#8B000030]'
                 : 'text-[#3A3A4A] hover:text-[#55556A] hover:bg-[#12121A]'
             }`}
+            title={collapsed ? t('nav.admin').split('(')[0].trim() : undefined}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="font-bold uppercase tracking-wider text-[10px]">{t('nav.admin').split('(')[0].trim()}</span>
+            {!collapsed && <span className="font-bold uppercase tracking-wider text-[10px]">{t('nav.admin').split('(')[0].trim()}</span>}
           </button>}
         </div>
       </div>

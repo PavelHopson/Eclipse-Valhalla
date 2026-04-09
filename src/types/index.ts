@@ -67,6 +67,8 @@ export interface Reminder {
   createdAt: number;
   subtasks?: Subtask[];
   estimatedMinutes?: number;
+  tags?: string[];
+  project?: string;
 }
 
 export interface Note {
@@ -203,4 +205,4 @@ export interface TTSState {
   error: string | null;
 }
 
-export type ViewMode = 'dashboard' | 'reminders' | 'stickers' | 'calendar' | 'workouts' | 'settings' | 'admin' | 'oracle' | 'chat' | 'image' | 'tts' | 'nexus' | 'achievements' | 'habits' | 'analytics';
+export type ViewMode = 'dashboard' | 'reminders' | 'stickers' | 'calendar' | 'workouts' | 'settings' | 'admin' | 'oracle' | 'chat' | 'image' | 'tts' | 'nexus' | 'achievements' | 'habits' | 'analytics' | 'journal';
