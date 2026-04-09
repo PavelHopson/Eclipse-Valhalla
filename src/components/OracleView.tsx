@@ -9,6 +9,30 @@ interface OracleViewProps {
   quests: Reminder[];
 }
 
+/** Simple markdown to HTML renderer */
+function renderMarkdown(text: string): string {
+  return text
+    // Headers
+    .replace(/^### (.+)$/gm, '<h3 class="text-base font-bold text-[#D8C18E] mt-4 mb-1">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-bold text-[#D8C18E] mt-5 mb-2">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold text-[#F2F1EE] mt-5 mb-2">$1</h1>')
+    // Bold + Italic
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong class="text-[#F2F1EE]"><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#F2F1EE]">$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em class="text-[#B4B0A7] italic">$1</em>')
+    // Horizontal rule
+    .replace(/^---$/gm, '<hr class="border-[#2A2A3C] my-3" />')
+    // List items
+    .replace(/^- (.+)$/gm, '<div class="flex gap-2 ml-2"><span class="text-[#D8C18E]">•</span><span>$1</span></div>')
+    .replace(/^\d+\. (.+)$/gm, '<div class="flex gap-2 ml-2"><span class="text-[#5DAEFF] font-mono text-xs">$&</span></div>')
+    // Line breaks
+    .replace(/\n/g, '<br/>');
+}
+
+const MarkdownText: React.FC<{ text: string; className?: string }> = ({ text, className }) => (
+  <div className={className} dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }} />
+);
+
 const QUICK_ACTIONS_EN = [
   { id: 'plan', label: 'Plan the next campaign', icon: Calendar, color: '#6C8FB8' },
   { id: 'analyze', label: 'Read my pattern', icon: Brain, color: '#B89B5E' },
@@ -211,9 +235,10 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
 
           <div className="w-full rounded-[28px] border border-white/8 bg-[#121212]/92 p-6 text-center shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
             <div className="text-[10px] uppercase tracking-[0.28em] text-[#7F7A72]">{isRu ? 'Текущее откровение' : 'Current revelation'}</div>
-            <div className="mx-auto mt-5 max-w-3xl whitespace-pre-wrap font-ritual text-[28px] leading-[1.35] text-[#F2F1EE] md:text-[34px]">
-              {latestOracleMessage?.text}
-            </div>
+            <MarkdownText
+              text={latestOracleMessage?.text || ''}
+              className="mx-auto mt-5 max-w-3xl text-left text-sm leading-7 text-[#B4B0A7] md:text-base"
+            />
             {latestOracleMessage?.isError && (
               <div className="mt-4 text-[11px] uppercase tracking-[0.18em] text-[#C05A60]">{isRu ? 'Ошибка передачи' : 'Transmission fault'}</div>
             )}
@@ -230,8 +255,12 @@ export const OracleView: React.FC<OracleViewProps> = ({ quests }) => {
               <div className="mb-3 text-center text-[10px] uppercase tracking-[0.24em] text-[#7F7A72]">{isRu ? 'Недавние воззвания' : 'Recent invocations'}</div>
               <div className="space-y-3">
                 {recentInvocations.map(msg => (
-                  <div key={msg.id} className="rounded-[18px] border border-white/8 bg-[#171717] px-4 py-3 text-center text-sm text-[#B4B0A7]">
-                    {msg.text}
+                  <div key={msg.id} className="rounded-[18px] border border-white/8 bg-[#171717] px-4 py-3 text-sm text-[#B4B0A7]">
+                    {msg.role === 'assistant' ? (
+                      <MarkdownText text={msg.text} className="text-left leading-6" />
+                    ) : (
+                      <div className="text-center">{msg.text}</div>
+                    )}
                   </div>
                 ))}
               </div>
