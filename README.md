@@ -1,220 +1,374 @@
 <p align="center">
-  <strong>◉</strong>
+  <img src="build-resources/icon.png" width="80" alt="Eclipse Valhalla" />
 </p>
 
 <h1 align="center">ECLIPSE VALHALLA</h1>
 
 <p align="center">
-  <em>The app that doesn't let you quit.</em>
+  <strong>Персональная операционная система дисциплины</strong><br/>
+  <em>Приложение, которое не даёт тебе сдаться.</em>
 </p>
 
 <p align="center">
-  <a href="https://pavelhopson.github.io/Eclipse-Valhalla/">Web App</a> &nbsp;·&nbsp;
-  <a href="https://github.com/PavelHopson/Eclipse-Valhalla/releases">Download</a> &nbsp;·&nbsp;
-  <a href="https://t.me/pfrfrpfr">Telegram</a>
+  <a href="https://github.com/PavelHopson/Eclipse-Valhalla/releases/latest"><img src="https://img.shields.io/github/v/release/PavelHopson/Eclipse-Valhalla?style=flat-square&color=D8C18E&label=Version" alt="Version" /></a>
+  <a href="https://github.com/PavelHopson/Eclipse-Valhalla/releases"><img src="https://img.shields.io/github/downloads/PavelHopson/Eclipse-Valhalla/total?style=flat-square&color=5DAEFF&label=Downloads" alt="Downloads" /></a>
+  <a href="https://github.com/PavelHopson/Eclipse-Valhalla/stargazers"><img src="https://img.shields.io/github/stars/PavelHopson/Eclipse-Valhalla?style=flat-square&color=FF6B35&label=Stars" alt="Stars" /></a>
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Web%20%7C%20Mobile-1A1A26?style=flat-square" alt="Platform" />
+  <img src="https://img.shields.io/badge/AI-Ollama%20%7C%20Gemini%20%7C%20OpenAI%20%7C%20Claude-0A0A0F?style=flat-square" alt="AI" />
+</p>
+
+<p align="center">
+  <a href="https://pavelhopson.github.io/Eclipse-Valhalla/">🌐 Web App</a> &nbsp;·&nbsp;
+  <a href="https://github.com/PavelHopson/Eclipse-Valhalla/releases/latest">⬇️ Скачать</a> &nbsp;·&nbsp;
+  <a href="docs/USER_GUIDE_RU.md">📖 Руководство</a> &nbsp;·&nbsp;
+  <a href="https://t.me/pfrfrpfr">💬 Telegram</a>
 </p>
 
 ---
 
-## What is this
+## 🔥 Что это
 
-Create a task. It follows you. Ignoring it makes it worse. Completing it earns progress. AI plans your day. You get disciplined or get punished.
+Eclipse Valhalla — не приложение для задач. Это **система исполнения**, построенная на давлении, последовательности и дисциплине. В стилистике викингов.
 
-Eclipse Valhalla is a **personal execution system** — not a to-do app. It enforces discipline through pressure, escalation, and consequences.
+Создай цель → система следит за исполнением → побег фиксируется → завершение награждается.
 
----
-
-## Try it
-
-**Web (instant, no signup):** https://pavelhopson.github.io/Eclipse-Valhalla/
-
-**Desktop (Windows):** [Download installer or portable build](https://github.com/PavelHopson/Eclipse-Valhalla/releases/latest)
-
-**Mobile:** Open the web link on your phone. Works as a web app. Native iOS/Android apps coming soon.
-
----
-
-## How it works
-
-1. **Create a quest** — type and press Enter. Takes 5 seconds.
-2. **Focus Mode activates** — fullscreen timer. No distractions.
-3. **Switch tabs? Caught.** — "You left. That is escape behavior."
-4. **Complete it** — emotional feedback + next quest prompt.
-5. **Ignore it** — notifications escalate. Discipline score drops.
-6. **Come back tomorrow** — "Day 5. Don't break it." or "Streak broken."
-
----
-
-## Core Systems
-
-| System | What it does |
-|--------|-------------|
-| **Quests** | Create, track, complete objectives. Priority escalation. Kanban + list view. |
-| **Focus Mode** | 25-min timer. Tab escape detection. No exit without completion. |
-| **Discipline** | Streak tracking. Daily comparison. Weekly identity review. |
-| **Oracle AI** | Plans your day. Analyzes productivity. Calls out procrastination. |
-| **Nexus Feed** | RSS/Telegram/Website news. AI ranking. Convert articles to quests. |
-| **Workouts** | Training routines with sets/reps. Built-in exercise videos plus your own trainer links or local files. Session tracking. |
-| **Notifications** | Browser push. 2h/5h pressure reminders. Escalation chain. |
-
----
-
-## AI Providers
-
-Supports multiple AI providers. Configure in Settings → AI Providers.
-
-| Provider | Chat | Image | TTS |
-|----------|------|-------|-----|
-| Google Gemini | ✓ | ✓ | ✓ |
-| OpenAI / GPT-4 | ✓ | ✓ | — |
-| Anthropic Claude | ✓ | — | — |
-| Custom endpoint | ✓ | — | — |
-| Ollama (local) | ✓ | — | — |
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19 · TypeScript · Vite 6 · Tailwind |
-| State | Zustand · React Context |
-| Desktop | Electron 29 |
-| Mobile | Capacitor |
-| Backend | Supabase (Auth, Postgres, RLS) |
-| AI | Multi-provider (Gemini, OpenAI, Anthropic, custom) |
-
----
-
-## Installation
-
-### Web (recommended for testing)
-
-Just open: https://pavelhopson.github.io/Eclipse-Valhalla/
-
-### From source
-
-```bash
-git clone https://github.com/PavelHopson/Eclipse-Valhalla.git
-cd Eclipse-Valhalla
-npm install
-npm run dev
+```
+Создал квест → Фокус-режим активирован → Переключил вкладку? Побег зафиксирован.
+→ Завершил → XP + Достижение → Стрик +1 день → Система доверяет больше.
+→ Проигнорировал → Давление растёт → Дисциплина падает → Конфронтация при входе.
 ```
 
-### Desktop (Electron)
+---
 
-```bash
-npm run electron:dev    # Development
-npm run dist:win        # Build Windows installer
-```
+## ⚡ Быстрый старт
 
-### Windows install in 3 steps
+### Веб (мгновенно, без установки)
+**https://pavelhopson.github.io/Eclipse-Valhalla/**
 
-1. Download `EclipseValhalla-...-win-x64.exe` from the latest release.
-2. Run the installer and keep the desktop/start menu shortcuts enabled.
-3. Open `Eclipse Valhalla` and configure AI keys only if you want cloud or AI features.
+### Десктоп (Windows)
+[⬇️ Скачать последний релиз](https://github.com/PavelHopson/Eclipse-Valhalla/releases/latest)
+- **Setup** — инсталлятор с ярлыками
+- **Portable** — запуск без установки
 
-Portable build is also published for users who prefer running the app without installation.
-
-### Mobile (Capacitor)
-
-```bash
-npm run build
-npx cap sync
-npx cap open android    # Opens Android Studio
-npx cap open ios        # Opens Xcode (macOS only)
-```
-
-### Environment (optional, for cloud features)
-
-```bash
-cp .env.example .env
-```
-
-- `VITE_SUPABASE_URL` — for cloud sync
-- `VITE_SUPABASE_ANON_KEY` — for auth
-
-AI keys are configured in the app: Settings → AI Providers.
+### Мобильный
+Откройте веб-версию на телефоне. Нативные iOS/Android — в разработке.
 
 ---
 
-## Languages
+## 🗺️ Вкладки приложения
 
-- 🇺🇸 English
-- 🇷🇺 Русский
+### CORE
+| Вкладка | Что делает | Ключевые функции |
+|---------|-----------|------------------|
+| 🏠 **Чертог** | Командный центр | Дисциплина (12-99), стрик, быстрый ввод квестов, виджет "Сегодня" |
 
-Switch in Settings → Language.
+### QUESTS
+| Вкладка | Что делает | Ключевые функции |
+|---------|-----------|------------------|
+| ⚔️ **Битвы** | Управление квестами | Список + канбан, приоритеты, подзадачи, повтор, оценка времени |
+| 📅 **Летопись** | Календарь | Месяц + лента 14 дней, время на квестах, клик → создание |
+
+### FOCUS
+| Вкладка | Что делает | Ключевые функции |
+|---------|-----------|------------------|
+| 🏋️ **Полигон** | Тренировки | 7 вкладок: Бой, Режимы, Планы, Видео, Кодекс, Руны, Саги |
+| 📝 **Скрижали** | Заметки | Цветные стикеры, drag & drop, pop-out окна |
+
+### ORACLE
+| Вкладка | Что делает | Ключевые функции |
+|---------|-----------|------------------|
+| 🔮 **Оракул** | AI-ассистент | Планирование, анализ, мотивация. Markdown. История сохраняется |
+
+### NEXUS
+| Вкладка | Что делает | Ключевые функции |
+|---------|-----------|------------------|
+| 📰 **Лента Нексус** | Новости | RSS-источники, категории, конвертация в квест |
+
+### GLORY
+| Вкладка | Что делает | Ключевые функции |
+|---------|-----------|------------------|
+| 🏆 **Зал Славы** | Достижения | 31 достижение, 5 категорий, 4 тира, 16 наград |
+
+### FORGE
+| Вкладка | Что делает | Ключевые функции |
+|---------|-----------|------------------|
+| 🎨 **Кузня** | Генерация изображений | Промпт → картинка, галерея (20 шт) |
+| 🔊 **Голос** | Text-to-Speech | Текст → озвучка, replay, история |
+
+### SYSTEM
+| Вкладка | Что делает | Ключевые функции |
+|---------|-----------|------------------|
+| ⚙️ **Кодекс** | Настройки | AI провайдеры, язык, экспорт/импорт, режим давления |
+| ❓ **Справка** | Помощь | Полный гайд по функциям, подсказки |
 
 ---
 
-## Behavioral System
+## 🏋️ Полигон — система тренировок
 
-Eclipse Valhalla uses psychological pressure mechanics:
+<details>
+<summary><strong>7 вкладок внутри Полигона</strong></summary>
 
-| Mechanic | Effect |
+| Вкладка | Описание |
+|---------|----------|
+| ⚔️ **Бой** | Активная тренировка: таймер, подходы, отдых, калории, видео, PR |
+| 📋 **Режимы** | Программы тренировок: упражнения, видео, расписание по дням |
+| 📅 **Планы** | Многонедельные программы (2-12 недель) с интенсивностью |
+| 🎬 **Видео** | Видеотека: загрузка с ПК/YouTube, категории, превью |
+| 📚 **Кодекс** | 10 готовых шаблонов: bodyweight, бег, растяжка, HIIT |
+| 📊 **Руны** | Статистика: тренировки, объём, подходы, калории, графики |
+| 📜 **Саги** | История всех тренировок с детализацией по подходам |
+
+</details>
+
+### Готовые программы (Кодекс)
+
+| Программа | Тип | Упражнений |
+|-----------|-----|-----------|
+| Тело Берсерка | Своим весом | 5 |
+| Приветствие Солнца | Растяжка | 4 |
+| Молот Тора | С весами | 5 |
+| Полёт Валькирии | HIIT | 4 |
+| Железный пресс | Своим весом | 5 |
+| Толкай и тяни | Своим весом | 5 |
+| День ног (дома) | Своим весом | 6 |
+| Ноль оборудования | Своим весом | 7 |
+| Бег: Новичок | Бег | 4 |
+| Бег: Выносливость | Бег | 4 |
+
+---
+
+## 🤖 AI — подключение моделей
+
+<details>
+<summary><strong>Ollama (локально, бесплатно) ⭐ Рекомендуется</strong></summary>
+
+```bash
+# 1. Установить: https://ollama.com/download
+# 2. Скачать модель:
+ollama run qwen3:8b        # Быстрая (5 ГБ)
+ollama run qwen3:32b       # Мощная (20 ГБ)
+```
+
+В Valhalla → Настройки → AI Провайдеры → + Добавить:
+- Тип: **OpenAI / Compatible**
+- API Key: `ollama`
+- Model: `qwen3:8b`
+- Base URL: `http://localhost:11434/v1`
+
+</details>
+
+<details>
+<summary><strong>OpenRouter (облако, бесплатные модели)</strong></summary>
+
+1. Ключ: https://openrouter.ai/workspaces/default/keys
+2. В Valhalla: тип **OpenAI / Compatible**
+3. Model: `meta-llama/llama-3.3-70b-instruct:free`
+4. Base URL: `https://openrouter.ai/api/v1`
+
+</details>
+
+<details>
+<summary><strong>Google Gemini (картинки + голос)</strong></summary>
+
+1. Ключ: https://aistudio.google.com/apikey
+2. В Valhalla: тип **Google Gemini**
+3. Model: `gemini-2.5-flash-preview-05-20`
+
+</details>
+
+| Провайдер | Чат | Изображения | Голос | Цена |
+|-----------|-----|-------------|-------|------|
+| **Ollama** | ✅ | — | — | Бесплатно |
+| **OpenRouter** | ✅ | — | — | Бесплатно* |
+| **Google Gemini** | ✅ | ✅ | ✅ | Бесплатно* |
+| **OpenAI** | ✅ | ✅ | — | Платно |
+| **Anthropic** | ✅ | — | — | Платно |
+
+*\* с лимитами*
+
+---
+
+## 🏆 Геймификация
+
+### 31 достижение
+
+| Категория | Примеры | Прогрессия |
+|-----------|---------|-----------|
+| ⚔️ Битвы | Первая кровь → Легенда Вальхаллы | 1 → 500 квестов |
+| 🔥 Дисциплина | Первое пламя → Неугасимый огонь | 3 → 100 дней стрик |
+| 🎯 Выносливость | Первый транс → Мастер дзен | 1 → 100 фокус-сессий |
+| 🧠 Интеллект | Первый совет → Архитектор разума | 1 → 200 AI-бесед |
+| 🧭 Мастерство | Исследователь → Максималист | 3 → 6 функций |
+
+### 16 наград
+Титулы (Посвящённый → Легенда), Темы (Кровь, Золото, Пустота), Знаки, Функции.
+
+### Тиры
+🥉 Бронза → 🥈 Серебро → 🥇 Золото → 💎 Легенда
+
+---
+
+## 🛡️ Система давления
+
+| Механика | Эффект |
 |----------|--------|
-| Streak tracking | "Day 7. Don't break it." |
-| Tab escape detection | "You left. That is escape behavior." |
-| Overdue escalation | Red pulse, growing notifications |
-| Morning confrontation | "3 objectives abandoned. The system remembers." |
-| Identity reinforcement | "You are becoming someone who executes." |
-| Anti-burnout valve | "You showed up enough today. Rest without guilt." |
-| Discipline modes | Hardcore (no mercy) / Balanced (firm but calm) |
+| Стрик | "День 7. Не сломай его." |
+| Побег из фокуса | "Ты ушёл. Это поведение побега." |
+| Просроченные квесты | Красный пульс, растущее давление |
+| Утренняя конфронтация | "3 цели брошены. Система помнит." |
+| Усиление идентичности | "Ты становишься тем, кто исполняет." |
+| Режимы | Экстремальный (без пощады) / Сбалансированный |
 
 ---
 
-## Project Structure
+## 🛠️ Технологии
+
+| Слой | Стек |
+|------|------|
+| **Frontend** | React 19 · TypeScript 5.8 · Vite 6 · Tailwind CSS |
+| **State** | Zustand · React Context · localStorage |
+| **Desktop** | Electron 29 · Frameless window · System tray · Auto-updater |
+| **Mobile** | Capacitor (Android / iOS) |
+| **AI** | Multi-provider: Gemini · OpenAI · Anthropic · Ollama |
+| **Backend** | Supabase (Auth, Postgres, RLS) — опционально |
+| **CI/CD** | GitHub Actions · GitHub Pages · Electron Builder |
+
+---
+
+## 📁 Структура проекта
 
 ```
 eclipse-valhalla/
 ├── src/
-│   ├── ai/            Multi-provider AI system (Gemini, OpenAI, Anthropic)
-│   ├── admin/         Analytics dashboard, RBAC
-│   ├── backend/       Supabase, repositories, ingestion pipeline
-│   ├── brand/         Visual DNA — motifs, sigils, overlays
-│   ├── components/    React components (40+)
-│   ├── design/        Design system — tokens, theme, motion, states, toast
-│   ├── i18n/          Translations (EN/RU, 700+ keys)
-│   ├── landing/       Landing page
-│   ├── mobile/        Capacitor bridge, responsive
-│   ├── news/          Nexus feed service
-│   ├── services/      25+ services (discipline, growth, analytics, etc.)
-│   ├── widgets/       Widget system (Zustand)
-│   └── App.tsx        Main app with behavioral loops
-├── electron/          Desktop overlay (7 files)
-├── docs/              20 documentation files
-└── .github/workflows/ CI/CD (GitHub Pages + releases)
+│   ├── ai/                 # AI система (4 адаптера, routing, usage logging)
+│   │   ├── adapters/       #   geminiAdapter, openaiAdapter, anthropicAdapter
+│   │   ├── aiService.ts    #   Центральный роутер провайдеров
+│   │   └── types.ts        #   Типы, capabilities, defaults
+│   │
+│   ├── components/         # 45+ React компонентов
+│   │   ├── Dashboard.tsx   #   Главный экран + виджеты
+│   │   ├── DashboardHero.tsx#  Командный контур + дисциплина
+│   │   ├── ReminderView.tsx #  Квесты (список + канбан)
+│   │   ├── CalendarView.tsx #  Календарь (месяц + лента)
+│   │   ├── WorkoutView.tsx  #  Полигон (1800+ строк, 7 вкладок)
+│   │   ├── TrainingPlanView.tsx # Многонедельные планы
+│   │   ├── VideoLibrary.tsx #  Видеотека тренировок
+│   │   ├── FocusMode.tsx    #  Режим фокуса (25 мин таймер)
+│   │   ├── OracleView.tsx   #  AI чат с markdown
+│   │   ├── NewsView.tsx     #  Нексус лента
+│   │   ├── AchievementsPanel.tsx # Зал Славы
+│   │   ├── StickerBoard.tsx #  Заметки (drag & drop)
+│   │   ├── ImageView.tsx    #  Кузня образов + галерея
+│   │   ├── TTSView.tsx      #  Голос + история
+│   │   ├── SettingsView.tsx #  Настройки
+│   │   ├── TitleBar.tsx     #  Кастомная рамка окна
+│   │   ├── OnboardingTips.tsx # Подсказки + справка
+│   │   └── Auth.tsx         #  Авторизация
+│   │
+│   ├── services/           # 25+ сервисов
+│   │   ├── achievementService.ts  # 31 достижение, trackEvent
+│   │   ├── rewardsService.ts      # 16 наград
+│   │   ├── cryptoService.ts       # SHA-256 пароли, AES-GCM ключи
+│   │   ├── gamificationService.ts # XP, уровни, стрики
+│   │   ├── disciplineMode.ts      # Давление, побеги
+│   │   ├── oracleService.ts       # AI промпты + контекст
+│   │   └── storageService.ts      # localStorage API
+│   │
+│   ├── i18n/               # Переводы (EN + RU, 900+ ключей)
+│   ├── design/             # Дизайн-система (tokens, theme, motion)
+│   ├── brand/              # Визуальная ДНК (Seal, sigils, motifs)
+│   ├── backend/            # Supabase + ingestion pipeline
+│   ├── types/              # TypeScript типы
+│   └── App.tsx             # Главный компонент (700+ строк)
+│
+├── electron/               # Десктоп (Electron)
+│   ├── main.js             #   Главный процесс
+│   ├── preload.js           #   IPC мост (window.valhalla)
+│   ├── windowManager.js    #   Frameless окно, overlay
+│   ├── autoUpdater.js      #   GitHub Releases auto-update
+│   ├── tray.js             #   System tray
+│   └── ipc/                #   IPC хэндлеры (system, widget)
+│
+├── docs/                   # Документация
+│   ├── USER_GUIDE_RU.md    #   Руководство пользователя (RU)
+│   ├── IMPROVEMENT_ROADMAP.md # Roadmap улучшений (20 пунктов)
+│   ├── ARCHITECTURE_DEEP.md   # Архитектура системы
+│   └── [15+ файлов]        #   Vision, API, Security, Database...
+│
+├── build-resources/        # Иконки (16px → 1024px + .ico)
+├── release/                # Собранные инсталляторы
+└── .github/workflows/      # CI/CD (Pages + Releases)
 ```
 
 ---
 
-## Documentation
+## 🔧 Установка из исходников
 
-Full docs in `docs/`:
+```bash
+# Клонирование
+git clone https://github.com/PavelHopson/Eclipse-Valhalla.git
+cd Eclipse-Valhalla
+npm install
 
-- [VISION.md](docs/VISION.md) — Product vision
-- [PRODUCT.md](docs/PRODUCT.md) — Features & user flows
-- [ARCHITECTURE_DEEP.md](docs/ARCHITECTURE_DEEP.md) — System architecture
-- [INTELLIGENCE_ENGINE.md](docs/INTELLIGENCE_ENGINE.md) — Nexus pipeline
-- [ORACLE_SYSTEM.md](docs/ORACLE_SYSTEM.md) — AI system
-- [WIDGET_SYSTEM.md](docs/WIDGET_SYSTEM.md) — Widgets
-- [DATABASE.md](docs/DATABASE.md) — Schema (14 tables)
-- [API_FULL.md](docs/API_FULL.md) — Internal API (100+ functions)
-- [SECURITY.md](docs/SECURITY.md) — Security model
-- [SCALING.md](docs/SCALING.md) — Growth stages (100 → 100K users)
-- [ROADMAP.md](docs/ROADMAP.md) — Development roadmap
-- [DEPLOYMENT.md](docs/DEPLOYMENT.md) — Deploy guides
-- [LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) — Launch plan
+# Разработка (веб)
+npm run dev
+
+# Разработка (десктоп)
+npm run electron:dev
+
+# Сборка
+npm run build              # Веб-билд
+npm run dist:win           # Windows инсталлятор + portable
+npm run dist:mac           # macOS DMG
+npm run dist:linux         # Linux AppImage + deb
+```
 
 ---
 
-## Contact
+## 🌐 Языки
+
+| Язык | Покрытие | Статус |
+|------|----------|--------|
+| 🇷🇺 Русский | ~99.5% | ✅ Готов |
+| 🇺🇸 English | 100% | ✅ Готов |
+| 🇩🇪 Deutsch | — | Планируется |
+| 🇪🇸 Español | — | Планируется |
+
+Переключение: Настройки → Язык. Мгновенно, без перезагрузки.
+
+---
+
+## 📚 Документация
+
+| Документ | Описание |
+|----------|----------|
+| [📖 Руководство пользователя](docs/USER_GUIDE_RU.md) | Полный гайд на русском (14 разделов) |
+| [🗺️ Roadmap улучшений](docs/IMPROVEMENT_ROADMAP.md) | 20 предложений по доработке |
+| [🏛️ Архитектура](docs/ARCHITECTURE_DEEP.md) | Глубокий разбор системы |
+| [🧠 AI система](docs/ORACLE_SYSTEM.md) | Oracle + провайдеры |
+| [📡 Intelligence Engine](docs/INTELLIGENCE_ENGINE.md) | Nexus pipeline |
+| [🔒 Безопасность](docs/SECURITY.md) | Модель безопасности |
+| [💾 База данных](docs/DATABASE.md) | 14 таблиц Postgres |
+| [📊 API](docs/API_FULL.md) | 100+ внутренних функций |
+| [🚀 Масштабирование](docs/SCALING.md) | 100 → 100K пользователей |
+
+---
+
+## 🤝 Контакты
 
 - **Telegram:** [@pfrfrpfr](https://t.me/pfrfrpfr)
-- **GitHub Issues:** [Report a bug](https://github.com/PavelHopson/Eclipse-Valhalla/issues)
+- **GitHub Issues:** [Баг-репорт](https://github.com/PavelHopson/Eclipse-Valhalla/issues)
+- **Releases:** [Скачать последнюю версию](https://github.com/PavelHopson/Eclipse-Valhalla/releases/latest)
+
+---
+
+## 📄 Лицензия
+
+MIT License — свободное использование, модификация и распространение.
 
 ---
 
 <p align="center">
-  <sub>Built with controlled fury.</sub>
+  <sub>Built with controlled fury. Закалено в контролируемой ярости.</sub><br/>
+  <sub>Eclipse Valhalla v3.3.0 · © 2025 Pavel Hopson</sub>
 </p>
