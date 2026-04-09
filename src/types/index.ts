@@ -113,6 +113,33 @@ export interface TrainingProgram {
   createdAt: string;
 }
 
+// --- TRAINING PLAN (multi-week) ---
+
+export interface PlanDay {
+  dayIndex: number;          // 0=Mon, 1=Tue, ..., 6=Sun
+  routineId?: string;        // Reference to a Routine, or null = rest
+  label?: string;            // "Chest + Triceps" or "Rest"
+  notes?: string;            // Coach notes for this day
+}
+
+export interface PlanWeek {
+  weekNumber: number;        // 1-based
+  days: PlanDay[];           // 7 days
+  intensityLabel?: string;   // "Light", "Medium", "Heavy", "Deload"
+}
+
+export interface TrainingPlan {
+  id: string;
+  name: string;
+  description?: string;
+  totalWeeks: number;
+  weeks: PlanWeek[];
+  currentWeek: number;       // Which week user is on (1-based)
+  startDate?: string;        // When the plan started
+  createdAt: string;
+  isActive: boolean;
+}
+
 export interface PersonalRecord {
   exerciseName: string;
   maxWeight: number;

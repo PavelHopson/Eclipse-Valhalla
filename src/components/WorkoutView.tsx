@@ -8,9 +8,10 @@ import {
   Plus, Dumbbell, Play, Clock, CheckCircle2, X, Save, History,
   ChevronRight, RotateCcw, Trash2, Compass, Copy, BarChart3,
   Pause, Timer, TrendingUp, Award, Flame, ChevronDown, ChevronUp,
-  Edit3, Target, Zap, Activity, Video,
+  Edit3, Target, Zap, Activity, Video, Calendar,
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import TrainingPlanView from './TrainingPlanView';
 
 /* ────────────────────────────────────────────────────────────
    Eclipse Valhalla Design Tokens
@@ -224,7 +225,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   const isRu = language === 'ru';
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'routines' | 'active' | 'history' | 'explore' | 'stats'>('routines');
+  const [activeTab, setActiveTab] = useState<'routines' | 'active' | 'history' | 'explore' | 'stats' | 'plans'>('routines');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Routine creation
@@ -612,6 +613,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
 
   const tabs = [
     { id: 'routines' as const, label: t('workout.tab_routines'), icon: Dumbbell },
+    { id: 'plans' as const, label: isRu ? 'Планы' : 'Plans', icon: Calendar },
     { id: 'explore' as const, label: t('workout.tab_explore'), icon: Compass },
     { id: 'stats' as const, label: t('workout.tab_stats'), icon: BarChart3 },
     { id: 'history' as const, label: t('workout.tab_history'), icon: History },
@@ -1425,6 +1427,10 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
               )}
             </div>
           </div>
+
+        /* ─── Plans Tab ─────────────────────────────────────── */
+        ) : activeTab === 'plans' ? (
+          <TrainingPlanView routines={routines} logs={logs} onStartWorkout={startWorkout} />
 
         /* ─── Explore Tab ───────────────────────────────────── */
         ) : activeTab === 'explore' ? (
