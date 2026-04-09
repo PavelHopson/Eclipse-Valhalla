@@ -74,6 +74,21 @@ const EXERCISE_VIDEOS: Record<string, string> = {
   'workout.ex_climbers': 'nmwgirgXLYM',
   'workout.ex_burpees': 'dZgVxmf6jkA',
   'workout.ex_jumpsquats': 'A-cFYGvaYcg',
+  // Bodyweight
+  'workout.ex_dips': 'yN6Q1UI_xkE',           // Tricep dips on chair
+  'workout.ex_pike_pushups': 'sposDXWEB9Q',     // Pike pushups (shoulders)
+  'workout.ex_wall_sit': 'y-wV4Lz6wJU',        // Wall sit
+  'workout.ex_crunches': 'Xyd_fa5zoEU',         // Crunches
+  'workout.ex_leg_raises': 'JB2oyawG9KI',       // Leg raises
+  'workout.ex_superman': 'z6PJMT2y8GQ',         // Superman back
+  'workout.ex_glute_bridge': 'OUgsJ8-Vi0E',     // Glute bridge
+  'workout.ex_diamond_pushups': 'J0DnG1_S92I',  // Diamond pushups
+  'workout.ex_step_ups': 'dQqApCGd5Cw',         // Step ups on chair
+  'workout.ex_mountain_climbers': 'nmwgirgXLYM', // Same as climbers
+  // Running
+  'workout.ex_warmup_jog': 'dSfx4Nt4cHU',       // Easy warm-up jog
+  'workout.ex_sprint_intervals': 'R0mMyV0pOYs',  // Sprint intervals
+  'workout.ex_cooldown_walk': 'njeZ29umqVE',     // Cool-down walk + stretch
 };
 
 const RECOMMENDED_WORKOUTS = [
@@ -82,6 +97,7 @@ const RECOMMENDED_WORKOUTS = [
     descKey: 'workout.rec_fullbody_desc',
     icon: Flame,
     gradient: 'from-[#FF6B35] to-[#FF4444]',
+    category: 'bodyweight',
     exercises: [
       { nameKey: 'workout.ex_squats', sets: 3, reps: '15' },
       { nameKey: 'workout.ex_pushups', sets: 3, reps: '12' },
@@ -95,6 +111,7 @@ const RECOMMENDED_WORKOUTS = [
     descKey: 'workout.rec_morning_desc',
     icon: Zap,
     gradient: 'from-[#FBBF24] to-[#FF6B35]',
+    category: 'stretch',
     exercises: [
       { nameKey: 'workout.ex_neck', sets: 2, reps: '30s' },
       { nameKey: 'workout.ex_catcow', sets: 2, reps: '10' },
@@ -107,6 +124,7 @@ const RECOMMENDED_WORKOUTS = [
     descKey: 'workout.rec_upper_desc',
     icon: Dumbbell,
     gradient: 'from-[#5DAEFF] to-[#4ADE80]',
+    category: 'weights',
     exercises: [
       { nameKey: 'workout.ex_press', sets: 3, reps: '12' },
       { nameKey: 'workout.ex_curls', sets: 3, reps: '12' },
@@ -120,11 +138,99 @@ const RECOMMENDED_WORKOUTS = [
     descKey: 'workout.rec_hiit_desc',
     icon: Activity,
     gradient: 'from-[#FF4444] to-[#FBBF24]',
+    category: 'bodyweight',
     exercises: [
       { nameKey: 'workout.ex_highknees', sets: 4, reps: '30s' },
       { nameKey: 'workout.ex_climbers', sets: 4, reps: '30s' },
       { nameKey: 'workout.ex_burpees', sets: 4, reps: '10' },
       { nameKey: 'workout.ex_jumpsquats', sets: 4, reps: '15' },
+    ],
+  },
+  // === BODYWEIGHT / HOME ===
+  {
+    nameKey: 'workout.rec_abs_core',
+    descKey: 'workout.rec_abs_core_desc',
+    icon: Target,
+    gradient: 'from-[#FF6B35] to-[#FBBF24]',
+    category: 'bodyweight',
+    exercises: [
+      { nameKey: 'workout.ex_crunches', sets: 3, reps: '20' },
+      { nameKey: 'workout.ex_leg_raises', sets: 3, reps: '15' },
+      { nameKey: 'workout.ex_plank', sets: 3, reps: '60s' },
+      { nameKey: 'workout.ex_mountain_climbers', sets: 3, reps: '30s' },
+      { nameKey: 'workout.ex_superman', sets: 3, reps: '15' },
+    ],
+  },
+  {
+    nameKey: 'workout.rec_push_pull',
+    descKey: 'workout.rec_push_pull_desc',
+    icon: TrendingUp,
+    gradient: 'from-[#4ADE80] to-[#5DAEFF]',
+    category: 'bodyweight',
+    exercises: [
+      { nameKey: 'workout.ex_pushups', sets: 4, reps: '15' },
+      { nameKey: 'workout.ex_diamond_pushups', sets: 3, reps: '10' },
+      { nameKey: 'workout.ex_pike_pushups', sets: 3, reps: '10' },
+      { nameKey: 'workout.ex_dips', sets: 3, reps: '12' },
+      { nameKey: 'workout.ex_glute_bridge', sets: 3, reps: '20' },
+    ],
+  },
+  {
+    nameKey: 'workout.rec_legs_home',
+    descKey: 'workout.rec_legs_home_desc',
+    icon: Flame,
+    gradient: 'from-[#FF4444] to-[#FF6B35]',
+    category: 'bodyweight',
+    exercises: [
+      { nameKey: 'workout.ex_squats', sets: 4, reps: '20' },
+      { nameKey: 'workout.ex_lunges', sets: 3, reps: '12/leg' },
+      { nameKey: 'workout.ex_wall_sit', sets: 3, reps: '45s' },
+      { nameKey: 'workout.ex_step_ups', sets: 3, reps: '10/leg' },
+      { nameKey: 'workout.ex_jumpsquats', sets: 3, reps: '15' },
+      { nameKey: 'workout.ex_glute_bridge', sets: 3, reps: '20' },
+    ],
+  },
+  {
+    nameKey: 'workout.rec_full_no_equip',
+    descKey: 'workout.rec_full_no_equip_desc',
+    icon: Award,
+    gradient: 'from-[#9B8FD8] to-[#5DAEFF]',
+    category: 'bodyweight',
+    exercises: [
+      { nameKey: 'workout.ex_jacks', sets: 1, reps: '50' },
+      { nameKey: 'workout.ex_squats', sets: 3, reps: '20' },
+      { nameKey: 'workout.ex_pushups', sets: 3, reps: '15' },
+      { nameKey: 'workout.ex_lunges', sets: 3, reps: '10/leg' },
+      { nameKey: 'workout.ex_crunches', sets: 3, reps: '20' },
+      { nameKey: 'workout.ex_plank', sets: 2, reps: '60s' },
+      { nameKey: 'workout.ex_burpees', sets: 3, reps: '10' },
+    ],
+  },
+  // === RUNNING ===
+  {
+    nameKey: 'workout.rec_run_beginner',
+    descKey: 'workout.rec_run_beginner_desc',
+    icon: Activity,
+    gradient: 'from-[#5DAEFF] to-[#4ADE80]',
+    category: 'running',
+    exercises: [
+      { nameKey: 'workout.ex_warmup_jog', sets: 1, reps: '5 min' },
+      { nameKey: 'workout.ex_highknees', sets: 3, reps: '30s' },
+      { nameKey: 'workout.ex_sprint_intervals', sets: 5, reps: '30s run / 60s walk' },
+      { nameKey: 'workout.ex_cooldown_walk', sets: 1, reps: '5 min' },
+    ],
+  },
+  {
+    nameKey: 'workout.rec_run_endurance',
+    descKey: 'workout.rec_run_endurance_desc',
+    icon: TrendingUp,
+    gradient: 'from-[#FBBF24] to-[#4ADE80]',
+    category: 'running',
+    exercises: [
+      { nameKey: 'workout.ex_warmup_jog', sets: 1, reps: '10 min' },
+      { nameKey: 'workout.ex_sprint_intervals', sets: 8, reps: '1 min run / 30s rest' },
+      { nameKey: 'workout.ex_highknees', sets: 2, reps: '30s' },
+      { nameKey: 'workout.ex_cooldown_walk', sets: 1, reps: '10 min' },
     ],
   },
 ];
@@ -260,6 +366,9 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
 
   // History expanded
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
+
+  // Explore filter
+  const [exploreFilter, setExploreFilter] = useState('all');
 
   /* ── Effects ──────────────────────────────────────────────── */
 
@@ -1453,8 +1562,30 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
               </div>
             </div>
 
+            {/* Category filter */}
+            <div className="flex gap-2 mb-4 flex-wrap">
+              {[
+                { id: 'all', label: isRu ? 'Все' : 'All' },
+                { id: 'bodyweight', label: isRu ? 'Своим весом' : 'Bodyweight' },
+                { id: 'running', label: isRu ? 'Бег' : 'Running' },
+                { id: 'stretch', label: isRu ? 'Растяжка' : 'Stretch' },
+                { id: 'weights', label: isRu ? 'С весами' : 'Weights' },
+              ].map(cat => (
+                <button key={cat.id} onClick={() => setExploreFilter(cat.id)}
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    exploreFilter === cat.id ? 'text-[#0A0A0A]' : ''
+                  }`}
+                  style={exploreFilter === cat.id
+                    ? { backgroundColor: V.orange, boxShadow: `0 2px 8px ${V.orange}30` }
+                    : { backgroundColor: V.bg3, border: `1px solid ${V.border}`, color: V.textTertiary }
+                  }>
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {RECOMMENDED_WORKOUTS.map((rec, i) => {
+              {RECOMMENDED_WORKOUTS.filter(rec => exploreFilter === 'all' || rec.category === exploreFilter).map((rec, i) => {
                 const Icon = rec.icon;
                 return (
                   <div key={i} className="rounded-2xl overflow-hidden flex flex-col transition-all hover:translate-y-[-1px]"
