@@ -15,7 +15,8 @@ export interface ThemeConfig {
   border: string;
   gold: string;
   icon: string;
-  unlockRequirement?: string; // achievement ID needed
+  unlockRequirement?: string;
+  colors: ThemeColors;
 }
 
 export interface ThemeColors {
@@ -28,7 +29,7 @@ export interface ThemeColors {
   textSecondary: string;
 }
 
-export const THEMES: (ThemeConfig & { colors: ThemeColors })[] = [
+export const THEMES: ThemeConfig[] = [
   { id: 'default', name: 'Eclipse', nameRu: 'Затмение', accent: '#5DAEFF', accentGlow: 'rgba(93,174,255,0.15)', surface: '#12121A', border: '#1E1E2E', gold: '#D8C18E', icon: '🌑',
     colors: { bg: '#0A0A0F', bg2: '#0C0C14', bg3: '#12121A', cardBg: '#171717', sidebarBg: '#050508', textPrimary: '#F2F1EE', textSecondary: '#8888A0' } },
   { id: 'blood', name: 'Blood', nameRu: 'Кровь', accent: '#E03030', accentGlow: 'rgba(224,48,48,0.12)', surface: '#1A1214', border: '#2E1E1E', gold: '#E8A080', icon: '🩸', unlockRequirement: 'war_machine',
