@@ -15,7 +15,7 @@ import { ViewMode, User, PlanTier } from '../types';
 import {
   Swords, Calendar as CalendarIcon, Settings, Crown, ShieldCheck,
   Home, Search, Dumbbell, StickyNote, Sparkles, Image, AudioLines,
-  ChevronRight, Rss, Trophy, HelpCircle,
+  ChevronRight, Rss, Trophy, HelpCircle, Heart,
 } from 'lucide-react';
 import { Seal } from '../brand/Seal';
 import { useLanguage } from '../i18n';
@@ -56,6 +56,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, onSearchC
       items: [
         { id: 'workouts', label: t('nav.workouts'), icon: Dumbbell, accent: '#FF6B35' },
         { id: 'stickers', label: t('nav.notes'), icon: StickyNote },
+        { id: 'habits', label: language === 'ru' ? 'Привычки' : 'Habits', icon: Heart, accent: '#FF6B9D' },
       ],
     },
     {

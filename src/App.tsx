@@ -27,6 +27,7 @@ const TTSView = lazy(() => import('./components/TTSView').then(m => ({ default: 
 const FocusMode = lazy(() => import('./components/FocusMode'));
 const DashboardHero = lazy(() => import('./components/DashboardHero'));
 const AchievementsPanel = lazy(() => import('./components/AchievementsPanel'));
+const HabitsView = lazy(() => import('./components/HabitsView'));
 const FeatureGuide = lazy(() => import('./components/OnboardingTips').then(m => ({ default: m.FeatureGuide })));
 
 import { OnboardingTip } from './components/OnboardingTips';
@@ -86,6 +87,11 @@ const AppContent: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+
+  // Quest templates
+  const [questTemplates, setQuestTemplates] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem('eclipse_quest_templates') || '[]'); } catch { return []; }
+  });
 
   // Modal state
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
@@ -345,6 +351,12 @@ const AppContent: React.FC = () => {
     api.saveData('workout_logs', user.id, workoutLogs);
   }, [routines, workoutLogs, isDataLoaded]);
 
+  // Save quest templates
+  useEffect(() => {
+    if (!isDataLoaded) return;
+    localStorage.setItem('eclipse_quest_templates', JSON.stringify(questTemplates));
+  }, [questTemplates, isDataLoaded]);
+
   // Keyboard shortcut
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -574,7 +586,7 @@ const AppContent: React.FC = () => {
             onOpenCreateModal={handleOpenCreateModal}
             onEditReminder={(r) => { setEditingId(r.id); setModalData({title: r.title, desc: r.description, date: r.dueDateTime, repeat: r.repeatType, priority: r.priority, category: r.category, subtasks: r.subtasks || [], estimatedMinutes: r.estimatedMinutes || 0}); setIsReminderModalOpen(true); }}
             onAddSmartTask={(r) => saveReminder(r)}
-            onStatusChange={(id, status) => setReminders(prev => prev.map(r => r.id === id ? { ...r, status, isCompleted: status === ReminderStatus.DONE } : r))}
+            onStatusChange={(id, status) => setReminders(prev => prev.map(r => r.id === id ? { ...r, status, isCompleted: status === ReminderStatus.DONE, completedAt: status === ReminderStatus.DONE ? Date.now() : undefined } : r))}
             onStartFocus={(id) => setFocusQuestId(id)}
             userPlan={user.plan}
             onUpgrade={() => setIsSubscriptionOpen(true)}
@@ -600,6 +612,7 @@ const AppContent: React.FC = () => {
           {currentView === 'image' && <div className="h-full p-4 md:p-6 overflow-hidden"><ImageView /></div>}
           {currentView === 'tts' && <div className="h-full p-4 md:p-6 overflow-hidden"><TTSView /></div>}
           {currentView === 'achievements' && <><OnboardingTip section="achievements" /><AchievementsPanel isOpen={true} onClose={() => setCurrentView('dashboard')} /></>}
+          {currentView === 'habits' && <HabitsView />}
         </Suspense>
       </main>
 
@@ -692,6 +705,23 @@ const AppContent: React.FC = () => {
               <button onClick={() => setIsReminderModalOpen(false)}><X className="w-5 h-5 text-[#55556A]" /></button>
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
+              {questTemplates.length > 0 && (
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#55556A]">
+                    {isRU ? 'Шаблоны' : 'Templates'}
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {questTemplates.map((tmpl: any) => (
+                      <button key={tmpl.id} type="button" onClick={() => {
+                        setModalData(prev => ({ ...prev, title: tmpl.title, desc: tmpl.desc || '', priority: tmpl.priority, category: tmpl.category, repeat: tmpl.repeat }));
+                      }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#5DAEFF] bg-[#5DAEFF10] border border-[#5DAEFF20] hover:bg-[#5DAEFF15] transition-colors">
+                        {tmpl.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <input type="text" value={modalData.title} onChange={e => setModalData(p => ({...p, title: e.target.value}))} placeholder={isRU ? 'Цель квеста...' : 'Quest objective...'} autoFocus onFocus={(e) => { e.target.style.borderColor = '#5DAEFF40'; }} onBlur={(e) => { e.target.style.borderColor = '#2A2A3C'; }} className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] text-[#EAEAF2] placeholder-[#3A3A4A] outline-none focus:border-[#5DAEFF40]" />
               <textarea value={modalData.desc} onChange={e => setModalData(p => ({...p, desc: e.target.value}))} placeholder={isRU ? 'Детали...' : 'Details...'} className="w-full px-4 py-3 bg-[#0E0E16] rounded-xl border border-[#2A2A3C] h-20 text-sm text-[#8888A0] placeholder-[#3A3A4A] outline-none resize-none" />
               <div className="grid grid-cols-2 gap-3">
@@ -775,6 +805,14 @@ const AppContent: React.FC = () => {
             <div className="px-6 py-4 border-t border-[#1E1E2E] flex justify-end gap-3">
               <button onClick={() => setIsReminderModalOpen(false)} className="px-5 py-2.5 text-[#55556A] text-sm">{isRU ? 'Отмена' : 'Cancel'}</button>
               <button onClick={() => saveReminder({ id: editingId || undefined, title: modalData.title, description: modalData.desc, dueDateTime: modalData.date, priority: modalData.priority, category: modalData.category, repeatType: modalData.repeat || RepeatType.NONE, subtasks: modalData.subtasks?.filter(s => s.title.trim()), estimatedMinutes: modalData.estimatedMinutes || undefined })} disabled={!modalData.title} className="px-6 py-2.5 bg-[#5DAEFF] text-[#0A0A0F] rounded-xl font-semibold text-sm disabled:opacity-30">{isRU ? 'Сохранить' : 'Save'}</button>
+              <button type="button" onClick={() => {
+                if (!modalData.title) return;
+                const template = { id: `tmpl_${Date.now()}`, title: modalData.title, desc: modalData.desc, priority: modalData.priority, category: modalData.category, repeat: modalData.repeat };
+                setQuestTemplates(prev => [...prev, template]);
+              }}
+                className="px-4 py-2 text-[10px] font-bold text-[#D8C18E] hover:text-[#F2F1EE] transition-colors uppercase tracking-wider">
+                {isRU ? '💾 Как шаблон' : '💾 As Template'}
+              </button>
             </div>
           </div>
         </div>

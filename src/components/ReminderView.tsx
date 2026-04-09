@@ -330,11 +330,30 @@ const ReminderView: React.FC<ReminderViewProps> = ({
                     {reminders.filter(r => (r.status || (r.isCompleted ? ReminderStatus.DONE : ReminderStatus.TODO)) === col.id).length}
                   </span>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3"
+                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.backgroundColor = '#5DAEFF08'; }}
+                  onDragLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    const questId = e.dataTransfer.getData('questId');
+                    if (questId) {
+                      onStatusChange(questId, col.id);
+                    }
+                  }}
+                >
                   {reminders
                     .filter(r => (r.status || (r.isCompleted ? ReminderStatus.DONE : ReminderStatus.TODO)) === col.id)
                     .map(r => (
-                      <div key={r.id} className="rounded-[18px] border border-white/8 bg-[#171717] p-4">
+                      <div key={r.id} className="rounded-[18px] border border-white/8 bg-[#171717] p-4 cursor-grab active:cursor-grabbing"
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('questId', r.id);
+                          e.dataTransfer.effectAllowed = 'move';
+                          e.currentTarget.style.opacity = '0.5';
+                        }}
+                        onDragEnd={(e) => { e.currentTarget.style.opacity = '1'; }}
+                      >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="text-sm font-bold text-[#F2F1EE]">{r.title}</div>

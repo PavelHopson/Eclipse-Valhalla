@@ -21,12 +21,11 @@ interface FocusModeProps {
   onClose: () => void;
 }
 
-const FOCUS_DURATION = 25 * 60;
-
 const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete, onStartNext, onClose }) => {
   const { t, language } = useLanguage();
   const isRu = language === 'ru';
-  const [secondsLeft, setSecondsLeft] = useState(FOCUS_DURATION);
+  const [focusDuration, setFocusDuration] = useState(25 * 60);
+  const [secondsLeft, setSecondsLeft] = useState(focusDuration);
   const [isRunning, setIsRunning] = useState(true);
   const [phase, setPhase] = useState<'focus' | 'completed' | 'escaped'>('focus');
   const [escapeCount, setEscapeCount] = useState(0);
@@ -78,14 +77,14 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
 
     // Achievement tracking
     import('../services/achievementService').then(({ trackEvent }) => {
-      trackEvent('focus_complete', Math.round(FOCUS_DURATION / 60));
+      trackEvent('focus_complete', Math.round(focusDuration / 60));
       if (escapeCount === 0) trackEvent('focus_no_escape');
     }).catch(() => {});
-  }, [quest.id, onComplete, escapeCount]);
+  }, [quest.id, onComplete, escapeCount, focusDuration]);
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const progress = 1 - secondsLeft / FOCUS_DURATION;
+  const progress = 1 - secondsLeft / focusDuration;
 
   if (phase === 'escaped') {
     return (
@@ -162,6 +161,10 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
               </p>
             </div>
 
+            <p className="text-[11px] text-[#7F7A72] mt-2">
+              {isRu ? 'Рекомендуемый перерыв: 5 минут' : 'Recommended break: 5 minutes'}
+            </p>
+
             <div className="mt-8 space-y-3">
               {nextQuests.length > 0 ? (
                 <button
@@ -226,6 +229,24 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
           </p>
         </div>
 
+        {/* Pomodoro presets */}
+        {!isRunning && phase === 'focus' && (
+          <div className="flex gap-2 justify-center mb-6">
+            {[15, 25, 30, 45, 60].map(min => (
+              <button key={min} onClick={() => { setFocusDuration(min * 60); setSecondsLeft(min * 60); }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  focusDuration === min * 60 ? 'text-[#0A0A0A]' : 'text-[#7F7A72]'
+                }`}
+                style={focusDuration === min * 60
+                  ? { backgroundColor: '#B89B5E', boxShadow: '0 2px 8px rgba(184,155,94,0.3)' }
+                  : { backgroundColor: '#1A1A26', border: '1px solid #2A2A3C' }
+                }>
+                {min}{isRu ? ' мин' : 'm'}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="relative mb-10 ring-pulse">
           <svg className="h-72 w-72 -rotate-90 md:h-80 md:w-80" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
@@ -271,7 +292,7 @@ const FocusMode: React.FC<FocusModeProps> = ({ quest, pendingQuests, onComplete,
 
           <button
             onClick={() => {
-              setSecondsLeft(FOCUS_DURATION);
+              setSecondsLeft(focusDuration);
               setIsRunning(true);
             }}
             className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.02] text-[#B4B0A7] transition-all hover:border-white/16 hover:text-[#F2F1EE]"
