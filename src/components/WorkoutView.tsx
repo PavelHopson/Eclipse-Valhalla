@@ -97,9 +97,16 @@ const EXERCISE_VIDEOS: Record<string, string> = {
   'workout.ex_plank_2min': 'ASdvN_XEl_c',        // 2-min plank hold
   'workout.ex_wall_sit_hold': 'y-wV4Lz6wJU',     // Wall sit hold
   // Legs power
-  'workout.ex_squats_power': 'aclHkVaku9U',       // Power squats
-  'workout.ex_squats_slow': 'aclHkVaku9U',        // Slow tempo squats
-  'workout.ex_calf_raises': 'gwLzBJksFhY',        // Calf raises standing
+  'workout.ex_squats_power': 'aclHkVaku9U',
+  'workout.ex_squats_slow': 'aclHkVaku9U',
+  'workout.ex_calf_raises': 'gwLzBJksFhY',
+  // Street/compound
+  'workout.ex_pullups': 'eGo4IYlbE5g',
+  'workout.ex_horizontal_row': 'hXTc1mDnZCg',
+  'workout.ex_dip_bars': 'dX_nSOOJIsE',
+  'workout.ex_decline_pushups': '4dF1DOWzf20',
+  'workout.ex_bulgarian_split': 'gGMcjOwnnHU',
+  'workout.ex_single_leg_rdl': 'BvLiRMX-yTk',
 };
 
 const RECOMMENDED_WORKOUTS = [
@@ -138,6 +145,22 @@ const RECOMMENDED_WORKOUTS = [
     featured: true,
     exercises: [
       { nameKey: 'workout.ex_wall_sit_hold', sets: 1, reps: '1-2 min' },
+    ],
+  },
+  {
+    nameKey: 'workout.rec_street_compound',
+    descKey: 'workout.rec_street_compound_desc',
+    icon: Award,
+    gradient: 'from-[#4ADE80] to-[#5DAEFF]',
+    category: 'bodyweight',
+    featured: true,
+    exercises: [
+      { nameKey: 'workout.ex_pullups', sets: 4, reps: '8-12' },
+      { nameKey: 'workout.ex_horizontal_row', sets: 3, reps: '12' },
+      { nameKey: 'workout.ex_dip_bars', sets: 4, reps: '10-15' },
+      { nameKey: 'workout.ex_decline_pushups', sets: 3, reps: '12-15' },
+      { nameKey: 'workout.ex_bulgarian_split', sets: 3, reps: '10/leg' },
+      { nameKey: 'workout.ex_single_leg_rdl', sets: 3, reps: '10/leg' },
     ],
   },
   {
@@ -681,6 +704,10 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       // Wall Sit challenge
       if (activeRoutine.name.includes('Стульчик') || activeRoutine.name.includes('Wall Sit') || activeRoutine.name.includes('wall sit')) {
         trackEvent('wallsit_complete');
+      }
+      // Street compound
+      if (activeRoutine.name.includes('Уличн') || activeRoutine.name.includes('Street') || activeRoutine.name.includes('Compound')) {
+        trackEvent('street_compound');
       }
     }).catch(() => {});
 

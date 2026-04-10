@@ -97,6 +97,11 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: 'wallsit_start',     category: 'endurance', tier: 'bronze',    icon: '🪑', target: 1,   xpReward: 10 },
   { id: 'wallsit_week',      category: 'endurance', tier: 'silver',    icon: '🪑', target: 7,   xpReward: 40 },
   { id: 'wallsit_month',     category: 'endurance', tier: 'gold',      icon: '🪑', target: 30,  xpReward: 250 },
+
+  // ── STREET COMPOUND ──
+  { id: 'street_start',      category: 'endurance', tier: 'bronze',    icon: '🏗️', target: 1,   xpReward: 15 },
+  { id: 'street_week',       category: 'endurance', tier: 'silver',    icon: '🏗️', target: 7,   xpReward: 50 },
+  { id: 'street_month',      category: 'endurance', tier: 'gold',      icon: '🏗️', target: 30,  xpReward: 300 },
 ];
 
 // ═══════════════════════════════════════════
@@ -125,6 +130,7 @@ export interface AchievementStats {
   morningRituals: number;
   plankDays: number;
   wallSitDays: number;
+  streetCompound: number;
 }
 
 const DEFAULT_STATS: AchievementStats = {
@@ -146,6 +152,7 @@ const DEFAULT_STATS: AchievementStats = {
   morningRituals: 0,
   plankDays: 0,
   wallSitDays: 0,
+  streetCompound: 0,
 };
 
 function getStats(): AchievementStats {
@@ -242,6 +249,10 @@ function checkAndUnlock(achievements: Achievement[], stats: AchievementStats): A
     wallsit_start: stats.wallSitDays,
     wallsit_week: stats.wallSitDays,
     wallsit_month: stats.wallSitDays,
+    // Street compound
+    street_start: stats.streetCompound,
+    street_week: stats.streetCompound,
+    street_month: stats.streetCompound,
   };
 
   let changed = false;
@@ -330,6 +341,9 @@ export function trackEvent(event: string, value?: number): void {
       break;
     case 'wallsit_complete':
       stats.wallSitDays++;
+      break;
+    case 'street_compound':
+      stats.streetCompound++;
       break;
   }
 
