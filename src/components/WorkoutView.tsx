@@ -118,11 +118,11 @@ const RECOMMENDED_WORKOUTS = [
     category: 'bodyweight',
     featured: true,
     exercises: [
-      { nameKey: 'workout.ex_pushups', sets: 2, reps: '30s' },
-      { nameKey: 'workout.ex_squats', sets: 2, reps: '30s' },
-      { nameKey: 'workout.ex_bird_dog', sets: 2, reps: '30s' },
-      { nameKey: 'workout.ex_static_hold', sets: 2, reps: '30s' },
-      { nameKey: 'workout.ex_plank', sets: 2, reps: '30s' },
+      { nameKey: 'workout.ex_pushups', sets: 2, reps: '30s', timed: true, timedSec: 30, descKey: 'workout.desc_pushups' },
+      { nameKey: 'workout.ex_squats', sets: 2, reps: '30s', timed: true, timedSec: 30, descKey: 'workout.desc_squats' },
+      { nameKey: 'workout.ex_bird_dog', sets: 2, reps: '30s', timed: true, timedSec: 30, descKey: 'workout.desc_bird_dog' },
+      { nameKey: 'workout.ex_static_hold', sets: 2, reps: '30s', timed: true, timedSec: 30, descKey: 'workout.desc_static' },
+      { nameKey: 'workout.ex_plank', sets: 2, reps: '30s', timed: true, timedSec: 30, descKey: 'workout.desc_plank' },
     ],
   },
   {
@@ -133,7 +133,7 @@ const RECOMMENDED_WORKOUTS = [
     category: 'bodyweight',
     featured: true,
     exercises: [
-      { nameKey: 'workout.ex_plank_2min', sets: 1, reps: '2 min' },
+      { nameKey: 'workout.ex_plank_2min', sets: 1, reps: '2 min', timed: true, timedSec: 120, descKey: 'workout.desc_plank_long' },
     ],
   },
   {
@@ -144,7 +144,7 @@ const RECOMMENDED_WORKOUTS = [
     category: 'bodyweight',
     featured: true,
     exercises: [
-      { nameKey: 'workout.ex_wall_sit_hold', sets: 1, reps: '1-2 min' },
+      { nameKey: 'workout.ex_wall_sit_hold', sets: 1, reps: '1-2 min', timed: true, timedSec: 90, descKey: 'workout.desc_wallsit' },
     ],
   },
   {
@@ -630,6 +630,9 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
         name: t(ex.nameKey),
         targetSets: ex.sets,
         targetReps: ex.reps,
+        isTimedExercise: (ex as any).timed || false,
+        timedDuration: (ex as any).timedSec || undefined,
+        videoUrl: EXERCISE_VIDEOS[ex.nameKey] ? `https://youtube.com/watch?v=${EXERCISE_VIDEOS[ex.nameKey]}` : undefined,
       })),
       // Auto-assign daily programs to all weekdays
       weekdays: (rec as any).featured ? [0,1,2,3,4,5,6] : undefined,
@@ -1160,6 +1163,27 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                         )}
                       </div>
                     </button>
+
+                    {/* Timed exercise: show timer + description */}
+                    {isExpanded && activeRoutine?.exercises[exIdx]?.isTimedExercise && (
+                      <div className="px-5 py-4 space-y-3 animate-in fade-in duration-200" style={{ borderBottom: `1px solid ${V.border}` }}>
+                        {/* Description */}
+                        {activeRoutine?.exercises[exIdx]?.isTimedExercise && (
+                          <p className="text-xs leading-5 italic" style={{ color: V.textSecondary }}>
+                            {t(`workout.desc_${exercise.exerciseName.toLowerCase().replace(/[^a-zа-яё]/g, '_').replace(/_+/g, '_')}`) !== `workout.desc_${exercise.exerciseName.toLowerCase().replace(/[^a-zа-яё]/g, '_').replace(/_+/g, '_')}`
+                              ? t(`workout.desc_${exercise.exerciseName.toLowerCase().replace(/[^a-zа-яё]/g, '_').replace(/_+/g, '_')}`)
+                              : isRu ? 'Удерживай позицию с правильной формой. Дыши ровно.' : 'Hold the position with proper form. Breathe steadily.'}
+                          </p>
+                        )}
+                        {/* Timer button */}
+                        <button onClick={() => startExerciseTimer(activeRoutine.exercises[exIdx].timedDuration || 30)}
+                          className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                          style={{ background: 'linear-gradient(135deg, #D8C18E, #B89B5E)', color: '#0A0A0F' }}>
+                          <Timer className="w-4 h-4" />
+                          {isRu ? `Старт таймер ${activeRoutine.exercises[exIdx].timedDuration || 30}с` : `Start ${activeRoutine.exercises[exIdx].timedDuration || 30}s Timer`}
+                        </button>
+                      </div>
+                    )}
 
                     {/* Sets */}
                     {isExpanded && (
