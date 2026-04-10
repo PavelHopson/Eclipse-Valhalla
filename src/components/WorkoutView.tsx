@@ -631,6 +631,9 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
         targetSets: ex.sets,
         targetReps: ex.reps,
       })),
+      // Auto-assign daily programs to all weekdays
+      weekdays: (rec as any).featured ? [0,1,2,3,4,5,6] : undefined,
+      restSeconds: 60,
     };
     setRoutines(prev => [...prev, routine]);
     setActiveTab('routines');
@@ -1515,9 +1518,22 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                         if (video) setVideoPlayback(video);
                       }}
                         className="w-full py-3 font-bold flex items-center justify-center gap-2 text-sm transition-all"
-                        style={{ backgroundColor: `${V.accent}10`, color: V.accent, borderBottom: `1px solid ${V.border}` }}>
+                        style={{ backgroundColor: 'rgba(93,174,255,0.1)', color: '#5DAEFF', borderBottom: '1px solid #1E1E2E' }}>
                         <Video className="w-4 h-4" />
                         {isRu ? 'Смотреть видео' : 'Watch Video'}
+                      </button>
+                    )}
+
+                    {/* Assign to calendar */}
+                    {!routine.weekdays?.length && (
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        // Assign to all weekdays (Mon-Fri)
+                        setRoutines(prev => prev.map(r => r.id === routine.id ? { ...r, weekdays: [1,2,3,4,5] } : r));
+                      }}
+                        className="w-full py-2.5 font-bold flex items-center justify-center gap-2 text-xs transition-all"
+                        style={{ backgroundColor: `${V.orange}10`, color: V.orange, borderBottom: `1px solid ${V.border}` }}>
+                        📅 {isRu ? 'Назначить на Пн-Пт' : 'Assign Mon-Fri'}
                       </button>
                     )}
 
@@ -1525,9 +1541,9 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                     <button onClick={() => startWorkout(routine)}
                       className="w-full py-3.5 font-bold flex items-center justify-center gap-2 text-sm transition-all hover:brightness-110 active:scale-[0.98]"
                       style={{
-                        backgroundColor: V.accent,
-                        color: V.bg0,
-                        boxShadow: `0 4px 16px ${V.accent}25`,
+                        background: 'linear-gradient(135deg, #FF6B35, #FF4444)',
+                        color: '#FFFFFF',
+                        boxShadow: '0 4px 16px rgba(255,107,53,0.25)',
                       }}>
                       <Play className="w-4 h-4" />
                       {t('workout.start')}
