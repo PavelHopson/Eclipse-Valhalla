@@ -93,6 +93,9 @@ const EXERCISE_VIDEOS: Record<string, string> = {
   // Morning Ritual
   'workout.ex_bird_dog': 'wiFNA3sqjCA',          // Bird Dog
   'workout.ex_static_hold': 'ASdvN_XEl_c',       // Static hold (like plank variation)
+  // Daily challenges
+  'workout.ex_plank_2min': 'ASdvN_XEl_c',        // 2-min plank hold
+  'workout.ex_wall_sit_hold': 'y-wV4Lz6wJU',     // Wall sit hold
 };
 
 const RECOMMENDED_WORKOUTS = [
@@ -109,6 +112,28 @@ const RECOMMENDED_WORKOUTS = [
       { nameKey: 'workout.ex_bird_dog', sets: 2, reps: '30s' },
       { nameKey: 'workout.ex_static_hold', sets: 2, reps: '30s' },
       { nameKey: 'workout.ex_plank', sets: 2, reps: '30s' },
+    ],
+  },
+  {
+    nameKey: 'workout.rec_plank_daily',
+    descKey: 'workout.rec_plank_daily_desc',
+    icon: Target,
+    gradient: 'from-[#FF4444] to-[#D8C18E]',
+    category: 'bodyweight',
+    featured: true,
+    exercises: [
+      { nameKey: 'workout.ex_plank_2min', sets: 1, reps: '2 min' },
+    ],
+  },
+  {
+    nameKey: 'workout.rec_wallsit_daily',
+    descKey: 'workout.rec_wallsit_daily_desc',
+    icon: Award,
+    gradient: 'from-[#5DAEFF] to-[#8878C8]',
+    category: 'bodyweight',
+    featured: true,
+    exercises: [
+      { nameKey: 'workout.ex_wall_sit_hold', sets: 1, reps: '1-2 min' },
     ],
   },
   {
@@ -630,6 +655,14 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       // Morning Ritual achievement
       if (activeRoutine.name.includes('Ритуал') || activeRoutine.name.includes('Ritual') || activeRoutine.name.includes('ritual')) {
         trackEvent('morning_ritual');
+      }
+      // Plank challenge
+      if (activeRoutine.name.includes('Планка') || activeRoutine.name.includes('Plank') || activeRoutine.name.includes('plank')) {
+        trackEvent('plank_complete');
+      }
+      // Wall Sit challenge
+      if (activeRoutine.name.includes('Стульчик') || activeRoutine.name.includes('Wall Sit') || activeRoutine.name.includes('wall sit')) {
+        trackEvent('wallsit_complete');
       }
     }).catch(() => {});
 

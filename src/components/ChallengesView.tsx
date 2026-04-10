@@ -29,6 +29,9 @@ const PRESETS_RU = [
   { title: '10 квестов за неделю', target: 10, unit: 'квестов', category: 'productivity' as const, days: 7 },
   { title: '5 тренировок за месяц', target: 5, unit: 'тренировок', category: 'fitness' as const, days: 30 },
   { title: '2 литра воды каждый день', target: 14, unit: 'дней', category: 'habits' as const, days: 14 },
+  { title: '🧱 Планка 2 минуты — 30 дней', target: 30, unit: 'дней', category: 'fitness' as const, days: 30 },
+  { title: '🪑 Стульчик у стены — 30 дней', target: 30, unit: 'дней', category: 'fitness' as const, days: 30 },
+  { title: '⚡ Утренний ритуал — 30 дней', target: 30, unit: 'дней', category: 'fitness' as const, days: 30 },
 ];
 const PRESETS_EN = [
   { title: '7-day streak', target: 7, unit: 'days', category: 'habits' as const, days: 7 },
@@ -37,6 +40,9 @@ const PRESETS_EN = [
   { title: '10 quests this week', target: 10, unit: 'quests', category: 'productivity' as const, days: 7 },
   { title: '5 workouts this month', target: 5, unit: 'workouts', category: 'fitness' as const, days: 30 },
   { title: 'Drink water daily (2 weeks)', target: 14, unit: 'days', category: 'habits' as const, days: 14 },
+  { title: '🧱 Plank 2 min — 30 days', target: 30, unit: 'days', category: 'fitness' as const, days: 30 },
+  { title: '🪑 Wall Sit — 30 days', target: 30, unit: 'days', category: 'fitness' as const, days: 30 },
+  { title: '⚡ Morning Ritual — 30 days', target: 30, unit: 'days', category: 'fitness' as const, days: 30 },
 ];
 
 function load(): Challenge[] { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }

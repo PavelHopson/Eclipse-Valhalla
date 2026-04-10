@@ -87,6 +87,16 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: 'ritual_week',       category: 'endurance', tier: 'silver',    icon: '⚡', target: 7,   xpReward: 50 },
   { id: 'ritual_month',      category: 'endurance', tier: 'gold',      icon: '🏛️', target: 30,  xpReward: 300 },
   { id: 'ritual_legend',     category: 'endurance', tier: 'legendary', icon: '👑', target: 100, xpReward: 1000 },
+
+  // ── PLANK CHALLENGE ──
+  { id: 'plank_start',       category: 'endurance', tier: 'bronze',    icon: '🧱', target: 1,   xpReward: 10 },
+  { id: 'plank_week',        category: 'endurance', tier: 'silver',    icon: '🧱', target: 7,   xpReward: 40 },
+  { id: 'plank_month',       category: 'endurance', tier: 'gold',      icon: '🧱', target: 30,  xpReward: 250 },
+
+  // ── WALL SIT CHALLENGE ──
+  { id: 'wallsit_start',     category: 'endurance', tier: 'bronze',    icon: '🪑', target: 1,   xpReward: 10 },
+  { id: 'wallsit_week',      category: 'endurance', tier: 'silver',    icon: '🪑', target: 7,   xpReward: 40 },
+  { id: 'wallsit_month',     category: 'endurance', tier: 'gold',      icon: '🪑', target: 30,  xpReward: 250 },
 ];
 
 // ═══════════════════════════════════════════
@@ -113,6 +123,8 @@ export interface AchievementStats {
   languageSwitched: boolean;
   lastQuestDate: string;
   morningRituals: number;
+  plankDays: number;
+  wallSitDays: number;
 }
 
 const DEFAULT_STATS: AchievementStats = {
@@ -132,6 +144,8 @@ const DEFAULT_STATS: AchievementStats = {
   languageSwitched: false,
   lastQuestDate: '',
   morningRituals: 0,
+  plankDays: 0,
+  wallSitDays: 0,
 };
 
 function getStats(): AchievementStats {
@@ -220,6 +234,14 @@ function checkAndUnlock(achievements: Achievement[], stats: AchievementStats): A
     ritual_week: stats.morningRituals,
     ritual_month: stats.morningRituals,
     ritual_legend: stats.morningRituals,
+    // Plank
+    plank_start: stats.plankDays,
+    plank_week: stats.plankDays,
+    plank_month: stats.plankDays,
+    // Wall Sit
+    wallsit_start: stats.wallSitDays,
+    wallsit_week: stats.wallSitDays,
+    wallsit_month: stats.wallSitDays,
   };
 
   let changed = false;
@@ -302,6 +324,12 @@ export function trackEvent(event: string, value?: number): void {
       break;
     case 'morning_ritual':
       stats.morningRituals++;
+      break;
+    case 'plank_complete':
+      stats.plankDays++;
+      break;
+    case 'wallsit_complete':
+      stats.wallSitDays++;
       break;
   }
 
