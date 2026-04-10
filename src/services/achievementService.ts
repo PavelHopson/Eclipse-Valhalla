@@ -81,6 +81,12 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: 'workout_warrior',   category: 'mastery', tier: 'silver',    icon: '💪', target: 10,  xpReward: 50 },
   { id: 'forge_master',      category: 'mastery', tier: 'gold',      icon: '🔨', target: 10,  xpReward: 75 },
   { id: 'polyglot',          category: 'mastery', tier: 'bronze',    icon: '🌐', target: 1,   xpReward: 10 },
+
+  // ── MORNING RITUAL ──
+  { id: 'ritual_start',      category: 'endurance', tier: 'bronze',    icon: '🌅', target: 1,   xpReward: 15 },
+  { id: 'ritual_week',       category: 'endurance', tier: 'silver',    icon: '⚡', target: 7,   xpReward: 50 },
+  { id: 'ritual_month',      category: 'endurance', tier: 'gold',      icon: '🏛️', target: 30,  xpReward: 300 },
+  { id: 'ritual_legend',     category: 'endurance', tier: 'legendary', icon: '👑', target: 100, xpReward: 1000 },
 ];
 
 // ═══════════════════════════════════════════
@@ -106,6 +112,7 @@ export interface AchievementStats {
   featuresUsed: Set<string> | string[];
   languageSwitched: boolean;
   lastQuestDate: string;
+  morningRituals: number;
 }
 
 const DEFAULT_STATS: AchievementStats = {
@@ -124,6 +131,7 @@ const DEFAULT_STATS: AchievementStats = {
   featuresUsed: [],
   languageSwitched: false,
   lastQuestDate: '',
+  morningRituals: 0,
 };
 
 function getStats(): AchievementStats {
@@ -207,6 +215,11 @@ function checkAndUnlock(achievements: Achievement[], stats: AchievementStats): A
     workout_warrior: stats.workoutsCompleted,
     forge_master: stats.imagesGenerated,
     polyglot: stats.languageSwitched ? 1 : 0,
+    // Morning Ritual
+    ritual_start: stats.morningRituals,
+    ritual_week: stats.morningRituals,
+    ritual_month: stats.morningRituals,
+    ritual_legend: stats.morningRituals,
   };
 
   let changed = false;
@@ -286,6 +299,9 @@ export function trackEvent(event: string, value?: number): void {
       break;
     case 'daily_reset':
       stats.questsCompletedToday = 0;
+      break;
+    case 'morning_ritual':
+      stats.morningRituals++;
       break;
   }
 

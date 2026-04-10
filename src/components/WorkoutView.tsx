@@ -90,9 +90,27 @@ const EXERCISE_VIDEOS: Record<string, string> = {
   'workout.ex_warmup_jog': 'dSfx4Nt4cHU',       // Easy warm-up jog
   'workout.ex_sprint_intervals': 'R0mMyV0pOYs',  // Sprint intervals
   'workout.ex_cooldown_walk': 'njeZ29umqVE',     // Cool-down walk + stretch
+  // Morning Ritual
+  'workout.ex_bird_dog': 'wiFNA3sqjCA',          // Bird Dog
+  'workout.ex_static_hold': 'ASdvN_XEl_c',       // Static hold (like plank variation)
 };
 
 const RECOMMENDED_WORKOUTS = [
+  {
+    nameKey: 'workout.rec_ritual',
+    descKey: 'workout.rec_ritual_desc',
+    icon: Zap,
+    gradient: 'from-[#D8C18E] to-[#B89B5E]',
+    category: 'bodyweight',
+    featured: true,
+    exercises: [
+      { nameKey: 'workout.ex_pushups', sets: 2, reps: '30s' },
+      { nameKey: 'workout.ex_squats', sets: 2, reps: '30s' },
+      { nameKey: 'workout.ex_bird_dog', sets: 2, reps: '30s' },
+      { nameKey: 'workout.ex_static_hold', sets: 2, reps: '30s' },
+      { nameKey: 'workout.ex_plank', sets: 2, reps: '30s' },
+    ],
+  },
   {
     nameKey: 'workout.rec_fullbody',
     descKey: 'workout.rec_fullbody_desc',
@@ -609,6 +627,10 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     import('../services/achievementService').then(({ trackEvent }) => {
       trackEvent('workout_complete');
       trackEvent('feature_use', 'workouts' as unknown as number);
+      // Morning Ritual achievement
+      if (activeRoutine.name.includes('Ритуал') || activeRoutine.name.includes('Ritual') || activeRoutine.name.includes('ritual')) {
+        trackEvent('morning_ritual');
+      }
     }).catch(() => {});
 
     // Save active session state
