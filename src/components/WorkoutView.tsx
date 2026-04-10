@@ -96,6 +96,10 @@ const EXERCISE_VIDEOS: Record<string, string> = {
   // Daily challenges
   'workout.ex_plank_2min': 'ASdvN_XEl_c',        // 2-min plank hold
   'workout.ex_wall_sit_hold': 'y-wV4Lz6wJU',     // Wall sit hold
+  // Legs power
+  'workout.ex_squats_power': 'aclHkVaku9U',       // Power squats
+  'workout.ex_squats_slow': 'aclHkVaku9U',        // Slow tempo squats
+  'workout.ex_calf_raises': 'gwLzBJksFhY',        // Calf raises standing
 };
 
 const RECOMMENDED_WORKOUTS = [
@@ -134,6 +138,20 @@ const RECOMMENDED_WORKOUTS = [
     featured: true,
     exercises: [
       { nameKey: 'workout.ex_wall_sit_hold', sets: 1, reps: '1-2 min' },
+    ],
+  },
+  {
+    nameKey: 'workout.rec_legs_power',
+    descKey: 'workout.rec_legs_power_desc',
+    icon: Flame,
+    gradient: 'from-[#FF4444] to-[#FF6B35]',
+    category: 'bodyweight',
+    featured: true,
+    exercises: [
+      { nameKey: 'workout.ex_squats_power', sets: 4, reps: '25' },
+      { nameKey: 'workout.ex_squats_slow', sets: 3, reps: '20 (2s вниз, 1s вверх)' },
+      { nameKey: 'workout.ex_glute_bridge', sets: 4, reps: '15' },
+      { nameKey: 'workout.ex_calf_raises', sets: 4, reps: '25' },
     ],
   },
   {
