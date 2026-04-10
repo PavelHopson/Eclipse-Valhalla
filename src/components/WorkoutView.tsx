@@ -1391,12 +1391,10 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                       const jsDay = idx === 6 ? 0 : idx + 1;
                       const routine = routines.find(r => r.weekdays?.includes(jsDay));
                       const isToday = idx === todayIdx;
-                      const isDone = logs.some(l => {
+                      // Only mark done for TODAY's actual day, not all days
+                      const isDone = isToday && logs.some(l => {
                         const logDate = new Date(l.date);
-                        const now = new Date();
-                        const isToday = logDate.toDateString() === now.toDateString();
-                        const isThisWeek = Math.abs(now.getTime() - logDate.getTime()) < 7 * 86400000;
-                        return isToday && l.routineName === routine?.name;
+                        return logDate.toDateString() === new Date().toDateString() && l.routineName === routine?.name;
                       });
 
                       return (
