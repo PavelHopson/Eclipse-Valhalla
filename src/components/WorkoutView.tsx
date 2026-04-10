@@ -1168,13 +1168,19 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                     {isExpanded && activeRoutine?.exercises[exIdx]?.isTimedExercise && (
                       <div className="px-5 py-4 space-y-3 animate-in fade-in duration-200" style={{ borderBottom: `1px solid ${V.border}` }}>
                         {/* Description */}
-                        {activeRoutine?.exercises[exIdx]?.isTimedExercise && (
-                          <p className="text-xs leading-5 italic" style={{ color: V.textSecondary }}>
-                            {t(`workout.desc_${exercise.exerciseName.toLowerCase().replace(/[^a-zа-яё]/g, '_').replace(/_+/g, '_')}`) !== `workout.desc_${exercise.exerciseName.toLowerCase().replace(/[^a-zа-яё]/g, '_').replace(/_+/g, '_')}`
-                              ? t(`workout.desc_${exercise.exerciseName.toLowerCase().replace(/[^a-zа-яё]/g, '_').replace(/_+/g, '_')}`)
-                              : isRu ? 'Удерживай позицию с правильной формой. Дыши ровно.' : 'Hold the position with proper form. Breathe steadily.'}
-                          </p>
-                        )}
+                        <p className="text-xs leading-5 italic" style={{ color: V.textSecondary }}>
+                          {(() => {
+                            // Try common description keys
+                            const name = exercise.exerciseName.toLowerCase();
+                            if (name.includes('отжимани') || name.includes('push')) return t('workout.desc_pushups');
+                            if (name.includes('присед') || name.includes('squat')) return t('workout.desc_squats');
+                            if (name.includes('bird') || name.includes('четверен')) return t('workout.desc_bird_dog');
+                            if (name.includes('статик') || name.includes('static') || name.includes('удерж')) return t('workout.desc_static');
+                            if (name.includes('планк') || name.includes('plank')) return t('workout.desc_plank');
+                            if (name.includes('стульч') || name.includes('wall sit')) return t('workout.desc_wallsit');
+                            return isRu ? 'Удерживай позицию с правильной формой. Дыши ровно.' : 'Hold the position with proper form. Breathe steadily.';
+                          })()}
+                        </p>
                         {/* Timer button */}
                         <button onClick={() => startExerciseTimer(activeRoutine.exercises[exIdx].timedDuration || 30)}
                           className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
@@ -1182,11 +1188,25 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                           <Timer className="w-4 h-4" />
                           {isRu ? `Старт таймер ${activeRoutine.exercises[exIdx].timedDuration || 30}с` : `Start ${activeRoutine.exercises[exIdx].timedDuration || 30}s Timer`}
                         </button>
+
+                        {/* Complete buttons for each round */}
+                        <div className="flex gap-2">
+                          {exercise.sets.map((set, setIdx) => (
+                            <button key={setIdx} onClick={() => toggleSetComplete(exIdx, setIdx)}
+                              className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all"
+                              style={set.completed
+                                ? { backgroundColor: '#4ADE8020', color: '#4ADE80', border: '1px solid #4ADE8030' }
+                                : { backgroundColor: '#1A1A26', color: '#7F7A72', border: '1px solid #2A2A3C' }
+                              }>
+                              {set.completed ? '✅' : ''} {isRu ? `Круг ${setIdx + 1}` : `Round ${setIdx + 1}`}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
 
-                    {/* Sets */}
-                    {isExpanded && (
+                    {/* Sets — hidden for timed exercises */}
+                    {isExpanded && !activeRoutine?.exercises[exIdx]?.isTimedExercise && (
                       <div className="p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                         {/* Column headers */}
                         <div className="flex items-center gap-2 px-2 pb-1"
