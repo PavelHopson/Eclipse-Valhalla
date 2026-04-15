@@ -9,7 +9,7 @@
 // PROVIDER IDENTITY
 // ═══════════════════════════════════════════
 
-export type AIProviderType = 'gemini' | 'openai' | 'anthropic' | 'custom';
+export type AIProviderType = 'gemini' | 'openai' | 'anthropic' | 'nvidia' | 'custom';
 
 export interface AIProviderConfig {
   id: string;
@@ -130,6 +130,7 @@ export const DEFAULT_MODELS: Record<AIProviderType, string> = {
   gemini: 'gemini-2.5-flash-preview-05-20',
   openai: 'gpt-4o-mini',
   anthropic: 'claude-sonnet-4-20250514',
+  nvidia: 'nvidia/llama-3.3-nemotron-super-49b-v1',
   custom: '',
 };
 
@@ -137,5 +138,8 @@ export const PROVIDER_CAPABILITIES: Record<AIProviderType, AICapability[]> = {
   gemini: ['chat', 'planning', 'analysis', 'summarization', 'classification', 'image', 'tts', 'enrichment'],
   openai: ['chat', 'planning', 'analysis', 'summarization', 'classification', 'image', 'enrichment'],
   anthropic: ['chat', 'planning', 'analysis', 'summarization', 'classification', 'enrichment'],
+  nvidia: ['chat', 'planning', 'analysis', 'summarization', 'classification', 'enrichment'],
   custom: ['chat', 'planning', 'analysis', 'summarization', 'classification', 'enrichment'],
 };
+
+export const NVIDIA_NIM_BASE_URL = 'https://integrate.api.nvidia.com/v1';

@@ -15,6 +15,7 @@ const PROVIDER_LABELS: Record<AIProviderType, string> = {
   gemini: 'Google Gemini',
   openai: 'OpenAI / Compatible',
   anthropic: 'Anthropic Claude',
+  nvidia: 'NVIDIA NIM',
   custom: 'Custom Endpoint',
 };
 

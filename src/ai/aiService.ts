@@ -17,6 +17,7 @@ import {
 import { geminiAdapter } from './adapters/geminiAdapter';
 import { openaiAdapter } from './adapters/openaiAdapter';
 import { anthropicAdapter } from './adapters/anthropicAdapter';
+import { nvidiaAdapter } from './adapters/nvidiaAdapter';
 import { encryptValue, decryptValue } from '../services/cryptoService';
 
 // ═══════════════════════════════════════════
@@ -27,6 +28,7 @@ const ADAPTERS: Record<AIProviderType, AIAdapter> = {
   gemini: geminiAdapter,
   openai: openaiAdapter,
   anthropic: anthropicAdapter,
+  nvidia: nvidiaAdapter,
   custom: openaiAdapter, // Custom endpoints use OpenAI-compatible API
 };
 
