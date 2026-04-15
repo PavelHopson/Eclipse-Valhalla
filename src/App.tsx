@@ -8,6 +8,7 @@ import { LanguageProvider, useLanguage } from './i18n';
 import { api } from './services/storageService';
 import TitleBar from './components/TitleBar';
 import UpdateNotification from './components/UpdateNotification';
+import { AppErrorBoundary } from './app/AppErrorBoundary';
 import './services/backupService'; // Auto-backup on load
 import './services/themeService';  // Apply saved theme on load
 
@@ -917,40 +918,6 @@ const AppContent: React.FC = () => {
     </div>
   );
 };
-
-// ═══════════════════════════════════════════
-// ERROR BOUNDARY
-// ═══════════════════════════════════════════
-
-class AppErrorBoundary extends React.Component<{children: React.ReactNode}, {error: Error | null}> {
-  state = { error: null as Error | null };
-  static getDerivedStateFromError(error: Error) { return { error }; }
-  componentDidCatch(error: Error) { console.error('[Eclipse Valhalla] Fatal:', error); }
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{background:'#0A0A0F',color:'#E8E8F0',height:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',fontFamily:'Inter,sans-serif',padding:32}}>
-          <h1 style={{fontSize:24,fontWeight:'bold',marginBottom:8}}>Eclipse Valhalla</h1>
-          <p style={{color:'#FF4444',marginBottom:16}}>{navigator.language?.startsWith('ru') ? 'Ошибка системы.' : 'System error.'}</p>
-          <p style={{color:'#55556A',fontSize:12,marginBottom:24,maxWidth:400,textAlign:'center'}}>{String(this.state.error?.message || '')}</p>
-          <button onClick={() => {
-            // Only clear Valhalla-specific data
-            const keysToRemove: string[] = [];
-            for (let i = 0; i < localStorage.length; i++) {
-              const key = localStorage.key(i);
-              if (key && (key.startsWith('eclipse_') || key.startsWith('lumina_') || key.startsWith('reminders_') || key.startsWith('notes_') || key.startsWith('routines_') || key.startsWith('workout_'))) {
-                keysToRemove.push(key);
-              }
-            }
-            keysToRemove.forEach(k => localStorage.removeItem(k));
-            window.location.href = '/';
-          }} style={{background:'#5DAEFF',color:'#0A0A0F',border:'none',padding:'12px 24px',borderRadius:12,fontWeight:'bold',cursor:'pointer'}}>{navigator.language?.startsWith('ru') ? 'Сброс и перезагрузка' : 'Reset & Reload'}</button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 // Import toast container
 import { ToastContainer } from './design';
