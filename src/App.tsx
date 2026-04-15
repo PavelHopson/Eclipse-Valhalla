@@ -20,6 +20,8 @@ import {
 import { pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
 import { trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
 import { useBootstrap } from './hooks/useBootstrap';
+import { useAchievementToasts } from './hooks/useAchievementToasts';
+import { useFeatureTracking } from './hooks/useFeatureTracking';
 import './services/backupService'; // Auto-backup on load
 import './services/themeService';  // Apply saved theme on load
 
@@ -139,46 +141,11 @@ const AppContent: React.FC = () => {
   const [weeklySummary, setWeeklySummary] = useState<any>(null);
   const [antiBurnout, setAntiBurnout] = useState<string | null>(null);
 
-  // Achievement toast
-  const [achievementToast, setAchievementToast] = useState<{ text: string; xp: number } | null>(null);
-
-  useEffect(() => {
-    import('./services/achievementService').then(({ onAchievementUnlock }) => {
-      onAchievementUnlock((achievement) => {
-        const name = t(`achievements.${achievement.id}`);
-        setAchievementToast({ text: name, xp: achievement.xpReward });
-        import('./utils').then(({ playAchievementSound }) => playAchievementSound()).catch(() => {});
-
-        // Auto-add XP from achievement
-        setUser(prev => {
-          const newXp = (prev.xp || 0) + achievement.xpReward;
-          const newLevel = Math.floor(newXp / 100) + 1;
-          const updatedUser = { ...prev, xp: newXp, level: newLevel };
-          api.updateUser(prev.id, { xp: newXp, level: newLevel });
-          localStorage.setItem('lumina_active_session', JSON.stringify(updatedUser));
-          return updatedUser;
-        });
-
-        setTimeout(() => setAchievementToast(null), 4000);
-      });
-    }).catch(() => {});
-  }, []);
+  // Achievement toast — subscription, XP credit, persistence, auto-hide
+  const achievementToast = useAchievementToasts({ t, setUser });
 
   // Track feature usage for achievements
-  useEffect(() => {
-    if (!isDataLoaded) return;
-    const featureMap: Record<string, string> = {
-      dashboard: 'dashboard', reminders: 'quests', workouts: 'workouts',
-      oracle: 'oracle', nexus: 'news', stickers: 'notes', calendar: 'calendar',
-      achievements: 'achievements', image: 'image', tts: 'tts',
-    };
-    const feature = featureMap[currentView];
-    if (feature) {
-      import('./services/achievementService').then(({ trackEvent }) => {
-        trackEvent('feature_use', feature as any);
-      }).catch(() => {});
-    }
-  }, [currentView, isDataLoaded]);
+  useFeatureTracking({ currentView, isDataLoaded });
 
   const pendingReminders = reminders.filter(r => !r.isCompleted);
   const overdueReminders = pendingReminders.filter(r => new Date(r.dueDateTime) < new Date());
