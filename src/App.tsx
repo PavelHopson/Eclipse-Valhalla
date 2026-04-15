@@ -1,14 +1,27 @@
 
 import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
+import { X, Loader2 } from 'lucide-react';
 import { Reminder, Note, ViewMode, RepeatType, Priority, User, Category, Routine, WorkoutLog, PlanTier, ReminderStatus } from './types';
 import { generateId, toLocalISOString } from './utils';
-import { X, Loader2 } from 'lucide-react';
 import { Seal } from './brand/Seal';
 import { LanguageProvider, useLanguage } from './i18n';
 import { api } from './services/storageService';
 import TitleBar from './components/TitleBar';
 import UpdateNotification from './components/UpdateNotification';
+import { OnboardingTip } from './components/OnboardingTips';
+import { ToastContainer } from './design';
 import { AppErrorBoundary } from './app/AppErrorBoundary';
+import {
+  QUEST_TEMPLATES_STORAGE_KEY,
+  QuestTemplate,
+  buildDefaultQuestTemplates,
+  loadQuestTemplates,
+} from './constants/questTemplates';
+import { pmfSessionStart, pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
+import { trackSessionStart, trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
+import { recordSession, checkCriticalQuests, dispatchAlerts } from './services/retentionService';
+import { getDailyStats, getMode, setMode as setDisciplineMode } from './services/disciplineMode';
+import { recordDay, getDailyComparison, getWeeklySummary, getAntiBurnoutMessage } from './services/progressionService';
 import './services/backupService'; // Auto-backup on load
 import './services/themeService';  // Apply saved theme on load
 
@@ -38,7 +51,11 @@ const ChallengesView = lazy(() => import('./components/ChallengesView'));
 const FeatureGuide = lazy(() => import('./components/OnboardingTips').then(m => ({ default: m.FeatureGuide })));
 const AnalyticsView = lazy(() => import('./components/AnalyticsView'));
 
-import { OnboardingTip } from './components/OnboardingTips';
+// Lazy-load growth components
+const QuickQuestInput = lazy(() => import('./components/QuickQuestInput'));
+const FeedbackPanel = lazy(() => import('./components/FeedbackPanel'));
+const AIProviderSettings = lazy(() => import('./components/AIProviderSettings'));
+const ReturnOverlay = lazy(() => import('./components/ReturnOverlay'));
 
 const LoadingScreen = () => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-[#050508]">
@@ -96,25 +113,10 @@ const AppContent: React.FC = () => {
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
-  // Quest templates
-  const DEFAULT_TEMPLATES = [
-    { id: 'tmpl_morning', title: isRU ? 'Утренняя рутина' : 'Morning Routine', desc: isRU ? 'Зарядка, душ, завтрак' : 'Exercise, shower, breakfast', priority: 'Medium', category: 'Health', repeat: 'daily' },
-    { id: 'tmpl_workout', title: isRU ? 'Тренировка' : 'Workout', desc: '', priority: 'High', category: 'Health', repeat: 'none' },
-    { id: 'tmpl_read', title: isRU ? 'Чтение 30 минут' : 'Read 30 minutes', desc: isRU ? 'Книга или статьи по специальности' : 'Book or professional articles', priority: 'Low', category: 'Education', repeat: 'daily' },
-    { id: 'tmpl_water', title: isRU ? 'Выпить 2л воды' : 'Drink 2L water', desc: '', priority: 'Medium', category: 'Health', repeat: 'daily' },
-    { id: 'tmpl_report', title: isRU ? 'Отчёт по работе' : 'Work report', desc: '', priority: 'High', category: 'Work', repeat: 'weekly' },
-    { id: 'tmpl_clean', title: isRU ? 'Уборка' : 'Cleaning', desc: '', priority: 'Low', category: 'Personal', repeat: 'weekly' },
-    { id: 'tmpl_plan', title: isRU ? 'Планирование недели' : 'Weekly planning', desc: isRU ? 'Цели, приоритеты, дедлайны' : 'Goals, priorities, deadlines', priority: 'High', category: 'Work', repeat: 'weekly' },
-    { id: 'tmpl_budget', title: isRU ? 'Проверить бюджет' : 'Check budget', desc: '', priority: 'Medium', category: 'Finance', repeat: 'monthly' },
-  ];
-
-  const [questTemplates, setQuestTemplates] = useState<any[]>(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('eclipse_quest_templates') || '[]');
-      if (saved.length > 0) return saved;
-      return DEFAULT_TEMPLATES;
-    } catch { return DEFAULT_TEMPLATES; }
-  });
+  const defaultQuestTemplates = useMemo(() => buildDefaultQuestTemplates(isRU), [isRU]);
+  const [questTemplates, setQuestTemplates] = useState<QuestTemplate[]>(() =>
+    loadQuestTemplates(buildDefaultQuestTemplates(isRU)),
+  );
 
   // Modal state
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
@@ -378,7 +380,7 @@ const AppContent: React.FC = () => {
   // Save quest templates
   useEffect(() => {
     if (!isDataLoaded) return;
-    localStorage.setItem('eclipse_quest_templates', JSON.stringify(questTemplates));
+    localStorage.setItem(QUEST_TEMPLATES_STORAGE_KEY, JSON.stringify(questTemplates));
   }, [questTemplates, isDataLoaded]);
 
   // Keyboard shortcut
@@ -741,7 +743,7 @@ const AppContent: React.FC = () => {
                     <label className="text-[10px] font-bold uppercase tracking-wider text-[#55556A]">
                       {isRU ? 'Шаблоны' : 'Templates'}
                     </label>
-                    <button type="button" onClick={() => setQuestTemplates(DEFAULT_TEMPLATES)}
+                    <button type="button" onClick={() => setQuestTemplates(defaultQuestTemplates)}
                       className="text-[9px] font-bold text-[#3A3A4A] hover:text-[#55556A] transition-colors uppercase tracking-wider">
                       {isRU ? 'Сбросить' : 'Reset'}
                     </button>
@@ -918,20 +920,6 @@ const AppContent: React.FC = () => {
     </div>
   );
 };
-
-// Import toast container
-import { ToastContainer } from './design';
-import { pmfSessionStart, pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
-import { trackSessionStart, trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
-import { recordSession, checkCriticalQuests, dispatchAlerts } from './services/retentionService';
-import { getDailyStats, getMode, setMode as setDisciplineMode } from './services/disciplineMode';
-import { recordDay, getDailyComparison, getWeeklySummary, getAntiBurnoutMessage } from './services/progressionService';
-
-// Lazy-load growth components
-const QuickQuestInput = lazy(() => import('./components/QuickQuestInput'));
-const FeedbackPanel = lazy(() => import('./components/FeedbackPanel'));
-const AIProviderSettings = lazy(() => import('./components/AIProviderSettings'));
-const ReturnOverlay = lazy(() => import('./components/ReturnOverlay'));
 
 const App = () => (
   <AppErrorBoundary>
