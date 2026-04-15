@@ -17,11 +17,9 @@ import {
   buildDefaultQuestTemplates,
   loadQuestTemplates,
 } from './constants/questTemplates';
-import { pmfSessionStart, pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
-import { trackSessionStart, trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
-import { recordSession, checkCriticalQuests, dispatchAlerts } from './services/retentionService';
-import { getDailyStats, getMode, setMode as setDisciplineMode } from './services/disciplineMode';
-import { recordDay, getDailyComparison, getWeeklySummary, getAntiBurnoutMessage } from './services/progressionService';
+import { pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
+import { trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
+import { useBootstrap } from './hooks/useBootstrap';
 import './services/backupService'; // Auto-backup on load
 import './services/themeService';  // Apply saved theme on load
 
@@ -203,158 +201,20 @@ const AppContent: React.FC = () => {
     return Math.max(12, Math.min(99, Math.round(48 + completionRate * 34 + streakBonus - overduePenalty)));
   }, [reminders, overdueReminders.length, currentStreak]);
 
-  // Load data ONCE + track session
-  useEffect(() => {
-    let notifInterval: ReturnType<typeof setInterval> | undefined;
-
-    setReminders(api.getData('reminders', user.id));
-    setNotes(api.getData('notes', user.id));
-    setRoutines(api.getData('routines', user.id));
-    setWorkoutLogs(api.getData('workout_logs', user.id));
-    setIsDataLoaded(true);
-
-    // PMF + analytics + retention tracking
-    pmfSessionStart();
-    trackSessionStart();
-    const retention = recordSession();
-    if (retention.alerts.length > 0) {
-      dispatchAlerts(retention.alerts);
-    }
-
-    // Streak + return messaging + overlay + notifications
-    try {
-      const streakKey = `eclipse_streak_${user.id}`;
-      const streakData = JSON.parse(localStorage.getItem(streakKey) || '{}');
-      const today = new Date().toISOString().split('T')[0];
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-      const lastShownKey = `eclipse_return_shown_${today}`;
-      const alreadyShown = localStorage.getItem(lastShownKey) === 'true';
-
-      // Count abandoned quests (created before today, not completed)
-      const loadedReminders: any[] = api.getData('reminders', user.id);
-      const abandonedCount = loadedReminders.filter((r: any) =>
-        !r.isCompleted && r.createdAt && new Date(r.createdAt).toISOString().split('T')[0] < today
-      ).length;
-      const topAbandoned = loadedReminders.find((r: any) => !r.isCompleted && r.priority === 'High')?.title
-        || loadedReminders.find((r: any) => !r.isCompleted)?.title;
-
-      if (streakData.lastActiveDate === today) {
-        if (streakData.days > 1) setReturnMessage(`Day ${streakData.days}. ${isRU ? 'Дисциплина сохранена.' : 'Discipline maintained.'}`);
-      } else if (streakData.lastActiveDate === yesterday) {
-        streakData.days = (streakData.days || 0) + 1;
-        streakData.lastActiveDate = today;
-        localStorage.setItem(streakKey, JSON.stringify(streakData));
-        setReturnMessage(`Day ${streakData.days}. ${isRU ? 'Ты пришёл. Продолжай.' : 'You showed up. Continue.'}`);
-
-        // Morning trigger overlay — only show if there's actual debt
-        if (!alreadyShown && abandonedCount > 0) {
-          setReturnOverlay({
-            type: 'debt',
-            streak: streakData.days,
-            abandonedCount,
-            daysAway: 0,
-            topAbandoned,
-          });
-          localStorage.setItem(lastShownKey, 'true');
-        }
-      } else if (streakData.lastActiveDate) {
-        const daysAway = Math.floor((Date.now() - new Date(streakData.lastActiveDate).getTime()) / 86400000);
-        streakData.days = 1;
-        streakData.lastActiveDate = today;
-        localStorage.setItem(streakKey, JSON.stringify(streakData));
-        setReturnMessage(`${daysAway} ${isRU ? 'дней отсутствия. Стрик сломан. День 1.' : 'days absent. Streak broken. Day 1 begins now.'}`);
-
-        // Comeback overlay
-        if (!alreadyShown) {
-          setReturnOverlay({
-            type: 'comeback',
-            streak: 1,
-            abandonedCount,
-            daysAway,
-            topAbandoned,
-          });
-          localStorage.setItem(lastShownKey, 'true');
-        }
-      } else {
-        streakData.days = 1;
-        streakData.lastActiveDate = today;
-        localStorage.setItem(streakKey, JSON.stringify(streakData));
-      }
-
-      // Achievement: track streak
-      import('./services/achievementService').then(({ trackEvent }) => {
-        trackEvent('streak_update', streakData.days || 0);
-      }).catch(() => {});
-
-      // ═══ NOTIFICATION PRESSURE ═══
-      // Request permission + schedule pressure notifications
-      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
-
-      // Record day + check weekly summary
-      const completedCount = loadedReminders.filter((r: any) => r.isCompleted).length;
-      const createdCount = loadedReminders.length;
-      recordDay(completedCount, createdCount);
-
-      // Weekly identity lock (shows every 7 days)
-      const weekly = getWeeklySummary();
-      if (weekly) setWeeklySummary(weekly);
-
-      // Schedule inactivity pressure notifications (2-3 hours from now)
-      const pendingCount = loadedReminders.filter((r: any) => !r.isCompleted).length;
-      if (pendingCount > 0 && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-        // 2 hours: gentle pressure
-        setTimeout(() => {
-          if (document.hidden) {
-            new Notification('Eclipse Valhalla', {
-              body: isRU ? `${pendingCount} в ожидании. Дисциплина не строится потом.` : `${pendingCount} objective${pendingCount > 1 ? 's' : ''} still pending. Discipline is not built later.`,
-              icon: '/favicon.ico',
-              tag: 'ev-pressure-1',
-            });
-          }
-        }, 2 * 60 * 60 * 1000);
-
-        // 5 hours: harder
-        setTimeout(() => {
-          if (document.hidden) {
-            new Notification('Eclipse Valhalla', {
-              body: 'You said you would act. You didn\'t. Still nothing done.',
-              icon: '/favicon.ico',
-              tag: 'ev-pressure-2',
-            });
-          }
-        }, 5 * 60 * 60 * 1000);
-      }
-
-      // Check for overdue quests every 5 minutes
-      notifInterval = setInterval(() => {
-        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-        const now = new Date();
-        const loaded: any[] = api.getData('reminders', user.id);
-        const justOverdue = loaded.filter((r: any) =>
-          !r.isCompleted && r.dueDateTime &&
-          new Date(r.dueDateTime) < now &&
-          new Date(r.dueDateTime) > new Date(now.getTime() - 10 * 60000) // overdue in last 10 min
-        );
-        if (justOverdue.length > 0) {
-          new Notification('Eclipse Valhalla', {
-            body: justOverdue.length === 1
-              ? `⚠️ ${justOverdue[0].title} — просрочено`
-              : `⚠️ ${justOverdue.length} квестов просрочено`,
-            icon: undefined,
-            silent: false,
-          });
-        }
-      }, 5 * 60 * 1000); // every 5 minutes
-
-    } catch {}
-
-    // Cleanup overdue notification interval
-    return () => {
-      if (notifInterval) clearInterval(notifInterval);
-    };
-  }, []);
+  // One-time bootstrap: load data, track session, streak, notifications,
+  // pressure scheduling, overdue watcher — see src/hooks/useBootstrap.ts
+  useBootstrap({
+    user,
+    isRussian: isRU,
+    setReminders,
+    setNotes,
+    setRoutines,
+    setWorkoutLogs,
+    setIsDataLoaded,
+    setReturnMessage,
+    setReturnOverlay,
+    setWeeklySummary,
+  });
 
   // Save reminders when they change
   useEffect(() => {
