@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { Reminder, Note, ViewMode, RepeatType, Priority, User, Category, Routine, WorkoutLog, PlanTier, ReminderStatus } from './types';
-import { generateId, toLocalISOString } from './utils';
+import { toLocalISOString } from './utils';
 import { Seal } from './brand/Seal';
 import { LanguageProvider, useLanguage } from './i18n';
 import { api } from './services/storageService';
@@ -16,12 +16,11 @@ import {
   buildDefaultQuestTemplates,
   loadQuestTemplates,
 } from './constants/questTemplates';
-import { pmfQuestCreated, pmfQuestCompleted } from './services/pmfTracker';
-import { trackQuestCreated, trackQuestCompleted } from './services/analyticsService';
 import { useBootstrap } from './hooks/useBootstrap';
 import { useAchievementToasts } from './hooks/useAchievementToasts';
 import { useFeatureTracking } from './hooks/useFeatureTracking';
 import { useAutosave } from './hooks/useAutosave';
+import { useReminderMutations } from './hooks/useReminderMutations';
 import './services/backupService'; // Auto-backup on load
 import './services/themeService';  // Apply saved theme on load
 
@@ -204,98 +203,27 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('keydown', h);
   }, []);
 
-  // Handlers
-  const saveReminder = useCallback((r: Partial<Reminder>) => {
-    const newR: Reminder = {
-      id: r.id || generateId(),
-      title: r.title || 'New Quest',
-      description: r.description || '',
-      dueDateTime: r.dueDateTime || new Date().toISOString(),
-      repeatType: r.repeatType || RepeatType.NONE,
-      priority: r.priority || Priority.MEDIUM,
-      category: r.category || Category.PERSONAL,
-      isCompleted: false,
-      status: ReminderStatus.TODO,
-      createdAt: Date.now(),
-      subtasks: r.subtasks || [],
-      estimatedMinutes: r.estimatedMinutes,
-    };
-    if (r.id) {
-      setReminders(prev => prev.map(x => x.id === r.id ? { ...x, ...r } as Reminder : x));
-    } else {
-      setReminders(prev => [...prev, newR]);
-      pmfQuestCreated();
-      trackQuestCreated();
-
-      // Quick-created quests no longer auto-start Focus Mode
-    }
-    setIsReminderModalOpen(false);
-  }, []);
-
-  const toggleComplete = useCallback((id: string) => {
-    setReminders(prev => {
-      const quest = prev.find(r => r.id === id);
-      if (quest && !quest.isCompleted) {
-        pmfQuestCompleted();
-        trackQuestCompleted();
-      }
-      const updated = prev.map(r =>
-        r.id === id ? { ...r, isCompleted: !r.isCompleted, completedAt: !r.isCompleted ? Date.now() : undefined, status: r.isCompleted ? ReminderStatus.TODO : ReminderStatus.DONE } : r
-      );
-      // Achievement tracking
-      const updatedQuest = updated.find(r => r.id === id);
-      if (updatedQuest?.isCompleted) {
-        import('./services/achievementService').then(({ trackEvent }) => {
-          trackEvent('quest_complete');
-        }).catch(() => {});
-        import('./utils').then(({ playSuccessSound }) => playSuccessSound()).catch(() => {});
-      }
-
-      // Update XP
-      if (updatedQuest && updatedQuest.isCompleted) {
-        const xpGain = updatedQuest.priority === 'High' ? 30 : updatedQuest.priority === 'Medium' ? 20 : 10;
-        setUser(prev => {
-          const newXp = (prev.xp || 0) + xpGain;
-          const newLevel = Math.floor(newXp / 100) + 1;
-          const updatedUser = { ...prev, xp: newXp, level: newLevel };
-          api.updateUser(prev.id, { xp: newXp, level: newLevel });
-          localStorage.setItem('lumina_active_session', JSON.stringify(updatedUser));
-          return updatedUser;
-        });
-      }
-
-      // Auto-repeat
-      if (updatedQuest && updatedQuest.isCompleted && updatedQuest.repeatType && updatedQuest.repeatType !== RepeatType.NONE) {
-        const nextDate = new Date(updatedQuest.dueDateTime);
-        if (updatedQuest.repeatType === RepeatType.DAILY) nextDate.setDate(nextDate.getDate() + 1);
-        else if (updatedQuest.repeatType === RepeatType.WEEKLY) nextDate.setDate(nextDate.getDate() + 7);
-        else if (updatedQuest.repeatType === RepeatType.MONTHLY) nextDate.setMonth(nextDate.getMonth() + 1);
-
-        const repeatedQuest = {
-          ...updatedQuest,
-          id: generateId(),
-          isCompleted: false,
-          completedAt: undefined,
-          status: ReminderStatus.TODO,
-          dueDateTime: nextDate.toISOString(),
-          createdAt: Date.now(),
-        };
-        setTimeout(() => {
-          setReminders(prev => [...prev, repeatedQuest]);
-        }, 500);
-      }
-
-      return updated;
-    });
-  }, []);
-
-  const deleteReminder = useCallback((id: string) => {
-    setReminders(prev => prev.filter(r => r.id !== id));
-  }, []);
+  // Reminder mutation handlers (create/edit, toggle complete, delete)
+  const { saveReminder, toggleComplete, deleteReminder } = useReminderMutations({
+    setReminders,
+    setUser,
+    setIsReminderModalOpen,
+  });
 
   const handleOpenCreateModal = useCallback(() => {
     setEditingId(null);
-    setModalData({ title: '', desc: '', date: toLocalISOString(new Date()), repeat: RepeatType.NONE, priority: Priority.MEDIUM, category: Category.PERSONAL, subtasks: [], estimatedMinutes: 0, tags: [] as string[], project: '' });
+    setModalData({
+      title: '',
+      desc: '',
+      date: toLocalISOString(new Date()),
+      repeat: RepeatType.NONE,
+      priority: Priority.MEDIUM,
+      category: Category.PERSONAL,
+      subtasks: [],
+      estimatedMinutes: 0,
+      tags: [] as string[],
+      project: '',
+    });
     setIsReminderModalOpen(true);
   }, []);
 
