@@ -446,6 +446,11 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
   const [exerciseTimerTarget, setExerciseTimerTarget] = useState(0);
 
+  // Auto-flow mode: run through all exercises with rest automatically
+  const [autoFlowActive, setAutoFlowActive] = useState(false);
+  const autoFlowRef = useRef<{ exIdx: number; roundIdx: number; phase: 'work' | 'rest' } | null>(null);
+  const [autoFlowPos, setAutoFlowPos] = useState<{ exIdx: number; roundIdx: number } | null>(null);
+
   // Personal records
   const [newPR, setNewPR] = useState<{ exercise: string; weight: number } | null>(null);
 
@@ -483,6 +488,31 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
             setIsResting(false);
             restStartRef.current = false;
             playNotificationSound();
+            // Auto-flow: advance to next round/exercise
+            if (autoFlowRef.current && autoFlowRef.current.phase === 'rest' && activeRoutine) {
+              const { exIdx, roundIdx } = autoFlowRef.current;
+              const curEx = activeRoutine.exercises[exIdx];
+              let nextEx = exIdx;
+              let nextRound = roundIdx + 1;
+              if (!curEx || nextRound >= curEx.targetSets) {
+                nextEx = exIdx + 1;
+                nextRound = 0;
+              }
+              if (nextEx >= activeRoutine.exercises.length) {
+                autoFlowRef.current = null;
+                setAutoFlowActive(false);
+                setAutoFlowPos(null);
+              } else {
+                autoFlowRef.current = { exIdx: nextEx, roundIdx: nextRound, phase: 'work' };
+                setAutoFlowPos({ exIdx: nextEx, roundIdx: nextRound });
+                setExpandedExercise(nextEx);
+                const nx = activeRoutine.exercises[nextEx];
+                const dur = nx.timedDuration || 45;
+                setExerciseTimer(0);
+                setExerciseTimerTarget(dur);
+                setIsExerciseTimerRunning(true);
+              }
+            }
             return 0;
           }
           return prev - 1;
@@ -492,7 +522,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       restStartRef.current = false;
     }
     return () => clearInterval(interval);
-  }, [isResting]);
+  }, [isResting, activeRoutine]);
 
   // Exercise timer (count up for timed exercises)
   useEffect(() => {
@@ -503,6 +533,28 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
           if (exerciseTimerTarget > 0 && prev >= exerciseTimerTarget) {
             setIsExerciseTimerRunning(false);
             playNotificationSound();
+            // Auto-flow: mark current set complete, then start rest
+            if (autoFlowRef.current && activeRoutine) {
+              const { exIdx, roundIdx } = autoFlowRef.current;
+              setSessionData(prevData => {
+                const next = prevData.map((ex, i) => {
+                  if (i !== exIdx) return ex;
+                  return { ...ex, sets: ex.sets.map((s, j) => j === roundIdx ? { ...s, completed: true } : s) };
+                });
+                return next;
+              });
+              const ex = activeRoutine.exercises[exIdx];
+              const isLastRound = !ex || roundIdx + 1 >= ex.targetSets;
+              const isLastEx = exIdx + 1 >= activeRoutine.exercises.length;
+              if (isLastRound && isLastEx) {
+                autoFlowRef.current = null;
+                setAutoFlowActive(false);
+                setAutoFlowPos(null);
+              } else {
+                autoFlowRef.current = { exIdx, roundIdx, phase: 'rest' };
+                setIsResting(true);
+              }
+            }
             return prev;
           }
           return prev + 1;
@@ -510,7 +562,7 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isExerciseTimerRunning, exerciseTimerTarget]);
+  }, [isExerciseTimerRunning, exerciseTimerTarget, activeRoutine]);
 
   // Session persistence — save to localStorage on change
   useEffect(() => {
@@ -775,6 +827,28 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
     setExerciseTimer(0);
   };
 
+  const startAutoFlow = () => {
+    if (!activeRoutine || activeRoutine.exercises.length === 0) return;
+    autoFlowRef.current = { exIdx: 0, roundIdx: 0, phase: 'work' };
+    setAutoFlowActive(true);
+    setAutoFlowPos({ exIdx: 0, roundIdx: 0 });
+    setExpandedExercise(0);
+    setIsResting(false);
+    const first = activeRoutine.exercises[0];
+    const dur = first.timedDuration || 45;
+    setExerciseTimer(0);
+    setExerciseTimerTarget(dur);
+    setIsExerciseTimerRunning(true);
+  };
+
+  const stopAutoFlow = () => {
+    autoFlowRef.current = null;
+    setAutoFlowActive(false);
+    setAutoFlowPos(null);
+    setIsExerciseTimerRunning(false);
+    setIsResting(false);
+  };
+
   /* ── Analytics ─────────────────────────────────────────────── */
 
   const chartData = useMemo(() =>
@@ -951,6 +1025,17 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <button onClick={autoFlowActive ? stopAutoFlow : startAutoFlow}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
+                    style={{
+                      background: autoFlowActive
+                        ? 'linear-gradient(135deg, #FF4444, #FF6B35)'
+                        : 'linear-gradient(135deg, #D8C18E, #B89B5E)',
+                      color: '#0A0A0F',
+                    }}>
+                    {autoFlowActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    {autoFlowActive ? (isRu ? 'Стоп авто' : 'Stop Auto') : (isRu ? 'Авто-режим' : 'Auto Mode')}
+                  </button>
                   <button onClick={finishWorkout}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
                     style={{ backgroundColor: V.bg0, color: V.accent }}>
@@ -1020,6 +1105,39 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ routines, logs, setRoutines, 
                       {sec}s
                     </button>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Auto-flow status banner */}
+            {autoFlowActive && autoFlowPos && activeRoutine && (
+              <div className="mb-4 rounded-2xl p-4 flex items-center gap-3"
+                style={{ background: 'linear-gradient(135deg, #D8C18E12, #B89B5E08)', border: '1px solid #D8C18E30' }}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: '#D8C18E15' }}>
+                  <Zap className="w-6 h-6" style={{ color: '#D8C18E' }} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#D8C18E' }}>
+                    {isRu ? 'Авто-режим' : 'Auto Mode'} · {isResting ? (isRu ? 'передышка' : 'rest') : (isRu ? 'работа' : 'work')}
+                  </p>
+                  <p className="text-sm font-bold mt-0.5" style={{ color: V.text }}>
+                    {activeRoutine.exercises[autoFlowPos.exIdx]?.name} — {isRu ? 'круг' : 'round'} {autoFlowPos.roundIdx + 1}/{activeRoutine.exercises[autoFlowPos.exIdx]?.targetSets}
+                  </p>
+                  {(() => {
+                    const cur = activeRoutine.exercises[autoFlowPos.exIdx];
+                    const totalRounds = cur?.targetSets || 0;
+                    let nextExIdx = autoFlowPos.exIdx;
+                    let nextRound = autoFlowPos.roundIdx + 1;
+                    if (nextRound >= totalRounds) { nextExIdx++; nextRound = 0; }
+                    const nextEx = activeRoutine.exercises[nextExIdx];
+                    if (!nextEx) return <p className="text-[10px] mt-0.5" style={{ color: V.textTertiary }}>{isRu ? 'Последнее упражнение!' : 'Last exercise!'}</p>;
+                    return (
+                      <p className="text-[10px] mt-0.5" style={{ color: V.textTertiary }}>
+                        {isRu ? 'Далее:' : 'Next:'} {nextEx.name} · {isRu ? 'круг' : 'round'} {nextRound + 1}
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
             )}
