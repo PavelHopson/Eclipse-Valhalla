@@ -12,7 +12,6 @@ import { OnboardingTip } from './components/OnboardingTips';
 import { ToastContainer } from './design';
 import { AppErrorBoundary } from './app/AppErrorBoundary';
 import {
-  QUEST_TEMPLATES_STORAGE_KEY,
   QuestTemplate,
   buildDefaultQuestTemplates,
   loadQuestTemplates,
@@ -22,6 +21,7 @@ import { trackQuestCreated, trackQuestCompleted } from './services/analyticsServ
 import { useBootstrap } from './hooks/useBootstrap';
 import { useAchievementToasts } from './hooks/useAchievementToasts';
 import { useFeatureTracking } from './hooks/useFeatureTracking';
+import { useAutosave } from './hooks/useAutosave';
 import './services/backupService'; // Auto-backup on load
 import './services/themeService';  // Apply saved theme on load
 
@@ -183,32 +183,16 @@ const AppContent: React.FC = () => {
     setWeeklySummary,
   });
 
-  // Save reminders when they change
-  useEffect(() => {
-    if (!isDataLoaded) return;
-    const t = setTimeout(() => api.saveData('reminders', user.id, reminders), 500);
-    return () => clearTimeout(t);
-  }, [reminders, isDataLoaded]);
-
-  // Save notes
-  useEffect(() => {
-    if (!isDataLoaded) return;
-    const t = setTimeout(() => api.saveData('notes', user.id, notes), 500);
-    return () => clearTimeout(t);
-  }, [notes, isDataLoaded]);
-
-  // Save routines + workout logs
-  useEffect(() => {
-    if (!isDataLoaded) return;
-    api.saveData('routines', user.id, routines);
-    api.saveData('workout_logs', user.id, workoutLogs);
-  }, [routines, workoutLogs, isDataLoaded]);
-
-  // Save quest templates
-  useEffect(() => {
-    if (!isDataLoaded) return;
-    localStorage.setItem(QUEST_TEMPLATES_STORAGE_KEY, JSON.stringify(questTemplates));
-  }, [questTemplates, isDataLoaded]);
+  // Debounced autosave for all user collections
+  useAutosave({
+    userId: user.id,
+    isDataLoaded,
+    reminders,
+    notes,
+    routines,
+    workoutLogs,
+    questTemplates,
+  });
 
   // Keyboard shortcut
   useEffect(() => {
