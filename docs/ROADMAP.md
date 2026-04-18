@@ -56,6 +56,16 @@
 - [ ] Referral reward fulfillment (real trial extensions)
 - [ ] Usage-based pricing tier (API calls)
 
+### Career Quest (new module) — see [CAREER_QUEST.md](./CAREER_QUEST.md)
+- [ ] Application tracker (Kanban: Applied → HR → Tech → Onsite → Offer)
+- [ ] 8 career quest templates (apply-3, interview-prep, cv-update, learn-hour, etc.)
+- [ ] Career achievements (First Application, Serial Applier, Offer Magnet)
+- [ ] AI CV tailoring (reuse existing 6-provider aiService)
+- [ ] AI rejection analysis + interview simulation
+- [ ] Career streaks with anti-burnout (reuse existing retention system)
+- [ ] Weekly digest notification (Fri 18:00)
+- [ ] Export to CSV / Notion / Google Sheets
+
 ---
 
 ## Long Term (6-12 months)
