@@ -40,6 +40,7 @@ const JournalView = lazy(() => import('../components/JournalView'));
 const BodyTracker = lazy(() => import('../components/BodyTracker'));
 const ChallengesView = lazy(() => import('../components/ChallengesView'));
 const AnalyticsView = lazy(() => import('../components/AnalyticsView'));
+const CareersView = lazy(() => import('../components/CareersView'));
 const QuickQuestInput = lazy(() => import('../components/QuickQuestInput'));
 
 const SESSION_STORAGE_KEY = 'lumina_active_session';
@@ -410,6 +411,7 @@ export function AppRouter(props: AppRouterProps): React.ReactElement {
   if (currentView === 'journal') return <JournalView />;
   if (currentView === 'body') return <BodyTracker />;
   if (currentView === 'challenges') return <ChallengesView />;
+  if (currentView === 'careers') return <CareersView />;
 
   // Unknown view — render nothing
   return <></>;

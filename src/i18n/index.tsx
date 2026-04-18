@@ -547,6 +547,23 @@ export const translations = {
 
     // Nexus
     'nav.nexus': 'Nexus Feed',
+
+    // Careers
+    'nav.careers': 'Careers',
+    'careers.title': 'Career Forge',
+    'careers.subtitle': 'Your job hunt, gamified.',
+    'careers.tabs.quests': 'Quests',
+    'careers.tabs.applications': 'Applications',
+    'careers.stats.total': 'Total applied',
+    'careers.stats.thisWeek': 'This week',
+    'careers.stats.interviews': 'Active interviews',
+    'careers.stats.offers': 'Offers',
+    'careers.stats.streak': 'Apply streak',
+    'careers.addApp': '+ Add application',
+    'careers.empty': 'No applications yet. Start with your first!',
+    'careers.earned': 'Earned',
+    'careers.done': 'Done',
+    'careers.complete': 'Complete',
   },
   ru: {
     'app.title': 'ECLIPSE VALHALLA',
@@ -1091,6 +1108,23 @@ export const translations = {
 
     // Nexus
     'nav.nexus': 'Лента Нексус',
+
+    // Careers
+    'nav.careers': 'Карьера',
+    'careers.title': 'Кузница карьеры',
+    'careers.subtitle': 'Поиск работы как квест.',
+    'careers.tabs.quests': 'Квесты',
+    'careers.tabs.applications': 'Отклики',
+    'careers.stats.total': 'Всего откликов',
+    'careers.stats.thisWeek': 'На этой неделе',
+    'careers.stats.interviews': 'Активных интервью',
+    'careers.stats.offers': 'Офферы',
+    'careers.stats.streak': 'Серия откликов',
+    'careers.addApp': '+ Новый отклик',
+    'careers.empty': 'Пока нет откликов. Начни с первого!',
+    'careers.earned': 'Получено',
+    'careers.done': 'Сделано',
+    'careers.complete': 'Выполнить',
   }
 };
 
