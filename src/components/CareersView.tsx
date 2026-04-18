@@ -16,6 +16,10 @@ import {
   ExternalLink,
   TrendingUp,
   Target,
+  Wand2,
+  Loader2,
+  Copy,
+  Save,
 } from 'lucide-react';
 import {
   getApplications,
@@ -25,6 +29,7 @@ import {
   getStats,
   completeQuest,
   getCompletedToday,
+  saveCVForApplication,
   CAREER_QUESTS,
   type Application,
   type ApplicationStatus,
@@ -32,6 +37,7 @@ import {
   type CareerQuestId,
   type CareerQuest,
 } from '../services/careerService';
+import { tailorCV, type CVTailorResult } from '../services/cvTailorService';
 
 type TabId = 'quests' | 'applications';
 
@@ -66,6 +72,16 @@ const CareersView: React.FC = () => {
   const [formUrl, setFormUrl] = useState('');
   const [formNotes, setFormNotes] = useState('');
   const [formStatus, setFormStatus] = useState<ApplicationStatus>('applied');
+
+  // CV Tailor state
+  const [tailorApp, setTailorApp] = useState<Application | null>(null);
+  const [tailorBaseCV, setTailorBaseCV] = useState('');
+  const [tailorJobDescription, setTailorJobDescription] = useState('');
+  const [tailorEmphasize, setTailorEmphasize] = useState('');
+  const [tailorLoading, setTailorLoading] = useState(false);
+  const [tailorError, setTailorError] = useState<string | null>(null);
+  const [tailorResult, setTailorResult] = useState<CVTailorResult | null>(null);
+  const [tailorCopied, setTailorCopied] = useState(false);
 
   const refresh = () => {
     setApplications(getApplications());
@@ -160,6 +176,81 @@ const CareersView: React.FC = () => {
     deleteApplication(id);
     refresh();
     closeModals();
+  };
+
+  // ─── CV Tailor ────────────────────────────────────────────────────────
+  const openTailor = (app: Application) => {
+    setTailorApp(app);
+    setTailorBaseCV(app.cvVersion || '');
+    setTailorJobDescription(app.notes || '');
+    setTailorEmphasize('');
+    setTailorResult(
+      app.cvVersion
+        ? {
+            tailoredCV: app.cvVersion,
+            keyChanges: [],
+            matchScore: app.cvMatchScore ?? 0,
+          }
+        : null,
+    );
+    setTailorError(null);
+    setTailorCopied(false);
+  };
+
+  const closeTailor = () => {
+    setTailorApp(null);
+    setTailorBaseCV('');
+    setTailorJobDescription('');
+    setTailorEmphasize('');
+    setTailorResult(null);
+    setTailorError(null);
+    setTailorLoading(false);
+    setTailorCopied(false);
+  };
+
+  const runTailor = async () => {
+    if (!tailorApp) return;
+    if (!tailorBaseCV.trim() || !tailorJobDescription.trim()) return;
+    setTailorLoading(true);
+    setTailorError(null);
+    try {
+      const result = await tailorCV({
+        baseCV: tailorBaseCV.trim(),
+        jobTitle: tailorApp.position,
+        jobCompany: tailorApp.company,
+        jobDescription: tailorJobDescription.trim(),
+        emphasize: tailorEmphasize.trim() || undefined,
+      });
+      setTailorResult(result);
+    } catch (e: any) {
+      const msg = e?.message || '';
+      if (msg.includes('No AI provider')) {
+        setTailorError(isRu ? 'AI-провайдер не настроен. Зайдите в Настройки → AI-провайдеры.' : 'No AI provider configured. Go to Settings → AI Providers.');
+      } else {
+        setTailorError(msg || (isRu ? 'Не удалось адаптировать CV.' : 'Failed to tailor CV.'));
+      }
+    } finally {
+      setTailorLoading(false);
+    }
+  };
+
+  const copyTailored = async () => {
+    if (!tailorResult) return;
+    try {
+      await navigator.clipboard.writeText(tailorResult.tailoredCV);
+      setTailorCopied(true);
+      window.setTimeout(() => setTailorCopied(false), 1800);
+    } catch {
+      // Clipboard API can fail in sandbox/older browsers — silent.
+    }
+  };
+
+  const saveTailored = () => {
+    if (!tailorApp || !tailorResult) return;
+    saveCVForApplication(tailorApp.id, tailorResult.tailoredCV, tailorResult.matchScore);
+    refresh();
+    showToast(isRu ? 'Сохранено в отклик' : 'Saved to application');
+    closeTailor();
   };
 
   const appsByStatus = (status: ApplicationStatus) =>
@@ -433,36 +524,69 @@ const CareersView: React.FC = () => {
                         </div>
                       ) : (
                         items.map((app) => (
-                          <button
+                          <div
                             key={app.id}
-                            onClick={() => openEdit(app)}
-                            className="text-left rounded-xl p-3 transition-all hover:translate-y-[-1px]"
+                            className="rounded-xl p-3 transition-all hover:translate-y-[-1px]"
                             style={{
                               backgroundColor: '#0B0B12',
                               border: '1px solid #1E1E2E',
                             }}
                           >
-                            <div className="text-sm font-bold text-[#EAEAF2] truncate">
-                              {app.company}
-                            </div>
-                            <div className="text-[11px] text-[#8888A0] truncate mt-0.5">
-                              {app.position}
-                            </div>
-                            <div className="flex items-center justify-between mt-2">
-                              <span
-                                className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
-                                style={{
-                                  backgroundColor: '#1A1A26',
-                                  color: '#8888A0',
-                                }}
-                              >
-                                {app.source}
-                              </span>
-                              {app.url && (
-                                <ExternalLink className="w-3 h-3 text-[#3A3A4A]" />
-                              )}
-                            </div>
-                          </button>
+                            <button
+                              onClick={() => openEdit(app)}
+                              className="w-full text-left"
+                            >
+                              <div className="text-sm font-bold text-[#EAEAF2] truncate">
+                                {app.company}
+                              </div>
+                              <div className="text-[11px] text-[#8888A0] truncate mt-0.5">
+                                {app.position}
+                              </div>
+                              <div className="flex items-center justify-between mt-2">
+                                <span
+                                  className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                                  style={{
+                                    backgroundColor: '#1A1A26',
+                                    color: '#8888A0',
+                                  }}
+                                >
+                                  {app.source}
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  {typeof app.cvMatchScore === 'number' && (
+                                    <span
+                                      className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                                      style={{
+                                        backgroundColor: '#FF6B3515',
+                                        color: '#FF6B35',
+                                        border: '1px solid #FF6B3530',
+                                      }}
+                                    >
+                                      {app.cvMatchScore}%
+                                    </span>
+                                  )}
+                                  {app.url && (
+                                    <ExternalLink className="w-3 h-3 text-[#3A3A4A]" />
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openTailor(app);
+                              }}
+                              className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                              style={{
+                                backgroundColor: '#FF6B3510',
+                                color: '#FF6B35',
+                                border: '1px solid #FF6B3530',
+                              }}
+                            >
+                              <Wand2 className="w-3 h-3" />
+                              {isRu ? 'Настроить CV' : 'Tailor CV'}
+                            </button>
+                          </div>
                         ))
                       )}
                     </div>
@@ -627,6 +751,260 @@ const CareersView: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ CV TAILOR MODAL ═══ */}
+      {tailorApp && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(5,5,8,0.88)', backdropFilter: 'blur(6px)' }}
+          onClick={closeTailor}
+        >
+          <div
+            className="w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl p-5 space-y-4"
+            style={{
+              backgroundColor: '#0B0B12',
+              border: '1px solid #2A2A3C70',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{
+                    backgroundColor: '#FF6B3515',
+                    border: '1px solid #FF6B3530',
+                  }}
+                >
+                  <Wand2 className="w-5 h-5" style={{ color: '#FF6B35' }} />
+                </div>
+                <div>
+                  <h3
+                    className="text-lg font-bold text-[#EAEAF2]"
+                    style={{ fontFamily: "'Cinzel', Georgia, serif" }}
+                  >
+                    {isRu ? 'Настройка CV' : 'CV Tailor'}
+                  </h3>
+                  <p className="text-xs text-[#8888A0] mt-0.5 truncate">
+                    {tailorApp.company} — {tailorApp.position}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={closeTailor}
+                className="p-1.5 rounded-lg text-[#8888A0] hover:text-[#EAEAF2] hover:bg-[#1A1A26] transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Input section */}
+            <div className="space-y-3">
+              <Field label={isRu ? 'Ваше CV' : 'Your base CV'}>
+                <textarea
+                  value={tailorBaseCV}
+                  onChange={(e) => setTailorBaseCV(e.target.value)}
+                  placeholder={isRu ? 'Вставьте сюда своё обычное CV…' : 'Paste your generic CV here…'}
+                  rows={6}
+                  className="w-full px-3 py-2 rounded-lg text-sm outline-none bg-[#050508] border border-[#1E1E2E] text-[#EAEAF2] focus:border-[#FF6B35] resize-y"
+                />
+              </Field>
+
+              <Field label={isRu ? 'Описание вакансии' : 'Job description'}>
+                <textarea
+                  value={tailorJobDescription}
+                  onChange={(e) => setTailorJobDescription(e.target.value)}
+                  placeholder={isRu ? 'Вставьте описание вакансии…' : 'Paste the job description…'}
+                  rows={4}
+                  className="w-full px-3 py-2 rounded-lg text-sm outline-none bg-[#050508] border border-[#1E1E2E] text-[#EAEAF2] focus:border-[#FF6B35] resize-y"
+                />
+              </Field>
+
+              <Field label={isRu ? 'Что подчеркнуть' : 'Skills to emphasize'}>
+                <input
+                  value={tailorEmphasize}
+                  onChange={(e) => setTailorEmphasize(e.target.value)}
+                  placeholder={
+                    isRu
+                      ? 'Необязательно — напр. TypeScript, system design…'
+                      : 'Optional — e.g. TypeScript, system design…'
+                  }
+                  className="w-full px-3 py-2 rounded-lg text-sm outline-none bg-[#050508] border border-[#1E1E2E] text-[#EAEAF2] focus:border-[#FF6B35]"
+                />
+              </Field>
+
+              <button
+                onClick={runTailor}
+                disabled={tailorLoading || !tailorBaseCV.trim() || !tailorJobDescription.trim()}
+                className="w-full py-2.5 rounded-xl text-xs font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: '#FF6B35',
+                  color: '#0A0A0F',
+                  boxShadow: '0 4px 12px rgba(255,107,53,0.3)',
+                }}
+              >
+                {tailorLoading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    {isRu ? 'Анализ вашего CV…' : 'Analyzing your CV…'}
+                  </>
+                ) : tailorResult ? (
+                  <>
+                    <Wand2 className="w-3.5 h-3.5" />
+                    {isRu ? 'Перегенерировать' : 'Regenerate'}
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-3.5 h-3.5" />
+                    {isRu ? 'Сгенерировать' : 'Generate'}
+                  </>
+                )}
+              </button>
+
+              {tailorError && (
+                <div
+                  className="px-3 py-2 rounded-lg text-[11px] font-semibold"
+                  style={{
+                    backgroundColor: '#FF444415',
+                    color: '#FF6666',
+                    border: '1px solid #FF444430',
+                  }}
+                >
+                  {tailorError}
+                </div>
+              )}
+            </div>
+
+            {/* Result section */}
+            {tailorResult && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-[#1E1E2E]">
+                {/* Tailored CV */}
+                <div
+                  className="rounded-xl p-3 flex flex-col gap-2 min-h-[240px]"
+                  style={{
+                    backgroundColor: '#050508',
+                    border: '1px solid #1E1E2E',
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8888A0]">
+                      {isRu ? 'Адаптированное CV' : 'Tailored CV'}
+                    </span>
+                    <button
+                      onClick={copyTailored}
+                      className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all"
+                      style={{
+                        backgroundColor: tailorCopied ? '#4ADE8015' : '#1A1A26',
+                        color: tailorCopied ? '#4ADE80' : '#8888A0',
+                        border: `1px solid ${tailorCopied ? '#4ADE8030' : '#2A2A3C'}`,
+                      }}
+                    >
+                      {tailorCopied ? (
+                        <Check className="w-3 h-3" />
+                      ) : (
+                        <Copy className="w-3 h-3" />
+                      )}
+                      {tailorCopied
+                        ? isRu
+                          ? 'Скопировано'
+                          : 'Copied'
+                        : isRu
+                          ? 'Скопировать'
+                          : 'Copy'}
+                    </button>
+                  </div>
+                  <pre className="flex-1 whitespace-pre-wrap text-[11px] leading-relaxed text-[#EAEAF2] font-sans">
+                    {tailorResult.tailoredCV}
+                  </pre>
+                </div>
+
+                {/* Score + changes */}
+                <div className="flex flex-col gap-3">
+                  <div
+                    className="rounded-xl p-4 flex flex-col items-center justify-center"
+                    style={{
+                      backgroundColor: '#050508',
+                      border: '1px solid #FF6B3530',
+                    }}
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#8888A0]">
+                      {isRu ? 'Соответствие' : 'Match score'}
+                    </span>
+                    <div
+                      className="text-5xl font-extrabold leading-none mt-2"
+                      style={{
+                        color: '#FF6B35',
+                        fontFamily: "'Cinzel', Georgia, serif",
+                      }}
+                    >
+                      {tailorResult.matchScore}
+                      <span className="text-xl align-top text-[#8888A0]">%</span>
+                    </div>
+                    {/* Gauge bar */}
+                    <div
+                      className="w-full h-1.5 rounded-full mt-3 overflow-hidden"
+                      style={{ backgroundColor: '#1A1A26' }}
+                    >
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${tailorResult.matchScore}%`,
+                          background: 'linear-gradient(90deg,#FF6B35,#FFB26B)',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    className="flex-1 rounded-xl p-3"
+                    style={{
+                      backgroundColor: '#050508',
+                      border: '1px solid #1E1E2E',
+                    }}
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8888A0]">
+                      {isRu ? 'Ключевые изменения' : 'Key changes'}
+                    </span>
+                    {tailorResult.keyChanges.length === 0 ? (
+                      <p className="text-[11px] text-[#55556A] italic mt-2">—</p>
+                    ) : (
+                      <ul className="mt-2 space-y-1.5">
+                        {tailorResult.keyChanges.map((change, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 text-[11px] text-[#EAEAF2] leading-snug"
+                          >
+                            <span
+                              className="mt-1 w-1.5 h-1.5 rounded-full shrink-0"
+                              style={{ backgroundColor: '#FF6B35' }}
+                            />
+                            <span>{change}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={saveTailored}
+                    className="w-full py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                    style={{
+                      backgroundColor: '#5DAEFF',
+                      color: '#0A0A0F',
+                      boxShadow: '0 4px 12px rgba(93,174,255,0.25)',
+                    }}
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {isRu ? 'Сохранить в отклик' : 'Save to application'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

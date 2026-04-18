@@ -41,6 +41,7 @@ export interface Application {
   notes: string;
   url?: string;
   cvVersion?: string;
+  cvMatchScore?: number;
 }
 
 export type CareerQuestId =
@@ -187,6 +188,23 @@ export function deleteApplication(id: string): void {
   saveApplications(apps);
 }
 
+/**
+ * Persist a tailored CV + its estimated match score onto an application.
+ * No-op if the application is not found.
+ */
+export function saveCVForApplication(appId: string, cv: string, score: number): void {
+  const apps = getApplications();
+  const idx = apps.findIndex(a => a.id === appId);
+  if (idx === -1) return;
+  apps[idx] = {
+    ...apps[idx],
+    cvVersion: cv,
+    cvMatchScore: Math.max(0, Math.min(100, Math.round(score))),
+    updatedAt: Date.now(),
+  };
+  saveApplications(apps);
+}
+
 // ═══════════════════════════════════════════
 // STATS
 // ═══════════════════════════════════════════
@@ -211,22 +229,26 @@ export function getStats(): CareerStats {
   const activeInterviewStatuses: ApplicationStatus[] = ['hr-screen', 'tech-screen', 'onsite'];
   const activeInterviews = apps.filter(a => activeInterviewStatuses.includes(a.status)).length;
 
-  // Apply streak: consecutive days (counting back from today) with >=1 application
+  // Apply streak: consecutive days (counting back from today) with >=1 application.
+  // All date comparisons use UTC (same as toDateStr) to avoid TZ drift around midnight.
   const applyDates = new Set(apps.map(a => toDateStr(a.appliedAt)));
   let applyStreak = 0;
-  let cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
+  const nowDate = new Date();
+  let cursorMs = Date.UTC(
+    nowDate.getUTCFullYear(),
+    nowDate.getUTCMonth(),
+    nowDate.getUTCDate(),
+  );
 
-  // If there is activity today, streak starts today; otherwise check yesterday
-  // and allow streak to continue (streak is "consecutive days with >=1 application,
-  // ending at the most recent activity that is not broken by a gap > 1 day").
-  const todayIso = cursor.toISOString().split('T')[0];
+  // If there is activity today, streak starts today; otherwise fall back to yesterday
+  // so the streak "ends at the most recent activity that is not broken by a gap > 1 day".
+  const todayIso = new Date(cursorMs).toISOString().split('T')[0];
   if (!applyDates.has(todayIso)) {
-    cursor = new Date(cursor.getTime() - 86400000);
+    cursorMs -= 86400000;
   }
-  while (applyDates.has(cursor.toISOString().split('T')[0])) {
+  while (applyDates.has(new Date(cursorMs).toISOString().split('T')[0])) {
     applyStreak++;
-    cursor = new Date(cursor.getTime() - 86400000);
+    cursorMs -= 86400000;
   }
 
   const lastApplyTs = apps.reduce<number>((max, a) => Math.max(max, a.appliedAt), 0);
@@ -319,11 +341,11 @@ export function getCompletedToday(): CareerQuestId[] {
 
 export function getCompletedThisWeek(): CareerQuestId[] {
   const wk = weekKey();
-  const weekStart = new Date();
-  const dayNum = weekStart.getDay() || 7;
-  weekStart.setHours(0, 0, 0, 0);
-  weekStart.setDate(weekStart.getDate() - (dayNum - 1));
-  const weekStartTs = weekStart.getTime();
+  // UTC-based week start (Monday) so we line up with weekKey() / toDateStr() semantics.
+  const now = new Date();
+  const todayUtcMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const dayNum = new Date(todayUtcMs).getUTCDay() || 7; // 1..7, Monday=1
+  const weekStartTs = todayUtcMs - (dayNum - 1) * 86400000;
 
   const done = readDone();
   const ids = new Set<CareerQuestId>();
