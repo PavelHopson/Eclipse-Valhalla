@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "project": "VALHALLA",
+  "capturedAt": "2026-09-08T09:52:34.036Z",
+  "caption": "Command Loop в новом локальном профиле: цели, дисциплина и начало работы без личной истории.",
+  "method": "isolated-local-source-preview",
+  "context": "Local source preview, clean browser storage, reduced motion, no .env, external resources and backend APIs blocked. Repository content only, no additional fixtures or personal history; no production verification.",
+  "sourceHead": "f1e8a1c722ac0805320cf447e13911cadce00cbc",
+  "sourceWorktreeDirty": true,
+  "entryFiles": [
+    {
+      "file": "index.html",
+      "sha256": "88c872a9cf9f74222a6cb38e097692416d31647132347bcea64bee215f4f5748"
+    },
+    {
+      "file": "package.json",
+      "sha256": "bc60fbeb32c5e8be1f6241983bdba67bde2b8297c6e8ff69417fb111ea444e1c"
+    },
+    {
+      "file": "src/main.tsx",
+      "sha256": "7bdd38a31431ec4a2703ebec49a92b1cb615262e072c831a92feadb9cf6f4e39"
+    }
+  ],
+  "screenshots": [
+    {
+      "kind": "overview",
+      "file": "overview.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "b71672ee62cdc57af1595ebcffc4a99c0ea6e2b83993058dc6d3b0dc29ca36bf",
+      "bytes": 867984
+    },
+    {
+      "kind": "mobile",
+      "file": "mobile.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "70b2629d53537a2707a668c26ea57884b2433106cff1515f335a24ff1ac7ed9f",
+      "bytes": 331660
+    }
+  ],
+  "review": "Desktop and selected mobile captures visually reviewed before documentation use."
+}
